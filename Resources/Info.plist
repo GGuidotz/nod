@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>local.nod.companion</string>
+	<key>CFBundleName</key>
+	<string>Nod</string>
+	<key>CFBundleDisplayName</key>
+	<string>Nod</string>
+	<key>CFBundleExecutable</key>
+	<string>Nod</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>__VERSION__</string>
+	<key>CFBundleVersion</key>
+	<string>__BUILD__</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>it</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSMotionUsageDescription</key>
+	<string>Nod legge il movimento della testa dalle AirPods per riconoscere quando annuisci, scuoti la testa o ti allontani.</string>
+</dict>
+</plist>

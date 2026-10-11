@@ -1,0 +1,126 @@
+// Preferenze salvate (UserDefaults) e le regole della presenza. Il token del server ntfy sta nel Portachiavi (Keychain.swift).
+
+import Foundation
+import Security
+import SwiftUI
+
+/// Un'app che, se aperta, rende "tieni sveglio" la scelta predefinita quando ti allontani.
+struct WatchedApp: Codable, Hashable, Identifiable {
+    var bundleIDs: [String]
+    var name: String
+    var id: String { name }
+
+    static let teams = WatchedApp(bundleIDs: ["com.microsoft.teams2", "com.microsoft.teams"], name: "Microsoft Teams")
+    static let slack = WatchedApp(bundleIDs: ["com.tinyspeck.slackmacgap"], name: "Slack")
+    static let zoom = WatchedApp(bundleIDs: ["us.zoom.xos"], name: "Zoom")
+    static let suggestions = [teams, slack, zoom]
+}
+
+/// Giorni della settimana e fascia oraria. I giorni usano la numerazione di Calendar (1 = domenica … 7 = sabato).
+/// Una fascia che passa la mezzanotte (22:00-02:00) appartiene al giorno in cui inizia.
+struct WorkSchedule: Codable, Equatable {
+    var weekdays: Set<Int> = [2, 3, 4, 5, 6]
+    var startMinutes = 9 * 60
+    var endMinutes = 18 * 60
+
+    func contains(_ date: Date, calendar: Calendar = .current) -> Bool {
+        let c = calendar.dateComponents([.weekday, .hour, .minute], from: date)
+        guard let day = c.weekday else { return false }
+        let m = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+        if startMinutes == endMinutes { return weekdays.contains(day) }
+        if startMinutes < endMinutes { return weekdays.contains(day) && m >= startMinutes && m < endMinutes }
+        let yesterday = day == 1 ? 7 : day - 1
+        return (weekdays.contains(day) && m >= startMinutes) || (weekdays.contains(yesterday) && m < endMinutes)
+    }
+}
+
+/// Cosa fare quando ti allontani.
+enum LeavingAction: String, Codable, CaseIterable, Identifiable {
+    case keepAwake, stayOnline, nothing
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .keepAwake: "Tieni sveglio"
+        case .stayOnline: "Resta online"
+        case .nothing: "Niente"
+        }
+    }
+}
+
+struct LeavingRule: Codable, Equatable {
+    /// Basta che una di queste app sia aperta.
+    var apps: [WatchedApp] = [.teams]
+    var schedule = WorkSchedule()
+    /// Minuti di attesa della tua risposta sul Watch prima di applicare la scelta predefinita.
+    var timeoutMinutes = 5
+
+    /// La regola scelta per il silenzio: "tieni sveglio" se una delle app è aperta ed è la tua fascia oraria, altrimenti niente.
+    func defaultAction(now: Date, running: Set<String>, calendar: Calendar = .current) -> LeavingAction {
+        let appOpen = apps.contains { !Set($0.bundleIDs).isDisjoint(with: running) }
+        return appOpen && schedule.contains(now, calendar: calendar) ? .keepAwake : .nothing
+    }
+
+    /// I pulsanti della notifica, il predefinito per primo (il doppio tap sul Watch esegue il primo).
+    func buttons(now: Date, running: Set<String>, stayOnlineAvailable: Bool) -> [LeavingAction] {
+        let first = defaultAction(now: now, running: running)
+        var all: [LeavingAction] = [.keepAwake]
+        if stayOnlineAvailable { all.append(.stayOnline) }
+        all.append(.nothing)
+        return [first] + all.filter { $0 != first }
+    }
+}
+
+enum NtfyServerChoice: String, Codable, CaseIterable, Identifiable {
+    case ntfySh, own
+    var id: String { rawValue }
+    var title: String { self == .ntfySh ? "ntfy.sh (predefinito)" : "Server mio" }
+}
+
+@MainActor
+final class Preferences: ObservableObject {
+    static let shared = Preferences()
+    private let defaults = UserDefaults.standard
+
+    @Published var setupCompleted: Bool { didSet { defaults.set(setupCompleted, forKey: "setupCompleted") } }
+    @Published var lastSeenVersion: String { didSet { defaults.set(lastSeenVersion, forKey: "lastSeenVersion") } }
+    @Published var headMotionEnabled: Bool { didSet { defaults.set(headMotionEnabled, forKey: "headMotionEnabled") } }
+    @Published var speakSummaries: Bool { didSet { defaults.set(speakSummaries, forKey: "speakSummaries") } }
+    @Published var serverChoice: NtfyServerChoice { didSet { defaults.set(serverChoice.rawValue, forKey: "serverChoice") } }
+    @Published var ownServerURL: String { didSet { defaults.set(ownServerURL, forKey: "ownServerURL") } }
+    @Published var topic: String { didSet { defaults.set(topic, forKey: "topic") } }
+    @Published var leavingRule: LeavingRule { didSet { save(leavingRule, "leavingRule") } }
+    @Published var leavingIdleSeconds: Int { didSet { defaults.set(leavingIdleSeconds, forKey: "leavingIdleSeconds") } }
+
+    private init() {
+        setupCompleted = defaults.bool(forKey: "setupCompleted")
+        lastSeenVersion = defaults.string(forKey: "lastSeenVersion") ?? "0"
+        headMotionEnabled = defaults.object(forKey: "headMotionEnabled") as? Bool ?? true
+        speakSummaries = defaults.bool(forKey: "speakSummaries")
+        serverChoice = NtfyServerChoice(rawValue: defaults.string(forKey: "serverChoice") ?? "") ?? .ntfySh
+        ownServerURL = defaults.string(forKey: "ownServerURL") ?? ""
+        topic = defaults.string(forKey: "topic") ?? Preferences.newTopic()
+        leavingIdleSeconds = defaults.object(forKey: "leavingIdleSeconds") as? Int ?? 30
+        leavingRule = (defaults.data(forKey: "leavingRule")).flatMap { try? JSONDecoder().decode(LeavingRule.self, from: $0) }
+            ?? LeavingRule()
+        defaults.set(topic, forKey: "topic")
+    }
+
+    /// L'indirizzo del server in uso, senza "/" finale.
+    var serverURL: URL? {
+        let raw = serverChoice == .ntfySh ? "https://ntfy.sh" : ownServerURL.trimmingCharacters(in: .whitespaces)
+        guard let url = URL(string: raw.hasSuffix("/") ? String(raw.dropLast()) : raw), url.scheme == "https" else { return nil }
+        return url
+    }
+
+    /// Nome del topic casuale: chi lo conosce può leggere e scrivere sul topic, quindi fa da segreto.
+    static func newTopic() -> String {
+        var bytes = [UInt8](repeating: 0, count: 16)
+        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        return "nod-" + bytes.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private func save<T: Encodable>(_ value: T, _ key: String) {
+        if let data = try? JSONEncoder().encode(value) { defaults.set(data, forKey: key) }
+    }
+}

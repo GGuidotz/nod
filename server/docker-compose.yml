@@ -1,0 +1,13 @@
+# Server ntfy per Nod. Avvio: docker compose up -d  (vedi docs/server-ntfy.md)
+services:
+  ntfy:
+    image: binwiederhier/ntfy:v2.11.0
+    command: serve
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Rome
+    volumes:
+      - ./server.yml:/etc/ntfy/server.yml:ro
+      - ./data:/var/lib/ntfy
+    ports:
+      - "127.0.0.1:8080:80"   # solo locale: l'HTTPS pubblico lo dà il proxy o il tunnel davanti

@@ -1,0 +1,16 @@
+# Configurazione ntfy per Nod. Sostituisci base-url con il tuo indirizzo HTTPS pubblico.
+base-url: "https://ntfy.esempio.it"
+listen-http: ":80"
+behind-proxy: true
+
+# Messaggi conservati poco: servono solo per qualche minuto.
+cache-file: "/var/lib/ntfy/cache.db"
+cache-duration: "1h"
+
+# Nessun accesso anonimo: solo il tuo utente (Mac e iPhone) con password o token.
+auth-file: "/var/lib/ntfy/user.db"
+auth-default-access: "deny-all"
+
+# Consegna istantanea sull'iPhone. A ntfy.sh arriva solo l'id del messaggio e un hash del topic, mai il testo.
+# Toglila per l'opt-out totale da ntfy.sh: le notifiche arriveranno con minuti o ore di ritardo (limite di iOS).
+upstream-base-url: "https://ntfy.sh"
