@@ -2,6 +2,7 @@
 // (metodo di conferma, icona classica nel Dock).
 
 import AppKit
+import LocalAuthentication
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -181,7 +182,7 @@ private struct WatchDiagnostics: View {
                 LabeledContent(L("Ordine in automatico"), value: watch.currentChain.map(\.title).joined(separator: " → "))
             }
             HStack {
-                Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova ogni metodo del Watch")) {
+                Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova guidata del doppio clic")) {
                     Task { await watch.testAllMethods() }
                 }
                 .disabled(watch.isAsking || watch.isProbing)
@@ -189,6 +190,20 @@ private struct WatchDiagnostics: View {
                     Task { await watch.probeViaOsascript() }
                 }
                 .disabled(watch.isAsking || watch.isProbing)
+            }
+            if let step = watch.guidedStep {
+                Label(step, systemImage: "applewatch.radiowaves.left.and.right")
+                    .font(.headline)
+                    .foregroundStyle(Brand.gradient)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if prefs.watchMethod != .automatic,
+               watch.attempts.last(where: { $0.method == prefs.watchMethod.rawValue })?.code == LAError.Code.userFallback.rawValue {
+                HStack {
+                    Text(L("Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma."))
+                        .foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                    Button(L("Torna ad Automatico")) { prefs.watchMethod = .automatic; watch.refresh() }
+                }
             }
             if let probe = watch.probeResult {
                 LabeledContent(L("osascript (firmato Apple)"), value: probe)
@@ -205,7 +220,7 @@ private struct WatchDiagnostics: View {
         } header: {
             Text(L("Apple Watch"))
         } footer: {
-            Text(L("Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra.")
+            Text(L("Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra.")
                  + " " + L("La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod."))
                 .foregroundStyle(.secondary)
         }

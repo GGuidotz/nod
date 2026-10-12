@@ -203,7 +203,6 @@ T = {
 "Passo 5": ("Step 5", "Étape 5", "Paso 5"),
 "Passo 6": ("Step 6", "Étape 6", "Paso 6"),
 "Per aggiornare, esegui nel Terminale:": ("To update, run in Terminal:", "Pour mettre à jour, exécutez dans Terminal :", "Para actualizar, ejecuta en Terminal:"),
-"Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra.": ("For each method the request appears on the Mac: double-click the Watch side button. Pick the method that works above.", "Pour chaque méthode, la demande apparaît sur le Mac : appuyez deux fois sur le bouton latéral de la Watch. Choisissez ci-dessus la méthode qui fonctionne.", "Para cada método aparece la solicitud en el Mac: pulsa dos veces el botón lateral del Watch. Elige arriba el método que funcione."),
 "Piccole correzioni e miglioramenti.": ("Minor fixes and improvements.", "Corrections et améliorations mineures.", "Correcciones y mejoras menores."),
 "Presenza": ("Presence", "Présence", "Presencia"),
 "Presenza: %@": ("Presence: %@", "Présence : %@", "Presencia: %@"),
@@ -213,7 +212,6 @@ T = {
 "Prova": ("Try It", "Essai", "Prueba"),
 "Prova invio ntfy": ("Test ntfy Delivery", "Tester l'envoi ntfy", "Probar envío ntfy"),
 "Prova la conferma": ("Try Confirmation", "Essayer la confirmation", "Probar confirmación"),
-"Prova ogni metodo del Watch": ("Try Every Watch Method", "Essayer chaque méthode de la Watch", "Probar cada método del Watch"),
 "Prova un'approvazione": ("Try an Approval", "Essayer une approbation", "Probar una aprobación"),
 "Prova: Claude vuole eseguire npm test nel progetto di esempio.": ("Test: Claude wants to run npm test in the sample project.", "Test : Claude veut exécuter npm test dans le projet d'exemple.", "Prueba: Claude quiere ejecutar npm test en el proyecto de ejemplo."),
 "Prova: annuisci due o tre volte, poi scuoti la testa.": ("Try it: nod two or three times, then shake your head.", "Essayez : hochez la tête deux ou trois fois, puis secouez-la.", "Pruébalo: asiente dos o tres veces y luego niega con la cabeza."),
@@ -415,6 +413,25 @@ T = {
      "Sur ce Mac, le double-clic sur la Watch n'est pas disponible : macOS le refuse à toutes les apps, y compris celles d'Apple.",
      "En este Mac el doble clic en el Watch no está disponible: macOS lo rechaza a todas las apps, incluidas las de Apple."),
 "Ultimo avviso": ("Last alert", "Dernière alerte", "Último aviso"),
+"%d di %d, %@: ora doppio clic sul Watch, non toccare il Mac.":
+    ("%d of %d, %@: now double-click the Watch, don't touch the Mac.",
+     "%d sur %d, %@ : double-cliquez maintenant sur la Watch, ne touchez pas le Mac.",
+     "%d de %d, %@: ahora doble clic en el Watch, no toques el Mac."),
+"Con questo metodo il doppio clic torna come \\\"altro metodo\\\" e non vale come conferma.":
+    ("With this method the double-click comes back as \\\"other method\\\" and doesn't count as a confirmation.",
+     "Avec cette méthode, le double-clic revient comme \\\"autre méthode\\\" et ne vaut pas confirmation.",
+     "Con este método el doble clic vuelve como \\\"otro método\\\" y no cuenta como confirmación."),
+"Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \\\"Confermato\\\" sceglilo qui sopra.":
+    ("For each method Nod tells you when to double-click the Watch side button: don't touch the Mac. Pick the method that gives \\\"Confirmed\\\" above.",
+     "Pour chaque méthode, Nod vous dit quand double-cliquer sur le bouton latéral de la Watch : ne touchez pas le Mac. Choisissez ci-dessus la méthode qui donne \\\"Confirmé\\\".",
+     "Para cada método Nod te dice cuándo hacer doble clic en el botón lateral del Watch: no toques el Mac. Elige arriba el método que da \\\"Confirmado\\\"."),
+"Prova guidata del doppio clic": ("Guided double-click test", "Test guidé du double-clic", "Prueba guiada del doble clic"),
+"Torna ad Automatico": ("Back to Automatic", "Revenir à Automatique", "Volver a Automático"),
+"Touch ID, Watch o password": ("Touch ID, Watch or password", "Touch ID, Watch ou mot de passe", "Touch ID, Watch o contraseña"),
+"macOS ha chiuso la richiesta col ramo \\\"altro metodo\\\": il doppio clic non è stato riconosciuto come conferma.":
+    ("macOS closed the request through the \\\"other method\\\" branch: the double-click wasn't recognized as a confirmation.",
+     "macOS a fermé la demande par la branche \\\"autre méthode\\\" : le double-clic n'a pas été reconnu comme confirmation.",
+     "macOS cerró la solicitud por la rama \\\"otro método\\\": el doble clic no se reconoció como confirmación."),
 }
 
 INFOPLIST = {

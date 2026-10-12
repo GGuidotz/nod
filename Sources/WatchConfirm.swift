@@ -47,7 +47,7 @@ final class WatchConfirmer: ObservableObject {
     @Published private(set) var isAsking = false
     @Published private(set) var lastOutcome: Outcome?
     @Published private(set) var attempts: [Attempt] = []
-    /// Risultati di "Prova ogni metodo" in Diagnostica.
+    /// Risultati della prova guidata in Diagnostica.
     @Published private(set) var methodResults: [WatchMethod: String] = [:]
     /// Esito della prova tramite osascript (processo firmato Apple).
     @Published private(set) var probeResult: String?
@@ -59,9 +59,12 @@ final class WatchConfirmer: ObservableObject {
     }
     /// L'ordine dei metodi che Nod proverà adesso (aggiornato da `refresh`).
     @Published private(set) var currentChain: [WatchMethod] = []
+    /// Prova guidata: l'istruzione del passo in corso.
+    @Published private(set) var guidedStep: String?
 
     private let prefs: Preferences
     private var context: LAContext?
+    private var right: LARight?
 
     init(prefs: Preferences) { self.prefs = prefs }
 
@@ -69,7 +72,9 @@ final class WatchConfirmer: ObservableObject {
         let chain = chain()
         currentChain = chain
         var error: NSError?
-        if let first = chain.first, let policy = first.policy {
+        if chain.first == .laRight {
+            isAvailable = true
+        } else if let first = chain.first, let policy = first.policy {
             isAvailable = LAContext().canEvaluatePolicy(policy, error: &error)
         } else {
             isAvailable = false
@@ -82,7 +87,7 @@ final class WatchConfirmer: ObservableObject {
     /// Le politiche da provare, in ordine: quella scelta in Diagnostica, oppure (automatico) quella che ha confermato
     /// l'ultima volta e poi Touch ID o Watch → companion → watch, tenendo solo quelle che il Mac sa valutare.
     func chain() -> [WatchMethod] {
-        if prefs.watchMethod != .automatic { return prefs.watchMethod.policy == nil ? [] : [prefs.watchMethod] }
+        if prefs.watchMethod != .automatic { return prefs.watchMethod.isUsable ? [prefs.watchMethod] : [] }
         var order: [WatchMethod] = []
         for method in [prefs.learnedWatchMethod].compactMap({ $0 }) + Self.automaticOrder where !order.contains(method) {
             if let policy = method.policy, LAContext().canEvaluatePolicy(policy, error: nil) { order.append(method) }
@@ -90,7 +95,7 @@ final class WatchConfirmer: ObservableObject {
         return order.isEmpty ? [.watch] : order
     }
 
-    static let automaticOrder: [WatchMethod] = [.biometricsOrCompanion, .companion, .watch]
+    static let automaticOrder: [WatchMethod] = [.biometricsOrCompanion, .deviceOwner, .companion, .watch]
 
     /// Codici che, se arrivano entro 1,5 s, vogliono dire "questo metodo qui non va" e non "hai risposto".
     private static let fastFailCodes: Set<Int> = [LAError.Code.authenticationFailed.rawValue, LAError.Code.biometryNotAvailable.rawValue,
@@ -114,13 +119,13 @@ final class WatchConfirmer: ObservableObject {
         let chain = chain()
         var outcome: Outcome = .unavailable(L("Apple Watch non disponibile."))
         for (index, method) in chain.enumerated() {
-            guard let policy = method.policy else { continue }
-            outcome = await evaluate(policy, method: method, reason: reason)
+            guard method.isUsable else { continue }
+            outcome = await run(method, reason: reason)
             if case .interrupted = outcome, let last = attempts.last, last.seconds < 1.5, last.code == LAError.Code.systemCancel.rawValue {
                 diag(.watch, "Closed by the system after \(String(format: "%.2f", last.seconds))s: retrying with Nod in front")
                 bringToFront()
                 try? await Task.sleep(nanoseconds: 400_000_000)
-                outcome = await evaluate(policy, method: method, reason: reason)
+                outcome = await run(method, reason: reason)
             }
             if case .confirmed = outcome {
                 if prefs.watchMethod == .automatic, prefs.learnedWatchMethod != method {
@@ -137,20 +142,38 @@ final class WatchConfirmer: ObservableObject {
         return outcome
     }
 
-    /// Diagnostica: prova uno dopo l'altro i metodi e annota quale funziona.
+    /// Diagnostica, prova guidata: per ogni metodo dice prima cosa fare (solo doppio clic sul Watch, senza toccare il Mac),
+    /// poi annota esito e codice. La tabella finisce anche nel report.
     func testAllMethods() async {
         methodResults = [:]
-        for method in WatchMethod.concrete {
-            guard let policy = method.policy else { methodResults[method] = L("Non disponibile su questo macOS"); continue }
-            let outcome = await evaluate(policy, method: method, reason: L("provare il metodo %@", method.title))
-            methodResults[method] = outcome.title
+        let methods = WatchMethod.concrete
+        for (index, method) in methods.enumerated() {
+            guard method.isUsable else { methodResults[method] = L("Non disponibile su questo macOS"); continue }
+            guidedStep = L("%d di %d, %@: ora doppio clic sul Watch, non toccare il Mac.", index + 1, methods.count, method.title)
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            let outcome = await run(method, reason: L("provare il metodo %@", method.title))
+            let code = attempts.last.flatMap { $0.code }.map { " (\($0) \(Self.codeName(code: $0)))" } ?? ""
+            methodResults[method] = outcome.title + code
         }
+        guidedStep = nil
+        diag(.watch, "guided test: " + methods.map { "\($0.rawValue)=\(methodResults[$0] ?? "-")" }.joined(separator: "; "))
+    }
+
+    /// Un metodo: una LAPolicy oppure LARight.
+    private func run(_ method: WatchMethod, reason: String) async -> Outcome {
+        if method == .laRight { return await authorizeRight(reason: reason) }
+        guard let policy = method.policy else { return .unavailable(L("Non disponibile su questo macOS")) }
+        return await evaluate(policy, method: method, reason: reason)
     }
 
     /// Chiude la richiesta in corso (per esempio perché hai risposto dalla notifica).
     func cancel() {
         context?.invalidate()
         context = nil
+        if let right {
+            self.right = nil
+            Task { await right.deauthorize() }
+        }
         isAsking = false
     }
 
@@ -161,15 +184,28 @@ final class WatchConfirmer: ObservableObject {
             probeResult = L("Script di prova non trovato nell'app.")
             return
         }
-        let method = chain().first(where: { $0 != .biometricsOrCompanion }) ?? .companion
-        guard let policy = method.policy else { return }
         cancel()
         isProbing = true
         probeResult = nil
-        diag(.watch, "osascript probe started (\(method.rawValue), policy \(policy.rawValue))")
         let reason = L("provare il Watch da osascript")
-        let start = Date()
-        let output = await Task.detached { () -> String in
+        var lines: [String] = []
+        // Solo Watch (3), poi Touch ID, Watch o password (2): due percorsi diversi dello stesso sistema.
+        for policy in [WatchMethod.companion.policy ?? .deviceOwnerAuthenticationWithWatch, LAPolicy.deviceOwnerAuthentication] {
+            diag(.watch, "osascript probe started (policy \(policy.rawValue))")
+            let start = Date()
+            let output = await Self.osascript(script: script, policy: policy, reason: reason)
+            if policy != .deviceOwnerAuthentication {
+                probeRefusedFast = Date().timeIntervalSince(start) < 3 && output.contains("error -1")
+            }
+            diag(.watch, "osascript probe: \(output)")
+            lines.append(output.isEmpty ? L("Nessuna risposta da osascript.") : output)
+        }
+        probeResult = lines.joined(separator: " | ")
+        isProbing = false
+    }
+
+    private static func osascript(script: URL, policy: LAPolicy, reason: String) async -> String {
+        await Task.detached { () -> String in
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
             process.arguments = ["-l", "JavaScript", script.path, String(policy.rawValue), reason]
@@ -181,10 +217,6 @@ final class WatchConfirmer: ObservableObject {
             process.waitUntilExit()
             return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
         }.value
-        probeResult = output.isEmpty ? L("Nessuna risposta da osascript.") : output
-        probeRefusedFast = Date().timeIntervalSince(start) < 3 && output.contains("error -1")
-        isProbing = false
-        diag(.watch, "osascript probe: \(output)")
     }
 
     // MARK: valutazione
@@ -193,6 +225,9 @@ final class WatchConfirmer: ObservableObject {
         cancel()
         let ctx = LAContext()
         ctx.localizedCancelTitle = L("Nega")
+        // Niente pulsante di ripiego ("Usa password…"): su macOS 27.0.1 il doppio clic sul Watch tornava come userFallback (-3).
+        // Con "Touch ID, Watch o password" la password fa parte della politica, quindi il ripiego resta.
+        if method != .deviceOwner { ctx.localizedFallbackTitle = "" }
         context = ctx
         isAsking = true
         bringToFront()
@@ -219,6 +254,35 @@ final class WatchConfirmer: ObservableObject {
         return outcome
     }
 
+    /// LARight (macOS 13+): l'autorizzazione con il requisito predefinito, qualsiasi autenticazione del proprietario.
+    private func authorizeRight(reason: String) async -> Outcome {
+        cancel()
+        let right = LARight()
+        self.right = right
+        isAsking = true
+        bringToFront()
+        diag(.watch, "authorize laRight")
+        let start = Date()
+        var error: NSError?
+        do {
+            try await right.authorize(localizedReason: reason)
+        } catch let caught {
+            error = caught as NSError
+        }
+        let seconds = Date().timeIntervalSince(start)
+        let ok = error == nil
+        let result = ok ? "confirmed" : "\(error?.domain ?? "?") \(error?.code ?? 0) \(Self.codeName(error))"
+        attempts.append(Attempt(date: start, method: WatchMethod.laRight.rawValue, seconds: seconds, result: result,
+                                code: ok ? nil : (error?.code ?? 0)))
+        if attempts.count > 30 { attempts.removeFirst() }
+        diag(.watch, "result laRight after \(String(format: "%.2f", seconds))s: \(result)")
+        if self.right === right {
+            self.right = nil
+            isAsking = false
+        }
+        return ok ? .confirmed(seconds: seconds) : Self.outcome(for: error)
+    }
+
     private func bringToFront() {
         NSApp.activate(ignoringOtherApps: true)
         NSApp.windows.first { $0.isVisible && $0.canBecomeKey }?.makeKeyAndOrderFront(nil)
@@ -230,14 +294,23 @@ final class WatchConfirmer: ObservableObject {
         case .userCancel?: return .denied
         case .systemCancel?: return .interrupted(L("Chiusa dal sistema (codice %d): Nod deve restare l'app attiva.", error.code))
         case .appCancel?, .invalidContext?: return .interrupted(L("Richiesta chiusa da Nod."))
+        case .userFallback?:
+            return .interrupted(L("macOS ha chiuso la richiesta col ramo \"altro metodo\": il doppio clic non è stato riconosciuto come conferma."))
         default: return .unavailable(describe(error))
         }
     }
 
     private static func codeName(_ error: NSError?) -> String {
-        guard let error, let code = LAError.Code(rawValue: error.code) else { return "" }
+        guard let error else { return "" }
+        return codeName(code: error.code)
+    }
+
+    static func codeName(code raw: Int) -> String {
+        guard let code = LAError.Code(rawValue: raw) else { return "code \(raw)" }
         switch code {
         case .userCancel: return "userCancel"
+        case .userFallback: return "userFallback"
+        case .biometryNotEnrolled: return "biometryNotEnrolled"
         case .systemCancel: return "systemCancel"
         case .appCancel: return "appCancel"
         case .watchNotAvailable: return "watchNotAvailable"
@@ -247,7 +320,7 @@ final class WatchConfirmer: ObservableObject {
         case .invalidContext: return "invalidContext"
         case .notInteractive: return "notInteractive"
         case .passcodeNotSet: return "passcodeNotSet"
-        default: return "code \(error.code)"
+        default: return "code \(raw)"
         }
     }
 

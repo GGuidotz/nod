@@ -68,7 +68,7 @@ func diag(_ category: DiagCategory, _ message: String) {
 
 /// Le politiche di LocalAuthentication che Nod sa usare per il Watch.
 enum WatchMethod: String, CaseIterable, Identifiable, Codable {
-    case automatic, companion, watch, biometricsOrCompanion
+    case automatic, companion, watch, biometricsOrCompanion, deviceOwner, laRight
     var id: String { rawValue }
 
     var title: String {
@@ -77,14 +77,18 @@ enum WatchMethod: String, CaseIterable, Identifiable, Codable {
         case .companion: "Companion (macOS 15+)"
         case .watch: "Apple Watch"
         case .biometricsOrCompanion: L("Touch ID o Watch")
+        case .deviceOwner: L("Touch ID, Watch o password")
+        case .laRight: "LARight"
         }
     }
 
-    /// La politica concreta; nil se non esiste su questo macOS.
+    /// La politica concreta; nil se non esiste su questo macOS (o per LARight, che non passa da una LAPolicy).
     var policy: LAPolicy? {
         switch self {
-        case .automatic:
+        case .automatic, .laRight:
             return nil
+        case .deviceOwner:
+            return .deviceOwnerAuthentication
         case .watch:
             return .deviceOwnerAuthenticationWithWatch
         case .companion:
@@ -96,7 +100,10 @@ enum WatchMethod: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    static let concrete: [WatchMethod] = [.companion, .watch, .biometricsOrCompanion]
+    /// Si può provare su questo Mac (LARight c'è sempre da macOS 13, il minimo di Nod è 14).
+    var isUsable: Bool { self == .laRight || policy != nil }
+
+    static let concrete: [WatchMethod] = [.companion, .watch, .biometricsOrCompanion, .deviceOwner, .laRight]
 }
 
 enum DiagnosticsReport {
@@ -165,10 +172,17 @@ enum DiagnosticsReport {
             .joined(separator: ", "))
         row("osascript probe", model.watch.probeResult ?? (model.watch.probeRefusedFast ? "refused instantly (earlier run)" : "not run"))
         for method in WatchMethod.concrete {
+            if method == .laRight { row(method.rawValue, "no canEvaluate (authorize only)"); continue }
             guard let policy = method.policy else { row(method.rawValue, "not available on this macOS"); continue }
             var error: NSError?
             let ok = LAContext().canEvaluatePolicy(policy, error: &error)
             row(method.rawValue, ok ? "can evaluate" : "cannot evaluate (\(error?.domain ?? "?") \(error?.code ?? 0): \(error?.localizedDescription ?? "-"))")
+        }
+        if !model.watch.methodResults.isEmpty {
+            out.append("  Guided test:")
+            for method in WatchMethod.concrete {
+                out.append("  - \(method.rawValue): \(model.watch.methodResults[method] ?? "-")")
+            }
         }
         for attempt in model.watch.attempts.suffix(10) {
             out.append("  - \(attempt.line)")

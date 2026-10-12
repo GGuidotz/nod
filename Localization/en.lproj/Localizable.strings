@@ -1,6 +1,7 @@
 /* Nod: en. Generato da tools/translations.py: modifica lì. */
 
 "%@: riconosciuto." = "%@: recognized.";
+"%d di %d, %@: ora doppio clic sul Watch, non toccare il Mac." = "%d of %d, %@: now double-click the Watch, don't touch the Mac.";
 "Accesso a Promemoria negato: Impostazioni di Sistema > Privacy e sicurezza > Promemoria." = "Reminders access denied: System Settings > Privacy & Security > Reminders.";
 "Adesso" = "Now";
 "Aggiorna a Nod %@ nel Terminale" = "Update to Nod %@ in Terminal";
@@ -63,6 +64,7 @@
 "Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche" = "With the ntfy app closed, the message shows up in Notification Center";
 "Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch." = "With AirPods you approve with a nod, then confirm with the Watch side button.";
 "Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. " = "With AirPods: nod, then double-click the Watch side button; shake your head to deny. ";
+"Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma." = "With this method the double-click comes back as \"other method\" and doesn't count as a confirmation.";
 "Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito." = "With your own server the content stays there; ntfy.sh only receives a notice without text, which the iPhone needs to get it instantly.";
 "Con una di queste app aperta" = "With one of these apps open";
 "Conferma non riuscita." = "Confirmation failed.";
@@ -216,7 +218,7 @@
 "Passo 5" = "Step 5";
 "Passo 6" = "Step 6";
 "Per aggiornare, esegui nel Terminale:" = "To update, run in Terminal:";
-"Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra." = "For each method the request appears on the Mac: double-click the Watch side button. Pick the method that works above.";
+"Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra." = "For each method Nod tells you when to double-click the Watch side button: don't touch the Mac. Pick the method that gives \"Confirmed\" above.";
 "Piccole correzioni e miglioramenti." = "Minor fixes and improvements.";
 "Presenza" = "Presence";
 "Presenza: %@" = "Presence: %@";
@@ -230,10 +232,10 @@
 "Prova" = "Try It";
 "Prova Promemoria" = "Test Reminders";
 "Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema." = "Try an Apple app, for example Passwords: if the Watch doesn't offer the double-click there either, it's a system setting.";
+"Prova guidata del doppio clic" = "Guided double-click test";
 "Prova il Watch tramite osascript" = "Test the Watch via osascript";
 "Prova invio ntfy" = "Test ntfy Delivery";
 "Prova la conferma" = "Try Confirmation";
-"Prova ogni metodo del Watch" = "Try Every Watch Method";
 "Prova un'approvazione" = "Try an Approval";
 "Prova: Claude vuole eseguire npm test nel progetto di esempio." = "Test: Claude wants to run npm test in the sample project.";
 "Prova: annuisci due o tre volte, poi scuoti la testa." = "Try it: nod two or three times, then shake your head.";
@@ -296,7 +298,9 @@
 "Tocca Ricevuta sulla notifica di prova" = "Tap Received on the test notification";
 "Token di accesso" = "Access token";
 "Topic" = "Topic";
+"Torna ad Automatico" = "Back to Automatic";
 "Touch ID o Watch" = "Touch ID or Watch";
+"Touch ID, Watch o password" = "Touch ID, Watch or password";
 "Tu" = "You";
 "Tutto pronto" = "All set";
 "Ultimi eventi" = "Recent events";
@@ -325,6 +329,7 @@
 "dalla notifica sul Watch" = "from the notification on the Watch";
 "fatto" = "done";
 "iPhone > Impostazioni > Notifiche > ntfy" = "iPhone > Settings > Notifications > ntfy";
+"macOS ha chiuso la richiesta col ramo \"altro metodo\": il doppio clic non è stato riconosciuto come conferma." = "macOS closed the request through the \"other method\" branch: the double-click wasn't recognized as a confirmation.";
 "macOS non manda la richiesta al Watch. Controlla:" = "macOS isn't sending the request to the Watch. Check:";
 "ntfy.sh (predefinito)" = "ntfy.sh (default)";
 "osascript (firmato Apple)" = "osascript (Apple-signed)";

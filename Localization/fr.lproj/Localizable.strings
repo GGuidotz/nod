@@ -1,6 +1,7 @@
 /* Nod: fr. Generato da tools/translations.py: modifica lì. */
 
 "%@: riconosciuto." = "%@ : reconnu.";
+"%d di %d, %@: ora doppio clic sul Watch, non toccare il Mac." = "%d sur %d, %@ : double-cliquez maintenant sur la Watch, ne touchez pas le Mac.";
 "Accesso a Promemoria negato: Impostazioni di Sistema > Privacy e sicurezza > Promemoria." = "Accès à Rappels refusé : Réglages Système > Confidentialité et sécurité > Rappels.";
 "Adesso" = "Maintenant";
 "Aggiorna a Nod %@ nel Terminale" = "Mettre à jour vers Nod %@ dans Terminal";
@@ -63,6 +64,7 @@
 "Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche" = "App ntfy fermée, le message apparaît dans le Centre de notifications";
 "Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch." = "Avec les AirPods, approuvez d'un hochement, puis confirmez avec le bouton latéral de la Watch.";
 "Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. " = "Avec les AirPods : hochez la tête, puis appuyez deux fois sur le bouton latéral de la Watch ; secouez la tête pour refuser. ";
+"Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma." = "Avec cette méthode, le double-clic revient comme \"autre méthode\" et ne vaut pas confirmation.";
 "Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito." = "Avec votre propre serveur, le contenu y reste ; ntfy.sh ne reçoit qu'un avis sans texte, nécessaire à l'iPhone pour le recevoir aussitôt.";
 "Con una di queste app aperta" = "Avec l'une de ces apps ouverte";
 "Conferma non riuscita." = "Confirmation échouée.";
@@ -216,7 +218,7 @@
 "Passo 5" = "Étape 5";
 "Passo 6" = "Étape 6";
 "Per aggiornare, esegui nel Terminale:" = "Pour mettre à jour, exécutez dans Terminal :";
-"Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra." = "Pour chaque méthode, la demande apparaît sur le Mac : appuyez deux fois sur le bouton latéral de la Watch. Choisissez ci-dessus la méthode qui fonctionne.";
+"Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra." = "Pour chaque méthode, Nod vous dit quand double-cliquer sur le bouton latéral de la Watch : ne touchez pas le Mac. Choisissez ci-dessus la méthode qui donne \"Confirmé\".";
 "Piccole correzioni e miglioramenti." = "Corrections et améliorations mineures.";
 "Presenza" = "Présence";
 "Presenza: %@" = "Présence : %@";
@@ -230,10 +232,10 @@
 "Prova" = "Essai";
 "Prova Promemoria" = "Tester Rappels";
 "Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema." = "Essayez une app Apple, par exemple Mots de passe : si la Watch ne propose pas non plus le double-clic, c'est un réglage du système.";
+"Prova guidata del doppio clic" = "Test guidé du double-clic";
 "Prova il Watch tramite osascript" = "Tester la Watch via osascript";
 "Prova invio ntfy" = "Tester l'envoi ntfy";
 "Prova la conferma" = "Essayer la confirmation";
-"Prova ogni metodo del Watch" = "Essayer chaque méthode de la Watch";
 "Prova un'approvazione" = "Essayer une approbation";
 "Prova: Claude vuole eseguire npm test nel progetto di esempio." = "Test : Claude veut exécuter npm test dans le projet d'exemple.";
 "Prova: annuisci due o tre volte, poi scuoti la testa." = "Essayez : hochez la tête deux ou trois fois, puis secouez-la.";
@@ -296,7 +298,9 @@
 "Tocca Ricevuta sulla notifica di prova" = "Touchez Reçue sur la notification test";
 "Token di accesso" = "Jeton d'accès";
 "Topic" = "Sujet";
+"Torna ad Automatico" = "Revenir à Automatique";
 "Touch ID o Watch" = "Touch ID ou Watch";
+"Touch ID, Watch o password" = "Touch ID, Watch ou mot de passe";
 "Tu" = "Vous";
 "Tutto pronto" = "Tout est prêt";
 "Ultimi eventi" = "Événements récents";
@@ -325,6 +329,7 @@
 "dalla notifica sul Watch" = "depuis la notification sur la Watch";
 "fatto" = "fait";
 "iPhone > Impostazioni > Notifiche > ntfy" = "iPhone > Réglages > Notifications > ntfy";
+"macOS ha chiuso la richiesta col ramo \"altro metodo\": il doppio clic non è stato riconosciuto come conferma." = "macOS a fermé la demande par la branche \"autre méthode\" : le double-clic n'a pas été reconnu comme confirmation.";
 "macOS non manda la richiesta al Watch. Controlla:" = "macOS n'envoie pas la demande à la Watch. Vérifiez :";
 "ntfy.sh (predefinito)" = "ntfy.sh (par défaut)";
 "osascript (firmato Apple)" = "osascript (signé par Apple)";

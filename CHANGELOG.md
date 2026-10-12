@@ -4,6 +4,21 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.3.3 · 2026-10-12
+
+### Improvements
+- Two more confirmation paths to try: `deviceOwnerAuthentication` ("Touch ID, Watch or password", policy 2), which is now part of the automatic chain after Touch ID or Watch, and `LARight` (`authorize(localizedReason:)`, default requirement), available from Diagnostics.
+- Guided double-click test in Diagnostics. Before each method Nod says "now double-click the Watch, don't touch the Mac", then records the outcome and `LAError` code in a table that is also added to the report.
+- The osascript probe runs with both policy 3 (watch only) and policy 2 (device owner).
+- When a forced method returns `userFallback`, Diagnostics suggests going back to Automatic.
+
+### Bug Fixes
+- The fallback button is now hidden on watch-only and Touch ID or Watch prompts (`localizedFallbackTitle = ""`). On macOS 27.0.1 the Watch double-click was coming back as `userFallback` (-3) instead of success.
+- `LAError` codes are named in the log and report, `userFallback` included, and a `userFallback` is explained as "not recognized as a confirmation". It never counts as an approval.
+
+### Known Issues
+- On macOS 27.0.1 the Watch double-click can close the Mac prompt yet return `userFallback` or `userCancel`, even for Apple-signed processes. If no method in the guided test returns "Confirmed", approvals at the Mac use Touch ID.
+
 ## 0.3.2 · 2026-10-12
 
 ### New Features
