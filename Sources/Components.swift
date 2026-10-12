@@ -21,12 +21,12 @@ struct HeadIndicator: View {
                 .rotation3DEffect(.radians(reduceMotion ? 0 : head.yaw), axis: (x: 0, y: 1, z: 0))
                 .rotationEffect(.radians(reduceMotion ? 0 : -head.roll))
             if reduceMotion, head.isConnected {
-                Text(String(format: "su/giù %.0f°  destra/sinistra %.0f°", head.pitch * 180 / .pi, head.yaw * 180 / .pi))
+                Text(L("su/giù %.0f°  destra/sinistra %.0f°", head.pitch * 180 / .pi, head.yaw * 180 / .pi))
                     .font(.caption).monospacedDigit().foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(head.isConnected ? "AirPods indossate" : "AirPods non indossate")
+        .accessibilityLabel(head.isConnected ? L("AirPods indossate") : L("AirPods non indossate"))
     }
 }
 
@@ -51,9 +51,8 @@ struct StatusRow: View {
 /// Giorni della settimana come pulsanti attivabili, da lunedì.
 struct WeekdayPicker: View {
     @Binding var selection: Set<Int>
-    private let days: [(Int, String, String)] = [(2, "L", "lunedì"), (3, "M", "martedì"), (4, "M", "mercoledì"),
-                                                 (5, "G", "giovedì"), (6, "V", "venerdì"), (7, "S", "sabato"),
-                                                 (1, "D", "domenica")]
+    /// Da lunedì: (giorno di Calendar, iniziale, nome per VoiceOver) nella lingua dell'app.
+    private var days: [(Int, String, String)] { Weekdays.ordered }
 
     var body: some View {
         HStack(spacing: 6) {
@@ -83,22 +82,22 @@ struct PresenceRuleEditor: View {
                     }))
             }
         } header: {
-            Text("Con una di queste app aperta")
+            Text(L("Con una di queste app aperta"))
         }
         Section {
-            LabeledContent("Giorni") { WeekdayPicker(selection: $prefs.leavingRule.schedule.weekdays) }
-            DatePicker("Dalle", selection: minutes(\.startMinutes), displayedComponents: .hourAndMinute)
-            DatePicker("Alle", selection: minutes(\.endMinutes), displayedComponents: .hourAndMinute)
+            LabeledContent(L("Giorni")) { WeekdayPicker(selection: $prefs.leavingRule.schedule.weekdays) }
+            DatePicker(L("Dalle"), selection: minutes(\.startMinutes), displayedComponents: .hourAndMinute)
+            DatePicker(L("Alle"), selection: minutes(\.endMinutes), displayedComponents: .hourAndMinute)
         } header: {
-            Text("Nella tua fascia oraria")
+            Text(L("Nella tua fascia oraria"))
         }
         Section {
-            Stepper("Ti consideriamo in uscita dopo \(prefs.leavingIdleSeconds) s senza usare il Mac",
+            Stepper(L("Ti consideriamo in uscita dopo %d s senza usare il Mac", prefs.leavingIdleSeconds),
                     value: $prefs.leavingIdleSeconds, in: 15...600, step: 15)
-            Stepper("Aspetta la tua risposta \(prefs.leavingRule.timeoutMinutes) min",
+            Stepper(L("Aspetta la tua risposta %d min", prefs.leavingRule.timeoutMinutes),
                     value: $prefs.leavingRule.timeoutMinutes, in: 1...30)
         } header: {
-            Text("Tempi")
+            Text(L("Tempi"))
         } footer: {
             Text(Self.summary(prefs.leavingRule)).foregroundStyle(.secondary)
         }
@@ -106,13 +105,12 @@ struct PresenceRuleEditor: View {
 
     /// La regola scritta per intero, aggiornata mentre la modifichi.
     static func summary(_ r: LeavingRule) -> String {
-        let apps = r.apps.map(\.name).formatted(.list(type: .or))
+        let apps = r.apps.map(\.name).formatted(.list(type: .or).locale(Localization.locale))
         guard !r.apps.isEmpty, !r.schedule.weekdays.isEmpty else {
-            return "Senza app o giorni scelti, quando non rispondi non succede niente."
+            return L("Senza app o giorni scelti, quando non rispondi non succede niente.")
         }
-        return "Se ti allontani con \(apps) aperto, nei giorni scelti tra \(clock(r.schedule.startMinutes)) e "
-            + "\(clock(r.schedule.endMinutes)), e non rispondi entro \(r.timeoutMinutes) min, Cocaine tiene sveglio il Mac. "
-            + "Altrimenti non succede niente. Quando torni, Cocaine torna com'era."
+        return L("Se ti allontani con %@ aperto, nei giorni scelti tra %@ e %@, e non rispondi entro %d min, Cocaine tiene sveglio il Mac. Altrimenti non succede niente. Quando torni, Cocaine torna com'era.",
+                 apps, clock(r.schedule.startMinutes), clock(r.schedule.endMinutes), r.timeoutMinutes)
     }
 
     private static func clock(_ m: Int) -> String { String(format: "%d:%02d", m / 60, m % 60) }
@@ -136,32 +134,42 @@ struct ServerSettingsSection: View {
 
     var body: some View {
         Section {
-            Picker("Server", selection: $prefs.serverChoice) {
+            Picker(L("Server"), selection: $prefs.serverChoice) {
                 ForEach(NtfyServerChoice.allCases) { Text($0.title).tag($0) }
             }
             if prefs.serverChoice == .own {
-                TextField("Indirizzo", text: $prefs.ownServerURL, prompt: Text("https://ntfy.esempio.it"))
-                SecureField("Token di accesso", text: $token, prompt: Text("tk_…"))
+                TextField(L("Indirizzo"), text: $prefs.ownServerURL, prompt: Text(verbatim: "https://ntfy.example.com"))
+                SecureField(L("Token di accesso"), text: $token, prompt: Text(verbatim: "tk_…"))
                     .onSubmit { relay.restartListening() }
                     .onChange(of: token) { Keychain.write(token, for: "ntfy-token") }
             }
-            LabeledContent("Topic") {
+            LabeledContent(L("Topic")) {
                 HStack {
                     Text(prefs.topic).font(.body.monospaced()).textSelection(.enabled).lineLimit(1).truncationMode(.middle)
-                    Button("Copia") {
+                    Button(L("Copia")) {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(prefs.topic, forType: .string)
                     }
                 }
             }
         } header: {
-            Text("Server delle notifiche")
+            Text(L("Server delle notifiche"))
         } footer: {
             Text(prefs.serverChoice == .ntfySh
-                 ? "Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita."
-                 : "Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito.")
+                 ? L("Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita.")
+                 : L("Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito."))
                 .foregroundStyle(.secondary)
         }
         .onChange(of: prefs.serverChoice) { relay.restartListening() }
+    }
+}
+
+/// I giorni da lunedì a domenica nella lingua dell'app: (numero di Calendar, iniziale, nome intero).
+enum Weekdays {
+    static var ordered: [(Int, String, String)] {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Localization.locale
+        let short = calendar.veryShortStandaloneWeekdaySymbols, full = calendar.standaloneWeekdaySymbols
+        return [2, 3, 4, 5, 6, 7, 1].map { ($0, short[$0 - 1], full[$0 - 1]) }
     }
 }

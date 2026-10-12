@@ -42,9 +42,9 @@ enum LeavingAction: String, Codable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .keepAwake: "Tieni sveglio"
-        case .stayOnline: "Resta online"
-        case .nothing: "Niente"
+        case .keepAwake: L("Tieni sveglio")
+        case .stayOnline: L("Resta online")
+        case .nothing: L("Niente")
         }
     }
 }
@@ -75,7 +75,7 @@ struct LeavingRule: Codable, Equatable {
 enum NtfyServerChoice: String, Codable, CaseIterable, Identifiable {
     case ntfySh, own
     var id: String { rawValue }
-    var title: String { self == .ntfySh ? "ntfy.sh (predefinito)" : "Server mio" }
+    var title: String { self == .ntfySh ? L("ntfy.sh (predefinito)") : L("Server mio") }
 }
 
 @MainActor
@@ -96,6 +96,16 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(appearance.rawValue, forKey: "appearance"); applyAppearance() }
     }
     @Published var menuBarStyle: MenuBarStyle { didSet { defaults.set(menuBarStyle.rawValue, forKey: "menuBarStyle") } }
+    @Published var language: AppLanguage {
+        didSet { defaults.set(language.rawValue, forKey: "language"); Localization.language = language }
+    }
+    /// Quale politica di LocalAuthentication usare per la conferma col Watch (Diagnostica).
+    @Published var watchMethod: WatchMethod { didSet { defaults.set(watchMethod.rawValue, forKey: "watchMethod") } }
+    /// Mostra nel Dock l'icona classica (.icns) invece di quella del catalogo, se quella non si vede.
+    @Published var classicDockIcon: Bool {
+        didSet { defaults.set(classicDockIcon, forKey: "classicDockIcon"); applyDockIcon() }
+    }
+    @Published var autoCheckUpdates: Bool { didSet { defaults.set(autoCheckUpdates, forKey: "autoCheckUpdates") } }
 
     private init() {
         setupCompleted = defaults.bool(forKey: "setupCompleted")
@@ -110,7 +120,22 @@ final class Preferences: ObservableObject {
             ?? LeavingRule()
         appearance = AppAppearance(rawValue: defaults.string(forKey: "appearance") ?? "") ?? .system
         menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: "menuBarStyle") ?? "") ?? .filled
+        language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .system
+        watchMethod = WatchMethod(rawValue: defaults.string(forKey: "watchMethod") ?? "") ?? .automatic
+        classicDockIcon = defaults.bool(forKey: "classicDockIcon")
+        autoCheckUpdates = defaults.object(forKey: "autoCheckUpdates") as? Bool ?? true
         defaults.set(topic, forKey: "topic")
+        Localization.language = language
+    }
+
+    /// Icona classica nel Dock mentre Nod è aperto (rimedio se l'icona Liquid Glass non si vede).
+    func applyDockIcon() {
+        if classicDockIcon, let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let image = NSImage(contentsOf: url) {
+            NSApp?.applicationIconImage = image
+        } else {
+            NSApp?.applicationIconImage = nil
+        }
     }
 
     /// Applica a tutta l'app l'aspetto scelto (Sistema = segue macOS).

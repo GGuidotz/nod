@@ -13,9 +13,9 @@ enum PresenceState: String {
 
     var title: String {
         switch self {
-        case .here: "Al Mac"
-        case .leaving: "In uscita"
-        case .away: "Lontano"
+        case .here: L("Al Mac")
+        case .leaving: L("In uscita")
+        case .away: L("Lontano")
         }
     }
 
@@ -83,7 +83,7 @@ final class PresenceEngine: ObservableObject {
         state = .leaving
         since = Date()
         decision = nil
-        note(manual ? "Hai detto che stai uscendo." : "Ti stai allontanando.")
+        note(manual ? L("Hai detto che stai uscendo.") : L("Ti stai allontanando."))
 
         let running = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
         let rule = prefs.leavingRule
@@ -92,8 +92,8 @@ final class PresenceEngine: ObservableObject {
             .map { action in NtfyButton(label: action.title) { [weak self] in self?.apply(action, answered: true) } }
         let minutes = rule.timeoutMinutes
         Task {
-            _ = await relay?.send(title: "Ti stai allontanando",
-                                  message: "Senza risposta tra \(minutes) min: \(fallback.title.lowercased()).",
+            _ = await relay?.send(title: L("Ti stai allontanando"),
+                                  message: L("Senza risposta tra %d min: %@.", minutes, fallback.title.lowercased()),
                                   buttons: buttons, lifetime: TimeInterval(minutes * 60), priority: 5)
         }
         timeoutTask?.cancel()
@@ -109,10 +109,10 @@ final class PresenceEngine: ObservableObject {
         timeoutTask?.cancel()
         state = .here
         since = Date()
-        note(manual ? "Hai detto che sei al Mac." : "Sei tornato al Mac.")
+        note(manual ? L("Hai detto che sei al Mac.") : L("Sei tornato al Mac."))
         if nodTurnedCocaineOn {
             nodTurnedCocaineOn = false
-            Task { await cocaine.stopKeepingAwake(); note("Cocaine spento, com'era prima.") }
+            Task { await cocaine.stopKeepingAwake(); note(L("Cocaine spento, com'era prima.")) }
         }
     }
 
@@ -121,22 +121,23 @@ final class PresenceEngine: ObservableObject {
         timeoutTask?.cancel()
         decision = action
         state = .away
-        note((answered ? "Hai scelto: " : "Nessuna risposta, regola: ") + action.title + ".")
+        note(answered ? L("Hai scelto: %@.", action.title) : L("Nessuna risposta, regola: %@.", action.title))
         switch action {
         case .keepAwake:
             Task {
                 await cocaine.refreshStatus()
                 guard cocaine.status?.on != true else { return }
-                if await cocaine.keepAwake() { nodTurnedCocaineOn = true; note("Cocaine acceso.") }
+                if await cocaine.keepAwake() { nodTurnedCocaineOn = true; note(L("Cocaine acceso.")) }
             }
         case .stayOnline:
-            note("Resta online non è ancora collegato a Cocaine.")
+            note(L("Resta online non è ancora collegato a Cocaine."))
         case .nothing:
             break
         }
     }
 
     private func note(_ text: String) {
+        diag(.presence, "\(state.rawValue): \(text)")
         log.insert((Date(), text), at: 0)
         if log.count > 50 { log.removeLast() }
     }

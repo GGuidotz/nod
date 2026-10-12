@@ -56,6 +56,16 @@ ntfy.esempio.it {
 Il token finisce nel Portachiavi del Mac e nei pulsanti delle notifiche (che passano solo dal tuo server). Per cambiarlo:
 `ntfy token remove`, poi `ntfy token add` e aggiorna Nod.
 
+## L'app giusta sull'iPhone
+
+Serve l'app **ntfy** di Philipp Heckel (icona verde, [App Store](https://apps.apple.com/app/ntfy/id1625396347)).
+**"Ntfy me"** (server `ntfy-me.com`) è un servizio diverso: un topic creato lì non riceve nulla di ciò che Nod pubblica su
+ntfy.sh. Se nella tua app vedi esempi con `ntfy-me.com`, è quella sbagliata.
+
+In ntfy: tocca **+**, incolla il **nome del topic** che Nod mostra (es. `nod-0d8a…`); attiva *Use another server* solo se in
+Nod hai scelto *Server mio*. Poi Nod > Notifiche > *Invia prova*: Nod chiede al server se il messaggio c'è e lo scrive
+("Il server ha ricevuto la notifica" oppure l'errore HTTP).
+
 ## Se le notifiche non arrivano sul Watch
 
 Se le vedi nell'elenco dell'app ntfy ma non compaiono come avviso, i messaggi arrivano: manca la consegna push.

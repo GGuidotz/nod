@@ -4,6 +4,7 @@
 // Grafica: aurora nel livello del contenuto, schede di materiale standard, una sola barra di vetro in basso con i passi,
 // Indietro e Continua (HIG, Liquid Glass: il vetro solo sui controlli che galleggiano).
 
+import AppKit
 import ServiceManagement
 import SwiftUI
 
@@ -14,7 +15,7 @@ enum SetupStep: String, CaseIterable, Identifiable {
     /// La versione che ha introdotto il passaggio: dopo un aggiornamento compaiono solo quelli più nuovi di ciò che hai visto.
     var introducedIn: String {
         switch self {
-        case .notifications, .appearance: "0.2.0"
+        case .notifications, .appearance: "0.3.0"
         default: "0.1.0"
         }
     }
@@ -107,13 +108,13 @@ struct SetupView: View {
                     .glassSurface(in: Capsule())
                 Spacer()
                 if step == .welcome {
-                    Button("Configura più tardi") { model.finishSetup() }
+                    Button(L("Configura più tardi")) { model.finishSetup() }
                         .secondaryButton()
                 } else if index > 0 {
-                    Button("Indietro") { go(-1) }
+                    Button(L("Indietro")) { go(-1) }
                         .secondaryButton()
                 }
-                Button(step == .done ? "Inizia a usare Nod" : "Continua") {
+                Button(step == .done ? L("Inizia a usare Nod") : L("Continua")) {
                     if step == .done { model.finishSetup() } else { go(1) }
                 }
                 .primaryButton()
@@ -165,24 +166,24 @@ private struct WelcomeStep: View {
             HStack(alignment: .center, spacing: 28) {
                 FloatingAppIcon(size: 150)
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Nod")
+                    Text(L("Nod"))
                         .font(.system(size: 54, weight: .heavy, design: .rounded))
                         .foregroundStyle(Brand.gradient)
-                    Text("Approva l'AI con un cenno. Lascia la scrivania senza pensarci.")
+                    Text(L("Approva l'AI con un cenno. Lascia la scrivania senza pensarci."))
                         .font(.title2.weight(.medium))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("Nod lavora con Cocaine, le tue AirPods e il tuo Apple Watch. Ogni passaggio si prova subito.")
+                    Text(L("Nod lavora con Cocaine, le tue AirPods e il tuo Apple Watch. Ogni passaggio si prova subito."))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             HStack(alignment: .top, spacing: 14) {
-                FeatureTile(symbol: "checkmark.seal.fill", title: "Annuisci",
-                            detail: "Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch.")
-                FeatureTile(symbol: "applewatch", title: "Solo Watch",
-                            detail: "Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare.")
-                FeatureTile(symbol: "figure.walk.motion", title: "Ti allontani",
-                            detail: "Il Watch ti chiede se tenere sveglio il Mac. Se non rispondi decide la tua regola.")
+                FeatureTile(symbol: "checkmark.seal.fill", title: L("Annuisci"),
+                            detail: L("Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch."))
+                FeatureTile(symbol: "applewatch", title: L("Solo Watch"),
+                            detail: L("Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare."))
+                FeatureTile(symbol: "figure.walk.motion", title: L("Ti allontani"),
+                            detail: L("Il Watch ti chiede se tenere sveglio il Mac. Se non rispondi decide la tua regola."))
             }
         }
     }
@@ -194,38 +195,15 @@ struct WhatsNewStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
-                StepHeader(eyebrow: "Aggiornamento", title: "Novità di Nod",
-                           subtitle: "Cosa è cambiato dall'ultima volta che l'hai aperto. Poi ti mostro solo ciò che è nuovo.")
+                StepHeader(eyebrow: L("Aggiornamento"), title: L("Novità di Nod"),
+                           subtitle: L("Cosa è cambiato dall'ultima volta che l'hai aperto. Poi ti mostro solo ciò che è nuovo."))
                 Spacer()
                 FloatingAppIcon(size: 84)
             }
             if entries.isEmpty {
-                Text("Piccole correzioni e miglioramenti.").foregroundStyle(.secondary).contentCard()
+                Text(L("Piccole correzioni e miglioramenti.")).foregroundStyle(.secondary).contentCard()
             } else {
                 ChangelogList(entries: entries).contentCard(padding: 22)
-            }
-        }
-    }
-}
-
-struct ChangelogList: View {
-    let entries: [ChangelogEntry]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            ForEach(entries) { entry in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Versione \(entry.version)").font(.title3.weight(.semibold))
-                        Text(entry.date).font(.callout).foregroundStyle(.secondary)
-                    }
-                    ForEach(entry.items, id: \.self) { item in
-                        HStack(alignment: .firstTextBaseline, spacing: 10) {
-                            Image(systemName: "sparkle").font(.caption).foregroundStyle(Brand.gradient).accessibilityHidden(true)
-                            Text(item).fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
             }
         }
     }
@@ -236,22 +214,22 @@ private struct CocaineStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 1", title: "Cocaine",
-                       subtitle: "Nod usa Cocaine per tenere sveglio il Mac quando ti allontani.")
+            StepHeader(eyebrow: L("Passo 1"), title: L("Cocaine"),
+                       subtitle: L("Nod usa Cocaine per tenere sveglio il Mac quando ti allontani."))
             VStack(alignment: .leading, spacing: 14) {
-                StatusRow(title: "Installato", value: cocaine.isInstalled ? "Versione \(cocaine.version ?? "?")" : "Non trovato",
+                StatusRow(title: L("Installato"), value: cocaine.isInstalled ? L("Versione %@", cocaine.version ?? "?") : L("Non trovato"),
                           ok: cocaine.isInstalled, symbol: "powersleep")
-                StatusRow(title: "Richieste dell'AI", value: cocaine.approvalsAvailable ? "Collegate" : "In arrivo",
+                StatusRow(title: L("Richieste dell'AI"), value: cocaine.approvalsAvailable ? L("Collegate") : L("In arrivo"),
                           ok: cocaine.approvalsAvailable, symbol: "checkmark.seal")
                 if !cocaine.isInstalled {
-                    Text("brew install --cask mattiakart/tap/cocaine")
+                    Text(verbatim: "brew install --cask mattiakart/tap/cocaine")
                         .font(.body.monospaced()).textSelection(.enabled)
                 }
                 if !cocaine.approvalsAvailable {
-                    Text("Le richieste vere dell'AI non sono ancora collegate a Cocaine. Intanto Nod gestisce la presenza e puoi provare il flusso delle approvazioni.")
+                    Text(L("Le richieste vere dell'AI non sono ancora collegate a Cocaine. Intanto Nod gestisce la presenza e puoi provare il flusso delle approvazioni."))
                         .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
-                Button("Controlla di nuovo") { cocaine.refresh() }.secondaryButton()
+                Button(L("Controlla di nuovo")) { cocaine.refresh() }.secondaryButton()
             }
             .contentCard()
         }
@@ -267,8 +245,8 @@ private struct AirPodsStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 2", title: "AirPods",
-                       subtitle: "Nod legge il movimento della testa per capire quando annuisci, scuoti la testa o ti alzi e cammini. Sono facoltative: senza, basta il Watch.")
+            StepHeader(eyebrow: L("Passo 2"), title: L("AirPods"),
+                       subtitle: L("Nod legge il movimento della testa per capire quando annuisci, scuoti la testa o ti alzi e cammini. Sono facoltative: senza, basta il Watch."))
             HStack(alignment: .center, spacing: 30) {
                 ZStack {
                     PulseRings(active: head.isConnected).frame(width: 220, height: 220)
@@ -279,18 +257,18 @@ private struct AirPodsStep: View {
                 VStack(alignment: .leading, spacing: 14) {
                     if !head.isRunning {
                         // Prima della richiesta di sistema: un solo pulsante, che la apre (HIG, Privacy).
-                        Text("Al prossimo passo macOS ti chiede il permesso Movimento e fitness. I dati restano su questo Mac.")
+                        Text(L("Al prossimo passo macOS ti chiede il permesso Movimento e fitness. I dati restano su questo Mac."))
                             .fixedSize(horizontal: false, vertical: true)
-                        Button("Continua") { prefs.headMotionEnabled = true; head.start() }.primaryButton()
+                        Button(L("Continua")) { prefs.headMotionEnabled = true; head.start() }.primaryButton()
                     } else {
-                        Text(head.isConnected ? "Prova: annuisci due o tre volte, poi scuoti la testa."
-                                              : "Indossa le AirPods: il disegno seguirà la tua testa.")
+                        Text(head.isConnected ? L("Prova: annuisci due o tre volte, poi scuoti la testa.")
+                                              : L("Indossa le AirPods: il disegno seguirà la tua testa."))
                             .font(.title3.weight(.medium))
                             .fixedSize(horizontal: false, vertical: true)
                         if let lastLabel {
                             Label(lastLabel, systemImage: "checkmark.circle.fill").foregroundStyle(Brand.gradient)
                         }
-                        Text("Non le hai con te? Continua: le approvazioni funzionano anche solo col Watch.")
+                        Text(L("Non le hai con te? Continua: le approvazioni funzionano anche solo col Watch."))
                             .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -299,7 +277,7 @@ private struct AirPodsStep: View {
         }
         .onReceive(head.$lastGesture) { g in
             guard let g else { return }
-            lastLabel = g.gesture.title + ": riconosciuto."
+            lastLabel = L("%@: riconosciuto.", g.gesture.title)
             if g.gesture == .nod { nods += 1 }
         }
     }
@@ -311,8 +289,8 @@ private struct WatchStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 3", title: "Apple Watch",
-                       subtitle: "Ogni approvazione si conferma premendo due volte il tasto laterale, come per sbloccare il Mac. Nega nella richiesta vale come no.")
+            StepHeader(eyebrow: L("Passo 3"), title: L("Apple Watch"),
+                       subtitle: L("Ogni approvazione si conferma premendo due volte il tasto laterale, come per sbloccare il Mac. Nega nella richiesta vale come no."))
             HStack(alignment: .center, spacing: 30) {
                 ZStack {
                     PulseRings(active: watch.isAsking).frame(width: 200, height: 200)
@@ -323,15 +301,15 @@ private struct WatchStep: View {
                 }
                 .frame(width: 220, height: 220)
                 VStack(alignment: .leading, spacing: 14) {
-                    StatusRow(title: "Watch vicino e sbloccato",
-                              value: watch.isAvailable ? "Pronto" : (watch.unavailableReason ?? "Non pronto"), ok: watch.isAvailable)
+                    StatusRow(title: L("Watch vicino e sbloccato"),
+                              value: watch.isAvailable ? L("Pronto") : (watch.unavailableReason ?? L("Non pronto")), ok: watch.isAvailable)
                     if !watch.isAvailable {
-                        Text("Attiva Impostazioni di Sistema > Touch ID e password > Apple Watch, poi riprova.")
+                        Text(L("Attiva Impostazioni di Sistema > Touch ID e password > Apple Watch, poi riprova."))
                             .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
-                    Button(watch.isAsking ? "Guarda il Watch…" : "Prova la conferma") {
+                    Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova la conferma")) {
                         Task {
-                            if case .confirmed = await watch.confirm("provare la conferma con Apple Watch") { successes += 1 }
+                            if case .confirmed = await watch.confirm(L("provare la conferma con Apple Watch")) { successes += 1 }
                         }
                     }
                     .primaryButton()
@@ -364,31 +342,30 @@ private struct NotificationsStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 4", title: "Notifiche sul Watch",
-                       subtitle: "Da lontano Nod ti scrive sul Watch tramite l'app ntfy dell'iPhone. Il doppio tap sceglie il primo pulsante.")
+            StepHeader(eyebrow: L("Passo 4"), title: L("Notifiche sul Watch"),
+                       subtitle: L("Da lontano Nod ti scrive sul Watch tramite l'app ntfy dell'iPhone. Il doppio tap sceglie il primo pulsante."))
+            OfficialAppCard(prefs: prefs)
             HStack(alignment: .top, spacing: 22) {
                 VStack(spacing: 14) {
                     WatchNotificationPreview()
-                    Button("Invia prova") { Task { await relay.sendTest() } }.primaryButton()
+                    Button(L("Invia prova")) { Task { await relay.sendTest() } }.primaryButton()
                     if let event = relay.lastEvent {
                         Text(event).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(width: 180)
                     }
                 }
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Se arrivano nell'app ntfy ma non come avviso").font(.headline)
-                    ChecklistRow(text: "Nell'app ntfy: + e il topic qui sotto", detail: "Server: lo stesso scelto qui.",
-                                 done: .constant(true), automatic: true)
-                    ChecklistRow(text: "iPhone > Impostazioni > Notifiche > ntfy",
-                                 detail: "Consenti notifiche, Banner, Avvisi con priorità.", done: $allowed)
-                    ChecklistRow(text: "Nessuna Full immersion che blocchi ntfy", done: $focus)
-                    ChecklistRow(text: "App Watch > Notifiche > ntfy: rispecchia gli avvisi", done: $mirror)
-                    ChecklistRow(text: "Blocca l'iPhone e tieni il Watch al polso",
-                                 detail: "Il Watch mostra le notifiche solo quando l'iPhone è bloccato.", done: $locked)
-                    ChecklistRow(text: "Nod in ascolto delle risposte", detail: relay.isListening ? "Collegato." : "Non collegato: controlla il server.",
+                    Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(.headline)
+                    ChecklistRow(text: L("iPhone > Impostazioni > Notifiche > ntfy"),
+                                 detail: L("Consenti notifiche, Banner, Avvisi con priorità."), done: $allowed)
+                    ChecklistRow(text: L("Nessuna Full immersion che blocchi ntfy"), done: $focus)
+                    ChecklistRow(text: L("App Watch > Notifiche > ntfy: rispecchia gli avvisi"), done: $mirror)
+                    ChecklistRow(text: L("Blocca l'iPhone e tieni il Watch al polso"),
+                                 detail: L("Il Watch mostra le notifiche solo quando l'iPhone è bloccato."), done: $locked)
+                    ChecklistRow(text: L("Nod in ascolto delle risposte"), detail: relay.isListening ? L("Collegato.") : L("Non collegato: controlla il server."),
                                  done: .constant(relay.isListening), automatic: true)
-                    ChecklistRow(text: "Tocca Ricevuta sulla notifica di prova",
-                                 detail: relay.lastRoundTrip.map { "Risposta arrivata alle \($0.formatted(date: .omitted, time: .shortened))." }
-                                     ?? "Quando arriva fino al Mac si spunta da sola.",
+                    ChecklistRow(text: L("Tocca Ricevuta sulla notifica di prova"),
+                                 detail: relay.lastRoundTrip.map { L("Risposta arrivata alle %@.", $0.formatted(date: .omitted, time: .shortened)) }
+                                     ?? L("Quando arriva fino al Mac si spunta da sola."),
                                  done: .constant(relay.lastRoundTrip != nil), automatic: true)
                 }
                 .contentCard()
@@ -406,8 +383,8 @@ private struct PresenceStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 5", title: "Quando ti allontani",
-                       subtitle: "Il Watch ti chiede cosa fare. Se non rispondi, vale questa regola.")
+            StepHeader(eyebrow: L("Passo 5"), title: L("Quando ti allontani"),
+                       subtitle: L("Il Watch ti chiede cosa fare. Se non rispondi, vale questa regola."))
             HStack(alignment: .center, spacing: 28) {
                 WeekStrip(schedule: prefs.leavingRule.schedule)
                 Text(PresenceRuleEditor.summary(prefs.leavingRule))
@@ -428,11 +405,17 @@ private struct AppearanceStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeader(eyebrow: "Passo 6", title: "Aspetto",
-                       subtitle: "Scegli il tema dell'app e come appare Nod nella barra dei menu.")
+            StepHeader(eyebrow: L("Passo 6"), title: L("Aspetto"),
+                       subtitle: L("Scegli lingua, tema dell'app e come appare Nod nella barra dei menu."))
             VStack(alignment: .leading, spacing: 14) {
-                Text("Tema").font(.headline)
-                Picker("Tema", selection: $prefs.appearance) {
+                Text(L("Lingua")).font(.headline)
+                Picker(L("Lingua"), selection: $prefs.language) {
+                    ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                Text(L("Tema")).font(.headline)
+                Picker(L("Tema"), selection: $prefs.appearance) {
                     ForEach(AppAppearance.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
@@ -441,16 +424,16 @@ private struct AppearanceStep: View {
             }
             .contentCard()
             VStack(alignment: .leading, spacing: 14) {
-                Text("Barra dei menu").font(.headline)
+                Text(L("Barra dei menu")).font(.headline)
                 HStack(spacing: 16) {
                     ForEach(MenuBarStyle.allCases) { style in
                         MenuBarPreview(style: style, selected: prefs.menuBarStyle == style)
                             .onTapGesture { prefs.menuBarStyle = style }
                             .accessibilityAddTraits(.isButton)
-                            .accessibilityLabel("Icona \(style.title)")
+                            .accessibilityLabel(L("Icona %@", style.title))
                     }
                 }
-                Text("Da sinistra: al Mac, in uscita, lontano.").font(.callout).foregroundStyle(.secondary)
+                Text(L("Da sinistra: al Mac, in uscita, lontano.")).font(.callout).foregroundStyle(.secondary)
             }
             .contentCard()
         }
@@ -470,18 +453,18 @@ private struct DoneStep: View {
                     DrawnCheck(trigger: 1, size: 54).offset(x: 54, y: 48)
                 }
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Tutto pronto").font(.system(size: 40, weight: .bold, design: .rounded))
-                    Text("Nod resta nella barra dei menu. Questa configurazione si riapre da Nod > Ripeti configurazione.")
+                    Text(L("Tutto pronto")).font(.system(size: 40, weight: .bold, design: .rounded))
+                    Text(L("Nod resta nella barra dei menu. Questa configurazione si riapre da Nod > Ripeti configurazione."))
                         .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
             FlowPills(items: [
-                ("powersleep", model.cocaine.isInstalled ? "Cocaine collegato" : "Cocaine da installare", model.cocaine.isInstalled),
-                ("airpodspro", model.head.isRunning ? "AirPods pronte" : "AirPods non usate", true),
-                ("applewatch", model.watch.isAvailable ? "Watch pronto" : "Watch da attivare", model.watch.isAvailable),
-                ("bell.badge", model.relay.isListening ? "Notifiche collegate" : "Notifiche da verificare", model.relay.isListening),
+                ("powersleep", model.cocaine.isInstalled ? L("Cocaine collegato") : L("Cocaine da installare"), model.cocaine.isInstalled),
+                ("airpodspro", model.head.isRunning ? L("AirPods pronte") : L("AirPods non usate"), true),
+                ("applewatch", model.watch.isAvailable ? L("Watch pronto") : L("Watch da attivare"), model.watch.isAvailable),
+                ("bell.badge", model.relay.isListening ? L("Notifiche collegate") : L("Notifiche da verificare"), model.relay.isListening),
             ])
-            Toggle("Apri Nod all'accesso", isOn: $launchAtLogin)
+            Toggle(L("Apri Nod all'accesso"), isOn: $launchAtLogin)
                 .toggleStyle(.switch)
                 .onChange(of: launchAtLogin) {
                     do {
@@ -512,5 +495,46 @@ private struct FlowPills: View {
                 }
             }
         }
+    }
+}
+
+/// L'app giusta sull'iPhone e l'indirizzo da incollarci: ntfy (di Philipp Heckel), non "Ntfy me", che è un altro servizio.
+private struct OfficialAppCard: View {
+    @ObservedObject var prefs: Preferences
+    @State private var copied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.bubble.fill").font(.title2).foregroundStyle(Brand.gradient)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("Usa l'app ntfy (icona verde, di Philipp Heckel)")).font(.headline)
+                    Text(L("Non \"Ntfy me\": è un servizio diverso e non riceve le notifiche di Nod."))
+                        .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Link(L("Apri nell'App Store"), destination: URL(string: "https://apps.apple.com/app/ntfy/id1625396347")!)
+            }
+            Text(prefs.serverChoice == .ntfySh
+                 ? L("Nell'app tocca + e incolla questo nome di topic (server: ntfy.sh, già quello predefinito):")
+                 : L("Nell'app tocca +, attiva \"Use another server\" con l'indirizzo del tuo server, e incolla questo nome di topic:"))
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Text(verbatim: prefs.topic)
+                    .font(.system(.callout, design: .monospaced))
+                    .textSelection(.enabled)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Spacer()
+                Button(copied ? L("Copiato") : L("Copia")) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(prefs.topic, forType: .string)
+                    copied = true
+                }
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.12)))
+        }
+        .contentCard()
     }
 }

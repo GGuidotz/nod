@@ -17,6 +17,9 @@ final class NotificationRelay: ObservableObject {
     @Published private(set) var lastEvent: String?
     /// L'ultima volta che un pulsante di una notifica è tornato fino al Mac: prova che il percorso funziona.
     @Published private(set) var lastRoundTrip: Date?
+    /// Per la diagnostica: l'ultimo invio e la verifica lato server.
+    @Published private(set) var lastPublish: String?
+    @Published private(set) var lastServerCheck: String?
 
     private let prefs: Preferences
     private var pending: [String: (expires: Date, action: @MainActor () -> Void)] = [:]
@@ -26,13 +29,19 @@ final class NotificationRelay: ObservableObject {
 
     var replyTopic: String { prefs.topic + "-r" }
     var accessToken: String? { Keychain.read("ntfy-token").flatMap { $0.isEmpty ? nil : $0 } }
+    /// L'indirizzo completo del topic, da incollare nell'app ntfy dell'iPhone.
+    var subscribeURL: String { (prefs.serverURL?.absoluteString ?? "https://ntfy.sh") + "/" + prefs.topic }
 
     // MARK: invio
 
     /// Pubblica una notifica; i pulsanti (al massimo 3) restano validi per `lifetime` secondi.
     func send(title: String, message: String, buttons: [NtfyButton] = [], lifetime: TimeInterval = 120,
               priority: Int = 4) async -> Bool {
-        guard let server = prefs.serverURL else { lastEvent = "Indirizzo del server non valido (serve https)."; return false }
+        guard let server = prefs.serverURL else {
+            lastEvent = L("Indirizzo del server non valido (serve https).")
+            diag(.ntfy, "publish skipped: invalid server URL")
+            return false
+        }
         let expires = Date().addingTimeInterval(lifetime)
         pending = pending.filter { $0.value.expires > Date() }
 
@@ -54,20 +63,53 @@ final class NotificationRelay: ObservableObject {
         if let accessToken { request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") }
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-            lastEvent = code == 200 ? "Notifica inviata." : "Il server ha risposto \(code)."
-            return code == 200
+            let id = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id"] as? String
+            lastPublish = "\(DiagnosticsLog.stamp(Date())) HTTP \(code) priority \(priority) buttons \(buttons.count) id \(id ?? "-")"
+            diag(.ntfy, "publish to \(server.host ?? "?"): HTTP \(code), id \(id ?? "-")")
+            guard code == 200 else {
+                lastEvent = L("Il server ha risposto %d.", code)
+                return false
+            }
+            lastEvent = L("Notifica inviata.")
+            if let id { Task { await verifyOnServer(id: id, server: server) } }
+            return true
         } catch {
-            lastEvent = "Invio non riuscito: \(error.localizedDescription)"
+            lastEvent = L("Invio non riuscito: %@", error.localizedDescription)
+            lastPublish = "\(DiagnosticsLog.stamp(Date())) error \(error.localizedDescription)"
+            diag(.ntfy, "publish failed: \(error.localizedDescription)")
             return false
         }
     }
 
+    /// Chiede al server se ha davvero il messaggio: distingue "non parte dal Mac" da "l'iPhone non lo mostra".
+    private func verifyOnServer(id: String, server: URL) async {
+        var components = URLComponents(url: server.appendingPathComponent(prefs.topic).appendingPathComponent("json"),
+                                       resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "poll", value: "1"), URLQueryItem(name: "since", value: "5m")]
+        guard let url = components?.url else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        if let accessToken { request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") }
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            let found = String(decoding: data, as: UTF8.self).contains("\"id\":\"\(id)\"")
+            lastServerCheck = "\(DiagnosticsLog.stamp(Date())) HTTP \(code), message \(found ? "found" : "NOT found")"
+            diag(.ntfy, "server check: HTTP \(code), message \(found ? "found" : "not found")")
+            lastEvent = found ? L("Il server ha ricevuto la notifica. Se non la vedi sul Watch, il problema è sull'iPhone.")
+                              : L("Il server non ha il messaggio (HTTP %d).", code)
+        } catch {
+            lastServerCheck = "\(DiagnosticsLog.stamp(Date())) error \(error.localizedDescription)"
+            diag(.ntfy, "server check failed: \(error.localizedDescription)")
+        }
+    }
+
     func sendTest() async {
-        _ = await send(title: "Nod: prova", message: "Fai doppio tap sul Watch.",
-                       buttons: [NtfyButton(label: "Ricevuta") { [weak self] in self?.lastEvent = "Risposta ricevuta dal Watch." },
-                                 NtfyButton(label: "Ignora") { [weak self] in self?.lastEvent = "Hai scelto Ignora." }])
+        _ = await send(title: L("Nod: prova"), message: L("Fai doppio tap sul Watch."),
+                       buttons: [NtfyButton(label: L("Ricevuta")) { [weak self] in self?.lastEvent = L("Risposta ricevuta dal Watch.") },
+                                 NtfyButton(label: L("Ignora")) { [weak self] in self?.lastEvent = L("Hai scelto Ignora.") }])
     }
 
     // MARK: risposte
@@ -98,15 +140,23 @@ final class NotificationRelay: ObservableObject {
         if let accessToken { request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") }
         do {
             let (bytes, response) = try await URLSession.shared.bytes(for: request)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else { isListening = false; return }
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            guard code == 200 else {
+                isListening = false
+                diag(.ntfy, "listen: HTTP \(code)")
+                return
+            }
             isListening = true
+            diag(.ntfy, "listening for replies on \(server.host ?? "?")")
             for try await line in bytes.lines {
                 guard let data = line.data(using: .utf8),
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                       json["event"] as? String == "message", let token = json["message"] as? String else { continue }
                 handle(token: token.trimmingCharacters(in: .whitespacesAndNewlines))
             }
-        } catch {}
+        } catch {
+            diag(.ntfy, "listen dropped: \(error.localizedDescription)")
+        }
         isListening = false
     }
 
@@ -114,8 +164,13 @@ final class NotificationRelay: ObservableObject {
     private func handle(token: String) {
         guard let entry = pending[token] else { return }
         pending = pending.filter { $0.value.expires != entry.expires }
-        guard entry.expires > Date() else { lastEvent = "Risposta arrivata dopo la scadenza: ignorata."; return }
+        guard entry.expires > Date() else {
+            lastEvent = L("Risposta arrivata dopo la scadenza: ignorata.")
+            diag(.ntfy, "reply after expiry ignored")
+            return
+        }
         lastRoundTrip = Date()
+        diag(.ntfy, "reply received (round trip ok)")
         entry.action()
     }
 

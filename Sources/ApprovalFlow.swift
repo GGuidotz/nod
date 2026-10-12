@@ -65,7 +65,7 @@ final class ApprovalFlow: ObservableObject {
         }
     }
 
-    func demo() { ask("Prova: Claude vuole eseguire npm test nel progetto di esempio.") }
+    func demo() { ask(L("Prova: Claude vuole eseguire npm test nel progetto di esempio.")) }
 
     func cancel() {
         windowTask?.cancel()
@@ -99,7 +99,7 @@ final class ApprovalFlow: ObservableObject {
         windowTask?.cancel()
         head.onGesture = nil
         switch gesture {
-        case .shake: finish(.denied(summary: summary, by: "scuotendo la testa"), allow: false, generation: gen)
+        case .shake: finish(.denied(summary: summary, by: L("scuotendo la testa")), allow: false, generation: gen)
         case .nod: askOnWatch(summary, notify: false)
         }
     }
@@ -110,21 +110,21 @@ final class ApprovalFlow: ObservableObject {
         let gen = generation
         phase = .confirmingOnWatch(summary: summary, alsoNotified: notify)
         if notify {
-            let approve = NtfyButton(label: "Approva") { [weak self] in
-                self?.decide(.approved(summary: summary, by: "dalla notifica sul Watch"), allow: true, generation: gen)
+            let approve = NtfyButton(label: L("Approva")) { [weak self] in
+                self?.decide(.approved(summary: summary, by: L("dalla notifica sul Watch")), allow: true, generation: gen)
             }
-            let deny = NtfyButton(label: "Nega") { [weak self] in
-                self?.decide(.denied(summary: summary, by: "dalla notifica sul Watch"), allow: false, generation: gen)
+            let deny = NtfyButton(label: L("Nega")) { [weak self] in
+                self?.decide(.denied(summary: summary, by: L("dalla notifica sul Watch")), allow: false, generation: gen)
             }
-            Task { _ = await relay.send(title: "Nod: approvazione", message: summary, buttons: [approve, deny],
+            Task { _ = await relay.send(title: L("Nod: approvazione"), message: summary, buttons: [approve, deny],
                                         lifetime: Self.watchWindow, priority: 5) }
         }
         Task {
-            let outcome = await watch.confirm("approvare: \(summary)")
+            let outcome = await watch.confirm(L("approvare: %@", summary))
             guard gen == generation, !phase.isFinal else { return }
             switch outcome {
-            case .confirmed: finish(.approved(summary: summary, by: "col tasto laterale del Watch"), allow: true, generation: gen)
-            case .denied: finish(.denied(summary: summary, by: "con Nega"), allow: false, generation: gen)
+            case .confirmed: finish(.approved(summary: summary, by: L("col tasto laterale del Watch")), allow: true, generation: gen)
+            case .denied: finish(.denied(summary: summary, by: L("con Nega")), allow: false, generation: gen)
             case .interrupted(let why), .unavailable(let why):
                 // Con la notifica in giro la decisione può ancora arrivare da lì.
                 if !notify { finish(.failed(summary: summary, reason: why), allow: nil, generation: gen) }

@@ -1,0 +1,2 @@
+"NSMotionUsageDescription" = "Nod reads head motion from your AirPods to recognize when you nod, shake your head or step away.";
+"NSAppleEventsUsageDescription" = "Nod opens Terminal to run the update command when you ask it to.";

@@ -4,16 +4,17 @@ import AppKit
 import SwiftUI
 
 enum SidebarItem: String, CaseIterable, Identifiable {
-    case status, approvals, presence, devices, whatsNew
+    case status, approvals, presence, devices, whatsNew, diagnostics
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .status: "Stato"
-        case .approvals: "Approvazioni"
-        case .presence: "Presenza"
-        case .devices: "Dispositivi"
-        case .whatsNew: "Novità"
+        case .status: L("Stato")
+        case .approvals: L("Approvazioni")
+        case .presence: L("Presenza")
+        case .devices: L("Dispositivi")
+        case .whatsNew: L("Novità")
+        case .diagnostics: L("Diagnostica")
         }
     }
 
@@ -24,6 +25,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .presence: "figure.walk"
         case .devices: "airpodspro"
         case .whatsNew: "sparkles"
+        case .diagnostics: "stethoscope"
         }
     }
 }
@@ -39,12 +41,13 @@ final class AppModel: ObservableObject {
     let relay: NotificationRelay
     let presence: PresenceEngine
     let approvals: ApprovalFlow
+    let updater: Updater
 
     @Published var selection: SidebarItem? = .status
     @Published var setup: SetupSession?
 
     private init() {
-        let prefs = Preferences.shared, cocaine = CocaineBridge(), head = HeadMotionMonitor(), watch = WatchConfirmer()
+        let prefs = Preferences.shared, cocaine = CocaineBridge(), head = HeadMotionMonitor(), watch = WatchConfirmer(prefs: prefs)
         let relay = NotificationRelay(prefs: prefs)
         let presence = PresenceEngine(prefs: prefs, head: head, cocaine: cocaine)
         presence.relay = relay
@@ -55,12 +58,18 @@ final class AppModel: ObservableObject {
         self.relay = relay
         self.presence = presence
         approvals = ApprovalFlow(head: head, watch: watch, relay: relay, prefs: prefs)
+        updater = Updater(prefs: prefs)
     }
 
     var appVersion: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
 
     func didLaunch() {
+        let info = Bundle.main.infoDictionary ?? [:]
+        diag(.app, "launch \(appVersion) build \(info["CFBundleVersion"] as? String ?? "?"), icon \(info["NodIconTier"] as? String ?? "?"), "
+             + "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
         prefs.applyAppearance()
+        prefs.applyDockIcon()
+        updater.start()
         cocaine.refresh()
         watch.refresh()
         if prefs.setupCompleted, prefs.headMotionEnabled { head.start() }

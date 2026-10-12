@@ -3,6 +3,7 @@
 #   ./build.sh              build/Nod.app
 #   ./build.sh --install    e la copia in /Applications (chiude la copia aperta)
 #   ./build.sh --dmg        e crea dist/Nod-<versione>.dmg (rifiuta la firma ad hoc: i permessi andrebbero persi)
+#   NOD_ICON=classic ./build.sh …   usa l'icona classica anche se c'è Xcode
 # Firma con l'identità di ./make-signing-identity.sh se c'è, altrimenti ad hoc (solo per prove).
 set -euo pipefail
 cd "${0:A:h}"
@@ -17,17 +18,26 @@ esac
 
 VERSION=$(tr -d '[:space:]' < VERSION)
 BUILD_NUMBER=$(git rev-list --count HEAD 2>/dev/null || echo 1)
+COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
 BUILD=build
 APP="$BUILD/Nod.app"
+PLIST="$APP/Contents/Info.plist"
 KC="$HOME/.nod-signing/nod-signing.keychain"
 IDENTITY="Nod Local Signing"
+plist_set() { /usr/bin/plutil -insert "$1" -string "$2" "$PLIST"; }   # chiave, valore (spazi ammessi)
 
 grep -q "^## $VERSION " CHANGELOG.md || { echo "Manca la sezione '## $VERSION · <data>' in CHANGELOG.md" >&2; exit 1; }
 
+# Traduzioni: ogni L("…") deve avere la sua voce in en/fr/es (avviso, non blocca).
+if command -v python3 >/dev/null; then
+  python3 -I tools/check-strings.py >/dev/null || echo "Attenzione: traduzioni incomplete (python3 tools/check-strings.py)."
+fi
+
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD_NUMBER/" Resources/Info.plist > "$APP/Contents/Info.plist"
+sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD_NUMBER/" Resources/Info.plist > "$PLIST"
 cp CHANGELOG.md "$APP/Contents/Resources/CHANGELOG.md"
+cp -R Localization/*.lproj "$APP/Contents/Resources/"
 
 for arch in arm64 x86_64; do
   mkdir -p "$BUILD/$arch"
@@ -44,49 +54,68 @@ for s in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
-# Icona Liquid Glass (Resources/Icon/Nod.icon, formato Icon Composer): serve actool di Xcode.
-if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app/Contents/Developer ]; then
-  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer   # Xcode anche se è selezionato solo CLT
-fi
-ACTOOL=$(xcrun --find actool 2>/dev/null || true)
-[ -z "$ACTOOL" ] && [ -x /Applications/Xcode.app/Contents/Developer/usr/bin/actool ] && \
-  ACTOOL=/Applications/Xcode.app/Contents/Developer/usr/bin/actool
-ICON_TIER=classica
-if [ -n "$ACTOOL" ]; then
-  if "$ACTOOL" Resources/Icon/Nod.icon \
-       --compile "$APP/Contents/Resources" --platform macosx --minimum-deployment-target 14.0 --app-icon Nod \
-       --output-partial-info-plist "$BUILD/icon-partial.plist" >"$BUILD/actool.log" 2>&1 \
-     && [ -f "$APP/Contents/Resources/Assets.car" ]; then
-    /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string Nod" "$APP/Contents/Info.plist"
-    ICON_TIER="Liquid Glass"
-  else
-    echo "Icona Liquid Glass non compilata (dettagli in $BUILD/actool.log): uso l'icona classica."
-    echo "Puoi aprire Resources/Icon/Nod.icon con Icon Composer, salvarlo e rifare la build."
+# Icona Liquid Glass (Resources/Icon/Nod.icon, formato Icon Composer): serve actool di Xcode. Accettata solo se il catalogo
+# compilato contiene davvero l'icona "Nod"; altrimenti si resta sulla classica (un catalogo vuoto lascia il Dock vuoto).
+ICON_TIER=classic
+if [ "${NOD_ICON:-}" != classic ]; then
+  if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app/Contents/Developer ]; then
+    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer   # Xcode anche se è selezionato solo CLT
   fi
-else
-  echo "actool non trovato (serve Xcode): icona classica."
+  ACTOOL=$(xcrun --find actool 2>/dev/null || true)
+  ASSETUTIL=$(xcrun --find assetutil 2>/dev/null || command -v assetutil || true)
+  if [ -n "$ACTOOL" ]; then
+    rm -rf "$BUILD/icon-out"; mkdir -p "$BUILD/icon-out"
+    if "$ACTOOL" Resources/Icon/Nod.icon --compile "$BUILD/icon-out" --platform macosx --target-device mac \
+         --minimum-deployment-target 14.0 --app-icon Nod --output-partial-info-plist "$BUILD/icon-partial.plist" \
+         >"$BUILD/actool.log" 2>&1 && [ -f "$BUILD/icon-out/Assets.car" ] \
+       && { [ -z "$ASSETUTIL" ] || grep -Eq '"Name" *: *"Nod"' <<< "$("$ASSETUTIL" --info "$BUILD/icon-out/Assets.car" 2>/dev/null)"; }; then
+      cp "$BUILD/icon-out/Assets.car" "$APP/Contents/Resources/"
+      plist_set CFBundleIconName Nod
+      ICON_TIER="liquid-glass"
+    else
+      echo "Icona Liquid Glass non valida (dettagli in $BUILD/actool.log): uso l'icona classica."
+    fi
+  else
+    echo "actool non trovato (serve Xcode): icona classica."
+  fi
 fi
 
+# Firma: decisa prima, perché l'Info.plist va completato prima di firmare.
 if [ -f "$KC" ]; then
-  security unlock-keychain -p nod "$KC"
-  codesign --force --keychain "$KC" --sign "$IDENTITY" "$APP"
   TIER=local
 else
   [ "$MODE" = dmg ] && { echo "Per un DMG serve l'identità: ./make-signing-identity.sh" >&2; exit 1; }
-  codesign --force --sign - "$APP"
   TIER=adhoc
+fi
+
+# Dati per la diagnostica e per gli aggiornamenti (Sources/Diagnostics.swift, Sources/Updater.swift).
+plist_set NodGitCommit "$COMMIT"
+plist_set NodIconTier "$ICON_TIER"
+plist_set NodSigningTier "$TIER"
+[ "$MODE" = dmg ] || plist_set NodSourcePath "$PWD"
+plutil -lint "$PLIST" >/dev/null
+
+if [ "$TIER" = local ]; then
+  security unlock-keychain -p nod "$KC"
+  codesign --force --keychain "$KC" --sign "$IDENTITY" "$APP"
+else
+  codesign --force --sign - "$APP"
   echo "Attenzione: firma ad hoc. macOS chiederà di nuovo i permessi a ogni build. ./make-signing-identity.sh lo evita."
 fi
 codesign --verify --strict "$APP"
-echo "Pronto: $APP ($VERSION, build $BUILD_NUMBER, firma $TIER, icona $ICON_TIER)"
+echo "Pronto: $APP ($VERSION, build $BUILD_NUMBER, commit $COMMIT, firma $TIER, icona $ICON_TIER)"
 
 case "$MODE" in
   install)
     /usr/bin/pkill -x Nod 2>/dev/null || true
     rm -rf /Applications/Nod.app
     cp -R "$APP" /Applications/Nod.app
+    # Il Dock e il Finder tengono in cache l'icona vecchia: registra di nuovo l'app.
+    touch /Applications/Nod.app
+    /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/Nod.app \
+      2>/dev/null || true
     open /Applications/Nod.app
-    echo "Installato in /Applications" ;;
+    echo "Installato in /Applications. Se il Dock mostra ancora l'icona vecchia: killall Dock" ;;
   dmg)
     mkdir -p dist
     STAGE=$(mktemp -d)

@@ -16,7 +16,7 @@ enum AboutPanel {
         center.alignment = .center
         let base: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 11), .paragraphStyle: center,
                                                    .foregroundColor: NSColor.secondaryLabelColor]
-        let credits = NSMutableAttributedString(string: "Sviluppato da \(Developer.name)\n", attributes: base)
+        let credits = NSMutableAttributedString(string: L("Sviluppato da %@", Developer.name) + "\n", attributes: base)
         var link = base
         link[.link] = Developer.github
         credits.append(NSAttributedString(string: "github.com/GGuidotz/nod\n", attributes: link))
@@ -31,7 +31,7 @@ enum AboutPanel {
 struct DeveloperLinks: View {
     var body: some View {
         HStack(spacing: 14) {
-            Text("Sviluppato da \(Developer.name)").foregroundStyle(.secondary)
+            Text(L("Sviluppato da %@", Developer.name)).foregroundStyle(.secondary)
             Link(destination: Developer.github) { Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
             Link(destination: Developer.mail) { Label(Developer.email, systemImage: "envelope") }
         }

@@ -1,32 +1,26 @@
 {
-  "fill" : {
-    "linear-gradient" : [
-      "display-p3:0.04706,0.07059,0.20392,1.00000",
-      "display-p3:0.11765,0.17255,0.47059,1.00000",
-      "display-p3:0.15686,0.83922,0.92549,1.00000"
-    ],
-    "orientation" : {
-      "start" : { "x" : 0.2, "y" : 0 },
-      "stop" : { "x" : 0.8, "y" : 1 }
-    }
-  },
   "groups" : [
     {
       "layers" : [
-        { "image-name" : "echo-far.svg", "name" : "echo-far", "glass" : true, "opacity" : 0.25 },
-        { "image-name" : "echo-near.svg", "name" : "echo-near", "glass" : true, "opacity" : 0.5 }
+        { "image-name" : "check.png", "name" : "check", "glass" : true }
+      ],
+      "name" : "Spunta",
+      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
+      "translucency" : { "enabled" : true, "value" : 0.3 }
+    },
+    {
+      "layers" : [
+        { "image-name" : "echo-near.png", "name" : "echo-near", "glass" : true, "opacity" : 0.5 },
+        { "image-name" : "echo-far.png", "name" : "echo-far", "glass" : true, "opacity" : 0.25 }
       ],
       "name" : "Eco",
       "translucency" : { "enabled" : true, "value" : 0.6 }
     },
     {
       "layers" : [
-        { "image-name" : "check.svg", "name" : "check", "glass" : true }
+        { "image-name" : "background.png", "name" : "background" }
       ],
-      "name" : "Spunta",
-      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
-      "specular" : true,
-      "translucency" : { "enabled" : true, "value" : 0.25 }
+      "name" : "Sfondo"
     }
   ],
   "supported-platforms" : {

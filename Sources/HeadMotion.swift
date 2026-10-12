@@ -6,7 +6,7 @@ import Foundation
 
 enum HeadGesture: String {
     case nod, shake
-    var title: String { self == .nod ? "Annuito" : "Scosso la testa" }
+    var title: String { self == .nod ? L("Annuito") : L("Scosso la testa") }
 }
 
 /// Riconosce un'oscillazione su un asse: picchi di segno alternato oltre la soglia, entro una finestra di tempo.
@@ -79,6 +79,7 @@ final class HeadMotionMonitor: NSObject, ObservableObject, CMHeadphoneMotionMana
         }
         isRunning = true
         authorization = CMHeadphoneMotionManager.authorizationStatus()
+        diag(.airpods, "motion updates started, authorization \(authorization.rawValue)")
     }
 
     func stop() {
@@ -88,6 +89,7 @@ final class HeadMotionMonitor: NSObject, ObservableObject, CMHeadphoneMotionMana
 
     nonisolated func headphoneMotionManagerDidConnect(_ manager: CMHeadphoneMotionManager) {
         Task { @MainActor in
+            diag(.airpods, "connected")
             self.isConnected = true
             self.authorization = CMHeadphoneMotionManager.authorizationStatus()
         }
@@ -95,6 +97,7 @@ final class HeadMotionMonitor: NSObject, ObservableObject, CMHeadphoneMotionMana
 
     nonisolated func headphoneMotionManagerDidDisconnect(_ manager: CMHeadphoneMotionManager) {
         Task { @MainActor in
+            diag(.airpods, "disconnected")
             self.isConnected = false
             self.isWalking = false
             self.lastDisconnect = Date()

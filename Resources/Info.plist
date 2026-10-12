@@ -17,7 +17,14 @@
 	<key>CFBundleVersion</key>
 	<string>__BUILD__</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>it</string>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>it</string>
+		<string>en</string>
+		<string>fr</string>
+		<string>es</string>
+	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>LSApplicationCategoryType</key>
@@ -28,6 +35,8 @@
 	<string>© 2026 gguidotz · github.com/GGuidotz/nod · giulioguidotz@yahoo.com</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Nod apre il Terminale per eseguire il comando di aggiornamento quando glielo chiedi.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Nod legge il movimento della testa dalle AirPods per riconoscere quando annuisci, scuoti la testa o ti allontani.</string>
 </dict>

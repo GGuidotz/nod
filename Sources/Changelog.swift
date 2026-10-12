@@ -1,14 +1,35 @@
-// Le novità, lette dal CHANGELOG.md incluso nell'app (Contents/Resources). Formato:
-//   ## 0.2.0 · 2026-11-02
-//   - Una riga per novità.
+// Le novità, lette dal CHANGELOG.md incluso nell'app (Contents/Resources) o da quello su GitHub (aggiornamenti). Formato:
+//   ## 0.3.0 · 2026-10-12
+//   ### New Features
+//   - One line per change, written for the people who use the app.
+// Sezioni previste: New Features, Improvements, Bug Fixes, Security, Known Issues. Le righe prima di una sezione vanno in
+// "Changes".
 
 import Foundation
+
+struct ChangelogSection: Identifiable, Equatable {
+    let title: String
+    let items: [String]
+    var id: String { title }
+
+    var symbol: String {
+        switch title.lowercased() {
+        case "new features": "sparkles"
+        case "improvements": "arrow.up.circle"
+        case "bug fixes": "ladybug"
+        case "security": "lock.shield"
+        case "known issues": "exclamationmark.triangle"
+        default: "circle.grid.2x1"
+        }
+    }
+}
 
 struct ChangelogEntry: Identifiable, Equatable {
     let version: String
     let date: String
-    let items: [String]
+    let sections: [ChangelogSection]
     var id: String { version }
+    var items: [String] { sections.flatMap(\.items) }
 }
 
 enum Changelog {
@@ -20,23 +41,36 @@ enum Changelog {
 
     static func parse(_ text: String) -> [ChangelogEntry] {
         var entries: [ChangelogEntry] = []
-        var version: String?, date = "", items: [String] = []
-        func flush() {
-            if let version { entries.append(ChangelogEntry(version: version, date: date, items: items)) }
+        var version: String?, date = ""
+        var sections: [ChangelogSection] = []
+        var sectionTitle = "Changes", items: [String] = []
+
+        func flushSection() {
+            if !items.isEmpty { sections.append(ChangelogSection(title: sectionTitle, items: items)) }
+            items = []
         }
+        func flushEntry() {
+            flushSection()
+            if let version { entries.append(ChangelogEntry(version: version, date: date, sections: sections)) }
+            sections = []
+            sectionTitle = "Changes"
+        }
+
         for raw in text.components(separatedBy: .newlines) {
             let line = raw.trimmingCharacters(in: .whitespaces)
             if line.hasPrefix("## ") {
-                flush()
+                flushEntry()
                 let parts = line.dropFirst(3).components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespaces) }
                 version = parts.first
                 date = parts.count > 1 ? parts[1] : ""
-                items = []
+            } else if line.hasPrefix("### "), version != nil {
+                flushSection()
+                sectionTitle = String(line.dropFirst(4))
             } else if line.hasPrefix("- "), version != nil {
                 items.append(String(line.dropFirst(2)))
             }
         }
-        flush()
+        flushEntry()
         return entries
     }
 

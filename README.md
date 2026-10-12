@@ -3,6 +3,14 @@
 Approvazioni a mani libere e presenza per [Cocaine](https://github.com/Mattiakart/cocaine), con AirPods e Apple Watch.
 Progetto indipendente, non affiliato a Cocaine.
 
+## Funzioni principali
+
+- **Approvazioni a mani libere**: con le AirPods annuisci e confermi col tasto laterale del Watch; senza AirPods basta il Watch.
+- **Presenza**: quando ti allontani il Watch ti chiede se tenere sveglio il Mac; senza risposta decide la tua regola.
+- **Lingue**: italiano, inglese, francese, spagnolo (Impostazioni > Aspetto > Lingua).
+- **Aggiornamenti**: controllo automatico, novità della nuova versione e comando pronto (anche "Aggiorna nel Terminale").
+- **Diagnostica**: report automatico senza segreti, da salvare e allegare a una segnalazione.
+
 ## Autore
 
 Sviluppato da **gguidotz**: [github.com/GGuidotz/nod](https://github.com/GGuidotz/nod) · giulioguidotz@yahoo.com
@@ -40,7 +48,8 @@ Una volta sola:
 
 A ogni versione:
 
-1. Aumenta `VERSION` e aggiungi in cima a `CHANGELOG.md` la sezione `## <versione> · <data>` con una riga per novità.
+1. Aumenta `VERSION` e aggiungi in cima a `CHANGELOG.md` la sezione `## <versione> · <data>` (in inglese, con `### New Features`,
+   `### Improvements`, `### Bug Fixes`, `### Known Issues`). Le traduzioni: `python3 tools/translations.py` e `tools/check-strings.py`.
 2. Fai il commit, poi `./release.sh`: crea il DMG firmato, la release `v<versione>` con il DMG e le note del changelog,
    aggiorna `version` e `sha256` del cask e lo pubblica nel tap.
 
@@ -71,3 +80,6 @@ Licenza MIT.
 | `Sources/ApprovalFlow.swift` | Flusso di un'approvazione (oggi in prova) |
 | `Sources/CocaineBridge.swift` | Cocaine tramite la sua riga di comando |
 | `packaging/homebrew/Casks/nod.rb` | Il cask per il tap |
+| `Sources/Diagnostics.swift`, `DiagnosticsView.swift` | Registro eventi e report di diagnostica |
+| `Sources/Updater.swift`, `UpdatesView.swift` | Controllo aggiornamenti e comando per aggiornare |
+| `Sources/Localization.swift`, `Localization/` | Lingue (`L("…")`), traduzioni generate da `tools/translations.py` |

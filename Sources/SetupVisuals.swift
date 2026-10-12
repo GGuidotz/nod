@@ -102,7 +102,7 @@ struct StepDots: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: current)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Passo \(current + 1) di \(count)")
+        .accessibilityLabel(L("Passo %d di %d", current + 1, count))
     }
 }
 
@@ -127,15 +127,15 @@ struct FeatureTile: View {
 
 /// Com'è la notifica sul Watch: per riconoscerla quando arriva.
 struct WatchNotificationPreview: View {
-    var title = "Nod: prova"
-    var message = "Fai doppio tap sul Watch."
-    var buttons = ["Ricevuta", "Ignora"]
+    var title = L("Nod: prova")
+    var message = L("Fai doppio tap sul Watch.")
+    var buttons = [L("Ricevuta"), L("Ignora")]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: 4).fill(Color(red: 0.2, green: 0.6, blue: 0.5)).frame(width: 14, height: 14)
-                Text("NTFY").font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.7))
+                Text(verbatim: "NTFY").font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.7))
             }
             Text(title).font(.callout.weight(.semibold)).foregroundStyle(.white)
             Text(message).font(.caption).foregroundStyle(.white.opacity(0.8))
@@ -158,14 +158,14 @@ struct WatchNotificationPreview: View {
         .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(.black))
         .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(.white.opacity(0.18), lineWidth: 3))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Anteprima della notifica sul Watch: \(title). Il doppio tap sceglie \(buttons.first ?? "").")
+        .accessibilityLabel(L("Anteprima della notifica sul Watch: %@. Il doppio tap sceglie %@.", title, buttons.first ?? ""))
     }
 }
 
 /// La settimana della regola di presenza: sette colonne, la fascia oraria colorata nei giorni scelti.
 struct WeekStrip: View {
     let schedule: WorkSchedule
-    private let days: [(Int, String)] = [(2, "L"), (3, "M"), (4, "M"), (5, "G"), (6, "V"), (7, "S"), (1, "D")]
+    private var days: [(Int, String)] { Weekdays.ordered.map { ($0.0, $0.1) } }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 10) {
@@ -263,7 +263,7 @@ struct ChecklistRow: View {
         }
         .buttonStyle(.plain)
         .disabled(automatic)
-        .accessibilityValue(done ? "fatto" : "da fare")
+        .accessibilityValue(done ? L("fatto") : L("da fare"))
     }
 }
 

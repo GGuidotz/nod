@@ -61,7 +61,7 @@ final class CocaineBridge: ObservableObject {
     /// Esegue il motore di Cocaine fuori dal thread principale; nil se manca o fallisce.
     private func run(_ args: [String]) async -> String? {
         guard let engine, FileManager.default.isExecutableFile(atPath: engine.path) else {
-            lastError = "Cocaine non è installato."
+            lastError = L("Cocaine non è installato.")
             return nil
         }
         let result: (Int32, String) = await Task.detached {
@@ -77,7 +77,7 @@ final class CocaineBridge: ObservableObject {
             return (p.terminationStatus, String(data: data, encoding: .utf8) ?? "")
         }.value
         guard result.0 == 0 else {
-            lastError = "Il comando di Cocaine \"\(args.joined(separator: " "))\" non è riuscito (codice \(result.0))."
+            lastError = L("Il comando di Cocaine \"%@\" non è riuscito (codice %d).", args.joined(separator: " "), Int(result.0))
             return nil
         }
         lastError = nil

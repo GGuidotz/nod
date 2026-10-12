@@ -3,6 +3,7 @@
 Concetto: la spunta è il percorso di un cenno del capo (giù, poi su), in vetro chiaro, con due eco più in alto che
 svaniscono (il movimento della testa), su un fondo blu notte che vira al ciano. Stessa geometria degli strati SVG di Resources/Icon/Nod.icon.
     python3 tools/render-icon.py Resources/Icon/AppIcon-1024.png
+    python3 tools/render-icon.py --layers Resources/Icon/Nod.icon/Assets
 """
 import sys
 import numpy as np
@@ -107,7 +108,23 @@ def render(squircle=True):
                 .point(lambda v: int(v * 0.35)))
     return Image.alpha_composite(sh, canvas_art)
 
+def render_layers(outdir):
+    """Strati per Icon Composer (Nod.icon/Assets): sfondo opaco a tutta tela e forme bianche nette su trasparente.
+    Il vetro, i riflessi e le ombre li aggiunge il sistema."""
+    import os
+    os.makedirs(outdir, exist_ok=True)
+    gradient_bg(1024).save(os.path.join(outdir, "background.png"))
+    for name, dy in (("check.png", 0), ("echo-near.png", -78), ("echo-far.png", -150)):
+        m = stroke_mask(N, [(x, y + dy * S) for x, y in check_points(S)], 128 * S).resize((1024, 1024), Image.LANCZOS)
+        layer = Image.new("RGBA", (1024, 1024), (255, 255, 255, 0))
+        layer.putalpha(m)
+        layer.save(os.path.join(outdir, name))
+
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "--layers":
+        render_layers(sys.argv[2])
+        print("strati scritti in", sys.argv[2])
+        sys.exit(0)
     out = sys.argv[1] if len(sys.argv) > 1 else "AppIcon-1024.png"
     render(squircle=True).save(out)
     if len(sys.argv) > 2:

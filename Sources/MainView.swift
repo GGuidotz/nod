@@ -24,6 +24,7 @@ struct MainView: View {
                     case .presence: PresenceView(presence: model.presence, prefs: model.prefs)
                     case .devices: DevicesView(head: model.head, watch: model.watch, prefs: model.prefs)
                     case .whatsNew: WhatsNewView()
+                    case .diagnostics: DiagnosticsView()
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -52,8 +53,9 @@ struct StatusView: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        StatusContent(cocaine: model.cocaine, presence: model.presence, head: model.head, watch: model.watch, relay: model.relay)
-            .navigationTitle("Stato")
+        StatusContent(cocaine: model.cocaine, presence: model.presence, head: model.head, watch: model.watch, relay: model.relay,
+                      updater: model.updater)
+            .navigationTitle(L("Stato"))
     }
 }
 
@@ -63,38 +65,42 @@ private struct StatusContent: View {
     @ObservedObject var head: HeadMotionMonitor
     @ObservedObject var watch: WatchConfirmer
     @ObservedObject var relay: NotificationRelay
+    @ObservedObject var updater: Updater
 
     var body: some View {
         Form {
-            Section("Tu") {
-                LabeledContent("Presenza") {
+            if updater.isUpdateAvailable {
+                Section { UpdateCard(updater: updater) }
+            }
+            Section(L("Tu")) {
+                LabeledContent(L("Presenza")) {
                     Label(presence.state.title, systemImage: presence.state.symbol)
                 }
-                LabeledContent("Da") { Text(presence.since, style: .relative) }
+                LabeledContent(L("Da")) { Text(presence.since, style: .relative) }
                 if let decision = presence.decision, presence.state == .away {
-                    LabeledContent("Scelta", value: decision.title)
+                    LabeledContent(L("Scelta"), value: decision.title)
                 }
             }
-            Section("Cocaine") {
-                StatusRow(title: "App", value: cocaine.isInstalled ? "Versione \(cocaine.version ?? "?")" : "Non installata",
+            Section(L("Cocaine")) {
+                StatusRow(title: L("App"), value: cocaine.isInstalled ? L("Versione %@", cocaine.version ?? "?") : L("Non installata"),
                           ok: cocaine.isInstalled)
-                StatusRow(title: "Mac sveglio", value: cocaine.status?.on == true ? "Sì" : "No", ok: cocaine.status?.on == true)
+                StatusRow(title: L("Mac sveglio"), value: cocaine.status?.on == true ? L("Sì") : L("No"), ok: cocaine.status?.on == true)
                 if cocaine.isInstalled {
                     HStack {
-                        Button(cocaine.status?.on == true ? "Spegni Cocaine" : "Tieni sveglio ora") {
+                        Button(cocaine.status?.on == true ? L("Spegni Cocaine") : L("Tieni sveglio ora")) {
                             Task { if cocaine.status?.on == true { await cocaine.stopKeepingAwake() } else { await cocaine.keepAwake() } }
                         }
-                        Button("Apri Cocaine") { cocaine.openCocaine() }
+                        Button(L("Apri Cocaine")) { cocaine.openCocaine() }
                     }
                 }
                 if let error = cocaine.lastError { Text(error).foregroundStyle(.orange) }
             }
-            Section("Dispositivi") {
-                StatusRow(title: "AirPods", value: head.isConnected ? (head.isWalking ? "Indossate, stai camminando" : "Indossate")
-                                                                    : "Non indossate", ok: head.isConnected)
-                StatusRow(title: "Apple Watch", value: watch.isAvailable ? "Pronto per le conferme" : "Non disponibile",
+            Section(L("Dispositivi")) {
+                StatusRow(title: L("AirPods"), value: head.isConnected ? (head.isWalking ? L("Indossate, stai camminando") : L("Indossate"))
+                                                                    : L("Non indossate"), ok: head.isConnected)
+                StatusRow(title: L("Apple Watch"), value: watch.isAvailable ? L("Pronto per le conferme") : L("Non disponibile"),
                           ok: watch.isAvailable)
-                StatusRow(title: "Notifiche", value: relay.isListening ? "In ascolto delle risposte" : "Non collegato",
+                StatusRow(title: L("Notifiche"), value: relay.isListening ? L("In ascolto delle risposte") : L("Non collegato"),
                           ok: relay.isListening)
             }
         }
@@ -113,58 +119,58 @@ struct ApprovalsView: View {
         Form {
             if !cocaine.approvalsAvailable {
                 Section {
-                    Label("Le richieste vere dell'AI non sono ancora collegate a Cocaine: quando lo saranno arriveranno qui. Intanto puoi provare il flusso completo.",
+                    Label(L("Le richieste vere dell'AI non sono ancora collegate a Cocaine: quando lo saranno arriveranno qui. Intanto puoi provare il flusso completo."),
                           systemImage: "info.circle")
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Section {
-                LabeledContent("Modo adesso") {
-                    Label(flow.usesGestures ? "AirPods e Watch" : "Solo Watch",
+                LabeledContent(L("Modo adesso")) {
+                    Label(flow.usesGestures ? L("AirPods e Watch") : L("Solo Watch"),
                           systemImage: flow.usesGestures ? "airpodspro" : "applewatch")
                 }
                 phaseView
                 HStack {
-                    Button("Prova un'approvazione") { flow.demo() }
-                    if flow.phase != .idle { Button("Annulla") { flow.cancel() } }
+                    Button(L("Prova un'approvazione")) { flow.demo() }
+                    if flow.phase != .idle { Button(L("Annulla")) { flow.cancel() } }
                 }
             } header: {
-                Text("Prova")
+                Text(L("Prova"))
             } footer: {
-                Text("Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. "
-                     + "Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. "
-                     + "\"Consenti sempre\" non è mai disponibile da qui: resta nel notch di Cocaine o nel terminale.")
+                Text(L("Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. ")
+                     + L("Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. ")
+                     + L("\"Consenti sempre\" non è mai disponibile da qui: resta nel notch di Cocaine o nel terminale."))
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Approvazioni")
+        .navigationTitle(L("Approvazioni"))
     }
 
     @ViewBuilder private var phaseView: some View {
         switch flow.phase {
         case .idle:
-            Text("Nessuna richiesta in attesa.").foregroundStyle(.secondary)
+            Text(L("Nessuna richiesta in attesa.")).foregroundStyle(.secondary)
         case .waitingForGesture(let summary, let until):
             VStack(alignment: .leading, spacing: 6) {
                 Text(summary)
-                Text("Annuisci o scuoti la testa, ancora \(Text(until, style: .timer))").foregroundStyle(.secondary)
+                HStack(spacing: 4) { Text(L("Annuisci o scuoti la testa, tempo rimasto:")); Text(until, style: .timer) }.foregroundStyle(.secondary)
             }
         case .confirmingOnWatch(let summary, let notified):
             VStack(alignment: .leading, spacing: 6) {
-                Label("Conferma sul Watch: \(summary)", systemImage: "applewatch")
-                Text(notified ? "Doppio clic sul tasto laterale, oppure rispondi alla notifica sul Watch."
-                              : "Doppio clic sul tasto laterale per approvare, Nega per rifiutare.")
+                Label(L("Conferma sul Watch: %@", summary), systemImage: "applewatch")
+                Text(notified ? L("Doppio clic sul tasto laterale, oppure rispondi alla notifica sul Watch.")
+                              : L("Doppio clic sul tasto laterale per approvare, Nega per rifiutare."))
                     .foregroundStyle(.secondary)
             }
         case .approved(let summary, let by):
-            Label("Approvata \(by): \(summary)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+            Label(L("Approvata %@: %@", by, summary), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case .denied(let summary, let by):
-            Label("Negata \(by): \(summary)", systemImage: "xmark.circle.fill").foregroundStyle(.red)
+            Label(L("Negata %@: %@", by, summary), systemImage: "xmark.circle.fill").foregroundStyle(.red)
         case .expired(let summary):
-            Label("Nessuna risposta in tempo: \(summary)", systemImage: "clock").foregroundStyle(.secondary)
+            Label(L("Nessuna risposta in tempo: %@", summary), systemImage: "clock").foregroundStyle(.secondary)
         case .failed(let summary, let reason):
-            Label("\(reason) \(summary)", systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+            Label(reason + " " + summary, systemImage: "exclamationmark.circle").foregroundStyle(.orange)
         }
     }
 }
@@ -177,17 +183,17 @@ struct PresenceView: View {
 
     var body: some View {
         Form {
-            Section("Adesso") {
-                LabeledContent("Stato") { Label(presence.state.title, systemImage: presence.state.symbol) }
+            Section(L("Adesso")) {
+                LabeledContent(L("Stato")) { Label(presence.state.title, systemImage: presence.state.symbol) }
                 HStack {
-                    Button("Sono al Mac") { presence.markHere(manual: true) }.disabled(presence.state == .here)
-                    Button("Sto uscendo…") { presence.markLeaving(manual: true) }.disabled(presence.state != .here)
+                    Button(L("Sono al Mac")) { presence.markHere(manual: true) }.disabled(presence.state == .here)
+                    Button(L("Sto uscendo…")) { presence.markLeaving(manual: true) }.disabled(presence.state != .here)
                 }
             }
             PresenceRuleEditor(prefs: prefs)
-            Section("Ultimi eventi") {
+            Section(L("Ultimi eventi")) {
                 if presence.log.isEmpty {
-                    Text("Ancora niente.").foregroundStyle(.secondary)
+                    Text(L("Ancora niente.")).foregroundStyle(.secondary)
                 }
                 ForEach(Array(presence.log.enumerated()), id: \.offset) { item in
                     LabeledContent(item.element.text) { Text(item.element.date, style: .time).foregroundStyle(.secondary) }
@@ -195,7 +201,7 @@ struct PresenceView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Presenza")
+        .navigationTitle(L("Presenza"))
     }
 }
 
@@ -208,26 +214,26 @@ struct DevicesView: View {
 
     var body: some View {
         Form {
-            Section("AirPods") {
+            Section(L("AirPods")) {
                 HStack(spacing: 20) {
                     HeadIndicator(head: head, size: 88)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(head.isConnected ? "Indossate" : "Non indossate").font(.headline)
+                        Text(head.isConnected ? L("Indossate") : L("Non indossate")).font(.headline)
                         if let g = head.lastGesture {
-                            Text("Ultimo gesto: \(g.gesture.title.lowercased()), \(Text(g.at, style: .relative)) fa")
+                            Text(L("Ultimo gesto: %@, alle %@", g.gesture.title.lowercased(), g.at.formatted(date: .omitted, time: .standard)))
                                 .foregroundStyle(.secondary)
                         }
-                        if head.isWalking { Label("Stai camminando", systemImage: "figure.walk") }
+                        if head.isWalking { Label(L("Stai camminando"), systemImage: "figure.walk") }
                     }
                 }
-                Toggle("Usa il movimento della testa", isOn: $prefs.headMotionEnabled)
+                Toggle(L("Usa il movimento della testa"), isOn: $prefs.headMotionEnabled)
                     .onChange(of: prefs.headMotionEnabled) { if prefs.headMotionEnabled { head.start() } else { head.stop() } }
             }
-            Section("Apple Watch") {
-                StatusRow(title: "Conferme", value: watch.isAvailable ? "Pronto" : (watch.unavailableReason ?? "Non disponibile"),
+            Section(L("Apple Watch")) {
+                StatusRow(title: L("Conferme"), value: watch.isAvailable ? L("Pronto") : (watch.unavailableReason ?? L("Non disponibile")),
                           ok: watch.isAvailable)
-                Button(watch.isAsking ? "Guarda il Watch…" : "Prova la conferma") {
-                    Task { _ = await watch.confirm("provare la conferma con Apple Watch") }
+                Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova la conferma")) {
+                    Task { _ = await watch.confirm(L("provare la conferma con Apple Watch")) }
                 }
                 .disabled(watch.isAsking)
                 if let outcome = watch.lastOutcome {
@@ -236,7 +242,7 @@ struct DevicesView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Dispositivi")
+        .navigationTitle(L("Dispositivi"))
         .onAppear { watch.refresh() }
     }
 }
@@ -253,6 +259,6 @@ struct WhatsNewView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(24)
         }
-        .navigationTitle("Novità")
+        .navigationTitle(L("Novità"))
     }
 }

@@ -11,15 +11,15 @@ struct NodApp: App {
 
     var body: some Scene {
         Window("Nod", id: "main") {
-            MainView()
+            LanguageRoot(prefs: model.prefs) { MainView() }
                 .environmentObject(model)
                 .frame(minWidth: 780, minHeight: 620)
         }
         .defaultSize(width: 920, height: 680)
-        .commands { NodCommands(model: model) }
+        .commands { NodCommands(model: model, prefs: model.prefs) }
 
         Settings {
-            SettingsView()
+            LanguageRoot(prefs: model.prefs) { SettingsView() }
                 .environmentObject(model)
         }
 
@@ -32,6 +32,16 @@ struct NodApp: App {
     }
 }
 
+/// Ricostruisce l'interfaccia quando cambi lingua, così ogni testo passa di nuovo da L().
+struct LanguageRoot<Content: View>: View {
+    @ObservedObject var prefs: Preferences
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        content.id(prefs.language)
+    }
+}
+
 /// L'icona nella barra dei menu segue lo stato della presenza.
 struct MenuBarLabel: View {
     @ObservedObject var presence: PresenceEngine
@@ -39,7 +49,7 @@ struct MenuBarLabel: View {
 
     var body: some View {
         Image(nsImage: MenuBarGlyph.image(state: presence.state, style: prefs.menuBarStyle))
-            .accessibilityLabel("Nod, \(presence.state.title)")
+            .accessibilityLabel("Nod, " + presence.state.title)
     }
 }
 
@@ -55,20 +65,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// Comandi della barra dei menu: ogni azione dell'app è raggiungibile anche da qui.
 struct NodCommands: Commands {
     @ObservedObject var model: AppModel
+    /// Osservato perché i comandi cambino lingua insieme al resto.
+    @ObservedObject var prefs: Preferences
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button("Informazioni su Nod") { AboutPanel.show() }
+            Button(L("Informazioni su Nod")) { AboutPanel.show() }
         }
         CommandGroup(after: .appInfo) {
-            Button("Novità di Nod…") { model.showWhatsNew() }
-            Button("Ripeti configurazione…") { model.startSetup(.full) }
+            Button(L("Novità di Nod…")) { model.showWhatsNew() }
+            Button(L("Ripeti configurazione…")) { model.startSetup(.full) }
+            Button(L("Controlla aggiornamenti…")) {
+                model.selection = .status
+                Task { await model.updater.check() }
+            }
         }
-        CommandMenu("Presenza") {
-            Button("Sono al Mac") { model.presence.markHere(manual: true) }
-            Button("Sto uscendo…") { model.presence.markLeaving(manual: true) }
+        CommandGroup(replacing: .help) {
+            Button(L("Diagnostica di Nod")) { model.selection = .diagnostics; NSApp.activate(ignoringOtherApps: true) }
+            Link(L("Nod su GitHub"), destination: Developer.github)
+        }
+        CommandMenu(L("Presenza")) {
+            Button(L("Sono al Mac")) { model.presence.markHere(manual: true) }
+            Button(L("Sto uscendo…")) { model.presence.markLeaving(manual: true) }
             Divider()
-            Button("Invia notifica di prova") { Task { await model.relay.sendTest() } }
+            Button(L("Invia notifica di prova")) { Task { await model.relay.sendTest() } }
         }
     }
 }
