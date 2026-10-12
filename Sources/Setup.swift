@@ -319,6 +319,7 @@ private struct WatchStep: View {
                             .foregroundStyle(isConfirmed(outcome) ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.orange))
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    if watch.watchOnlyFailsFast { WatchTroubleshooting() }
                 }
             }
             .contentCard(padding: 22)
@@ -335,10 +336,6 @@ private struct WatchStep: View {
 private struct NotificationsStep: View {
     @ObservedObject var prefs: Preferences
     @ObservedObject var relay: NotificationRelay
-    @AppStorage("check.allowed") private var allowed = false
-    @AppStorage("check.focus") private var focus = false
-    @AppStorage("check.mirror") private var mirror = false
-    @AppStorage("check.locked") private var locked = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -353,27 +350,47 @@ private struct NotificationsStep: View {
                         Text(event).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(width: 180)
                     }
                 }
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(.headline)
-                    ChecklistRow(text: L("iPhone > Impostazioni > Notifiche > ntfy"),
-                                 detail: L("Consenti notifiche, Banner, Avvisi con priorità."), done: $allowed)
-                    ChecklistRow(text: L("Nessuna Full immersion che blocchi ntfy"), done: $focus)
-                    ChecklistRow(text: L("App Watch > Notifiche > ntfy: rispecchia gli avvisi"), done: $mirror)
-                    ChecklistRow(text: L("Blocca l'iPhone e tieni il Watch al polso"),
-                                 detail: L("Il Watch mostra le notifiche solo quando l'iPhone è bloccato."), done: $locked)
-                    ChecklistRow(text: L("Nod in ascolto delle risposte"), detail: relay.isListening ? L("Collegato.") : L("Non collegato: controlla il server."),
-                                 done: .constant(relay.isListening), automatic: true)
-                    ChecklistRow(text: L("Tocca Ricevuta sulla notifica di prova"),
-                                 detail: relay.lastRoundTrip.map { L("Risposta arrivata alle %@.", $0.formatted(date: .omitted, time: .shortened)) }
-                                     ?? L("Quando arriva fino al Mac si spunta da sola."),
-                                 done: .constant(relay.lastRoundTrip != nil), automatic: true)
-                }
-                .contentCard()
+                NtfyAlertChecklist(relay: relay)
+                    .contentCard()
             }
             Form { ServerSettingsSection(prefs: prefs, relay: relay) }
                 .formStyle(.grouped)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 230)
+        }
+    }
+}
+
+/// Se i messaggi arrivano nell'app ntfy ma non come avviso: cosa controllare sull'iPhone e sul Watch. Anche in Diagnostica.
+struct NtfyAlertChecklist: View {
+    @ObservedObject var relay: NotificationRelay
+    @AppStorage("check.allowed") private var allowed = false
+    @AppStorage("check.delivery") private var delivery = false
+    @AppStorage("check.focus") private var focus = false
+    @AppStorage("check.mirror") private var mirror = false
+    @AppStorage("check.locked") private var locked = false
+    @AppStorage("check.push") private var push = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(.headline)
+            ChecklistRow(text: L("iPhone > Impostazioni > Notifiche > ntfy"),
+                         detail: L("Consenti notifiche, Banner, Avvisi con priorità."), done: $allowed)
+            ChecklistRow(text: L("Consegna immediata, non Riepilogo programmato"),
+                         detail: L("Stessa schermata: con il riepilogo gli avvisi arrivano solo agli orari del riepilogo."), done: $delivery)
+            ChecklistRow(text: L("Nessuna Full immersion che blocchi ntfy"), done: $focus)
+            ChecklistRow(text: L("App Watch > Notifiche > ntfy: rispecchia gli avvisi"), done: $mirror)
+            ChecklistRow(text: L("Blocca l'iPhone e tieni il Watch al polso"),
+                         detail: L("Il Watch mostra le notifiche solo quando l'iPhone è bloccato."), done: $locked)
+            ChecklistRow(text: L("Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche"),
+                         detail: L("Se compare solo aprendo l'app, il push non arriva: in ntfy togli e aggiungi di nuovo il topic, poi attiva Aggiornamento app in background per ntfy."),
+                         done: $push)
+            ChecklistRow(text: L("Nod in ascolto delle risposte"), detail: relay.isListening ? L("Collegato.") : L("Non collegato: controlla il server."),
+                         done: .constant(relay.isListening), automatic: true)
+            ChecklistRow(text: L("Tocca Ricevuta sulla notifica di prova"),
+                         detail: relay.lastRoundTrip.map { L("Risposta arrivata alle %@.", $0.formatted(date: .omitted, time: .shortened)) }
+                             ?? L("Quando arriva fino al Mac si spunta da sola."),
+                         done: .constant(relay.lastRoundTrip != nil), automatic: true)
         }
     }
 }

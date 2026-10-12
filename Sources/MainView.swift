@@ -239,6 +239,10 @@ struct DevicesView: View {
                 if let outcome = watch.lastOutcome {
                     Text(outcome.title).foregroundStyle(.secondary)
                 }
+                if !watch.currentChain.isEmpty {
+                    LabeledContent(L("Metodi, in ordine"), value: watch.currentChain.map(\.title).joined(separator: " → "))
+                }
+                if watch.watchOnlyFailsFast { WatchTroubleshooting() }
             }
         }
         .formStyle(.grouped)

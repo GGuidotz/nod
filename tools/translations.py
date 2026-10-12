@@ -237,7 +237,6 @@ T = {
 "Scelta": ("Choice", "Choix", "Elección"),
 "Scosso la testa": ("Shook your head", "Tête secouée", "Negado con la cabeza"),
 "Se arrivano nell'app ntfy ma non come avviso": ("If they reach the ntfy app but don't alert", "Si elles arrivent dans l'app ntfy mais sans alerte", "Si llegan a la app ntfy pero sin aviso"),
-"Se nel Dock l'icona resta vuota, questa opzione mostra quella classica mentre Nod è aperto.": ("If the Dock icon stays blank, this shows the classic icon while Nod is open.", "Si l'icône du Dock reste vide, cette option affiche l'icône classique tant que Nod est ouvert.", "Si el icono del Dock se queda vacío, esta opción muestra el clásico mientras Nod está abierto."),
 "Se ti allontani con %@ aperto, nei giorni scelti tra %@ e %@, e non rispondi entro %d min, Cocaine tiene sveglio il Mac. Altrimenti non succede niente. Quando torni, Cocaine torna com'era.": ("If you step away with %@ open, on the chosen days between %@ and %@, and don't answer within %d min, Cocaine keeps the Mac awake. Otherwise nothing happens. When you're back, Cocaine returns to how it was.", "Si vous vous éloignez avec %@ ouvert, les jours choisis entre %@ et %@, sans répondre sous %d min, Cocaine garde le Mac éveillé. Sinon, rien ne se passe. À votre retour, Cocaine revient à son état initial.", "Si te alejas con %@ abierto, en los días elegidos entre las %@ y las %@, y no respondes en %d min, Cocaine mantiene el Mac despierto. Si no, no pasa nada. Cuando vuelves, Cocaine queda como estaba."),
 "Sei tornato al Mac.": ("You're back at the Mac.", "Vous êtes de retour au Mac.", "Has vuelto al Mac."),
 "Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. ": ("Without AirPods: double-click to approve, Deny in the request or the Deny button of the notification on the Watch. ", "Sans AirPods : appuyez deux fois pour approuver, Refuser dans la demande ou le bouton Refuser de la notification sur la Watch. ", "Sin AirPods: pulsa dos veces para aprobar, Denegar en la solicitud o el botón Denegar de la notificación en el Watch. "),
@@ -300,6 +299,72 @@ T = {
 "provare la conferma con Apple Watch": ("try the Apple Watch confirmation", "essayer la confirmation avec l'Apple Watch", "probar la confirmación con el Apple Watch"),
 "scuotendo la testa": ("by shaking your head", "en secouant la tête", "negando con la cabeza"),
 "su/giù %.0f°  destra/sinistra %.0f°": ("up/down %.0f°  left/right %.0f°", "haut/bas %.0f°  gauche/droite %.0f°", "arriba/abajo %.0f°  izquierda/derecha %.0f°"),
+"All'avvio Nod misura l'icona che il Dock disegna: se è vuota mette quella classica. Con questa opzione la classica resta sempre.":
+    ("At launch Nod measures the icon the Dock draws: if it is blank, it switches to the classic one. With this option the classic icon is always used.",
+     "Au lancement, Nod mesure l'icône que le Dock dessine : si elle est vide, il affiche l'icône classique. Avec cette option, l'icône classique reste toujours.",
+     "Al abrirse, Nod mide el icono que dibuja el Dock: si está vacío, pone el clásico. Con esta opción el clásico se usa siempre."),
+"Altrimenti Diagnostica > \\\"Prova il Watch tramite osascript\\\": se così funziona, il limite è la firma di Nod.":
+    ("Otherwise Diagnostics > \\\"Test the Watch via osascript\\\": if that works, the limit is Nod's signature.",
+     "Sinon Diagnostic > \\\"Tester la Watch via osascript\\\" : si cela fonctionne, la limite vient de la signature de Nod.",
+     "Si no, Diagnóstico > \\\"Probar el Watch con osascript\\\": si así funciona, el límite es la firma de Nod."),
+"Anteprima dell'icona del bundle": ("Preview of the bundle icon", "Aperçu de l'icône du paquet", "Vista previa del icono del paquete"),
+"Bluetooth e Wi-Fi accesi sul Mac; Mac e Watch con lo stesso Apple ID.":
+    ("Bluetooth and Wi-Fi on for the Mac; Mac and Watch on the same Apple Account.",
+     "Bluetooth et Wi-Fi activés sur le Mac ; Mac et Watch avec le même compte Apple.",
+     "Bluetooth y Wi-Fi activados en el Mac; Mac y Watch con la misma cuenta de Apple."),
+"Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche":
+    ("With the ntfy app closed, the message shows up in Notification Center",
+     "App ntfy fermée, le message apparaît dans le Centre de notifications",
+     "Con la app ntfy cerrada, el mensaje aparece en el Centro de notificaciones"),
+"Consegna immediata, non Riepilogo programmato":
+    ("Immediate Delivery, not Scheduled Summary", "Distribution immédiate, pas Résumé programmé", "Entrega inmediata, no Resumen programado"),
+"Controllo di build.sh": ("build.sh check", "Contrôle de build.sh", "Comprobación de build.sh"),
+"Impostazioni di Sistema > Touch ID e password: \\\"Usa Apple Watch per sbloccare app e Mac\\\" attivo.":
+    ("System Settings > Touch ID & Password: \\\"Use Apple Watch to unlock applications and your Mac\\\" on.",
+     "Réglages Système > Touch ID et mot de passe : \\\"Utiliser l'Apple Watch pour déverrouiller les apps et le Mac\\\" activé.",
+     "Ajustes del Sistema > Touch ID y contraseña: \\\"Usar el Apple Watch para desbloquear apps y el Mac\\\" activado."),
+"Intanto Nod usa Touch ID: al Mac approvi col dito.":
+    ("Meanwhile Nod uses Touch ID: at the Mac you approve with your finger.",
+     "En attendant, Nod utilise Touch ID : au Mac, vous approuvez avec le doigt.",
+     "Mientras tanto Nod usa Touch ID: en el Mac apruebas con el dedo."),
+"La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod.":
+    ("The osascript test makes the same request from an Apple-signed process: if the Watch receives it that way, the limit is Nod's signature.",
+     "Le test via osascript fait la même demande depuis un processus signé par Apple : si la Watch la reçoit ainsi, la limite vient de la signature de Nod.",
+     "La prueba con osascript hace la misma solicitud desde un proceso firmado por Apple: si así el Watch la recibe, el límite es la firma de Nod."),
+"Metodi, in ordine": ("Methods, in order", "Méthodes, dans l'ordre", "Métodos, en orden"),
+"Nessuna risposta da osascript.": ("No answer from osascript.", "Aucune réponse d'osascript.", "Sin respuesta de osascript."),
+"Ordine in automatico": ("Automatic order", "Ordre automatique", "Orden automático"),
+"Parte visibile": ("Visible area", "Partie visible", "Parte visible"),
+"Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema.":
+    ("Try an Apple app, for example Passwords: if the Watch doesn't offer the double-click there either, it's a system setting.",
+     "Essayez une app Apple, par exemple Mots de passe : si la Watch ne propose pas non plus le double-clic, c'est un réglage du système.",
+     "Prueba con una app de Apple, por ejemplo Contraseñas: si tampoco allí el Watch ofrece el doble clic, es un ajuste del sistema."),
+"Prova il Watch tramite osascript": ("Test the Watch via osascript", "Tester la Watch via osascript", "Probar el Watch con osascript"),
+"Risultava vuota: Nod mostra da solo l'icona classica.":
+    ("It looked blank: Nod shows the classic icon by itself.", "Elle semblait vide : Nod affiche de lui-même l'icône classique.",
+     "Parecía vacío: Nod muestra el icono clásico por su cuenta."),
+"Script di prova non trovato nell'app.": ("Test script not found in the app.", "Script de test introuvable dans l'app.", "No se encontró el script de prueba en la app."),
+"Se compare solo aprendo l'app, il push non arriva: in ntfy togli e aggiungi di nuovo il topic, poi attiva Aggiornamento app in background per ntfy.":
+    ("If it only shows up when you open the app, push isn't arriving: in ntfy remove and re-add the topic, then turn on Background App Refresh for ntfy.",
+     "S'il n'apparaît qu'en ouvrant l'app, le push n'arrive pas : dans ntfy, supprimez puis ajoutez à nouveau le topic, puis activez l'Actualisation en arrière-plan pour ntfy.",
+     "Si solo aparece al abrir la app, el push no llega: en ntfy quita y vuelve a añadir el topic, y activa la Actualización en segundo plano para ntfy."),
+"Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra).":
+    ("If the server check finds the message but no alert appears, the path to the server works: what's left is delivery on the iPhone (list above).",
+     "Si la vérification sur le serveur trouve le message mais qu'aucune alerte n'apparaît, le chemin jusqu'au serveur fonctionne : reste la distribution sur l'iPhone (liste ci-dessus).",
+     "Si la comprobación en el servidor encuentra el mensaje pero no aparece el aviso, el camino hasta el servidor funciona: queda la entrega en el iPhone (lista de arriba)."),
+"Stessa schermata: con il riepilogo gli avvisi arrivano solo agli orari del riepilogo.":
+    ("Same screen: with the summary, alerts only arrive at the summary times.",
+     "Même écran : avec le résumé, les alertes n'arrivent qu'aux heures du résumé.",
+     "Misma pantalla: con el resumen, los avisos solo llegan a las horas del resumen."),
+"Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice).":
+    ("Watch on your wrist and unlocked, with Wrist Detection on (Watch app on the iPhone > Passcode).",
+     "Watch au poignet et déverrouillée, avec la Détection du poignet activée (app Watch sur l'iPhone > Code).",
+     "Watch en la muñeca y desbloqueado, con la Detección de muñeca activada (app Watch del iPhone > Código)."),
+"macOS non manda la richiesta al Watch. Controlla:":
+    ("macOS isn't sending the request to the Watch. Check:", "macOS n'envoie pas la demande à la Watch. Vérifiez :",
+     "macOS no envía la solicitud al Watch. Comprueba:"),
+"osascript (firmato Apple)": ("osascript (Apple-signed)", "osascript (signé par Apple)", "osascript (firmado por Apple)"),
+"provare il Watch da osascript": ("test the Watch from osascript", "tester la Watch depuis osascript", "probar el Watch desde osascript"),
 }
 
 INFOPLIST = {

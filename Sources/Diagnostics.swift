@@ -110,15 +110,29 @@ enum DiagnosticsReport {
         out.append("# Nod diagnostics")
         row("Generated", DiagnosticsLog.stamp(Date()))
 
+        section("Summary")
+        let findings = summary(model: model)
+        if findings.isEmpty { out.append("- No problems detected.") }
+        for finding in findings { out.append("- " + finding) }
+
         section("App")
         row("Version", "\(info["CFBundleShortVersionString"] as? String ?? "?") (build \(info["CFBundleVersion"] as? String ?? "?"))")
         row("Commit", info["NodGitCommit"] as? String ?? "unknown")
         row("Signing", info["NodSigningTier"] as? String ?? "unknown")
-        row("Icon", (info["NodIconTier"] as? String ?? "unknown") + (model.prefs.classicDockIcon ? " (classic Dock icon forced)" : ""))
         row("Bundle", Bundle.main.bundlePath)
         row("Language", "\(model.prefs.language.rawValue) → \(Localization.effectiveCode)")
         row("Appearance", model.prefs.appearance.rawValue)
         row("Update channel", Updater.channel.rawValue)
+
+        section("Icon")
+        let icon = IconHealth.shared
+        row("Tier", icon.tier)
+        row("Build check", icon.buildCheck ?? "-")
+        row("CFBundleIconName", icon.iconName ?? "-")
+        row("Assets.car", icon.hasAssetCatalog ? "present" : "absent")
+        row("Bundle icon now", icon.coverage.map { "coverage \(IconMetrics.percent($0))" } ?? "not measured")
+        row("Different from generic icon", icon.differenceFromGeneric.map(IconMetrics.percent) ?? "-")
+        row("Dock icon", model.prefs.classicDockIcon ? "classic (forced)" : icon.fallbackActive ? "classic (automatic fallback)" : "bundle icon")
 
         section("Mac")
         row("macOS", ProcessInfo.processInfo.operatingSystemVersionString)
@@ -145,6 +159,11 @@ enum DiagnosticsReport {
 
         section("Apple Watch (LocalAuthentication)")
         row("Method setting", model.prefs.watchMethod.rawValue)
+        row("Learned method", model.prefs.learnedWatchMethod?.rawValue ?? "-")
+        row("Chain", model.watch.chain().map(\.rawValue).joined(separator: " → "))
+        row("Policy raw values", WatchMethod.concrete.map { "\($0.rawValue)=\($0.policy.map { String($0.rawValue) } ?? "-")" }
+            .joined(separator: ", "))
+        row("osascript probe", model.watch.probeResult ?? "not run")
         for method in WatchMethod.concrete {
             guard let policy = method.policy else { row(method.rawValue, "not available on this macOS"); continue }
             var error: NSError?
@@ -174,6 +193,39 @@ enum DiagnosticsReport {
             out.append("\(DiagnosticsLog.stamp(entry.date)) [\(entry.category.rawValue)] \(entry.message)")
         }
         return out.joined(separator: "\n") + "\n"
+    }
+
+    /// I problemi riconosciuti in automatico, per primi nel report.
+    @MainActor
+    private static func summary(model: AppModel) -> [String] {
+        var findings: [String] = []
+        if model.watch.watchOnlyFailsFast {
+            findings.append("Apple Watch: watch-only policies (companion/watch) fail instantly, so macOS does not forward the request to the "
+                            + "Watch. Check System Settings > Touch ID & Password > Apple Watch, wrist detection and Bluetooth, then run "
+                            + "Diagnostics > Test the Watch via osascript. Touch ID keeps working meanwhile.")
+        }
+        if let probe = model.watch.probeResult {
+            findings.append("Apple Watch via osascript (Apple-signed process): \(probe)")
+        }
+        if let check = model.relay.lastServerCheck {
+            if check.contains("NOT found") { findings.append("ntfy: the server does not have the test message (\(check)).") }
+            if check.contains("error") { findings.append("ntfy: server check failed (\(check)).") }
+            if check.contains("found on attempt"), model.relay.lastRoundTrip == nil {
+                findings.append("ntfy: the server has the message but no button reply has reached the Mac yet: delivery on the iPhone "
+                                + "is the likely problem (notification settings, Scheduled Summary, Focus).")
+            }
+        }
+        if !model.relay.isListening { findings.append("ntfy: not listening for replies.") }
+        let icon = IconHealth.shared
+        if icon.fallbackActive {
+            findings.append("Icon: the bundle icon looks empty (coverage \(icon.coverage.map(IconMetrics.percent) ?? "?")): "
+                            + "classic Dock icon applied automatically.")
+        }
+        if let check = icon.buildCheck, icon.tier == "classic", check.contains("%") {
+            findings.append("Icon: build.sh rejected the Liquid Glass icon (\(check)).")
+        }
+        if !model.cocaine.isInstalled { findings.append("Cocaine is not installed.") }
+        return findings
     }
 
     private static func sysctl(_ name: String) -> String {

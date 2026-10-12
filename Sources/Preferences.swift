@@ -101,6 +101,10 @@ final class Preferences: ObservableObject {
     }
     /// Quale politica di LocalAuthentication usare per la conferma col Watch (Diagnostica).
     @Published var watchMethod: WatchMethod { didSet { defaults.set(watchMethod.rawValue, forKey: "watchMethod") } }
+    /// In automatico: l'ultimo metodo che ha davvero confermato, provato per primo la volta dopo.
+    @Published var learnedWatchMethod: WatchMethod? {
+        didSet { defaults.set(learnedWatchMethod?.rawValue, forKey: "learnedWatchMethod") }
+    }
     /// Mostra nel Dock l'icona classica (.icns) invece di quella del catalogo, se quella non si vede.
     @Published var classicDockIcon: Bool {
         didSet { defaults.set(classicDockIcon, forKey: "classicDockIcon"); applyDockIcon() }
@@ -122,20 +126,16 @@ final class Preferences: ObservableObject {
         menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: "menuBarStyle") ?? "") ?? .filled
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .system
         watchMethod = WatchMethod(rawValue: defaults.string(forKey: "watchMethod") ?? "") ?? .automatic
+        learnedWatchMethod = WatchMethod(rawValue: defaults.string(forKey: "learnedWatchMethod") ?? "")
         classicDockIcon = defaults.bool(forKey: "classicDockIcon")
         autoCheckUpdates = defaults.object(forKey: "autoCheckUpdates") as? Bool ?? true
         defaults.set(topic, forKey: "topic")
         Localization.language = language
     }
 
-    /// Icona classica nel Dock mentre Nod è aperto (rimedio se l'icona Liquid Glass non si vede).
+    /// Icona classica nel Dock mentre Nod è aperto: se scelta, o da sola se l'icona Liquid Glass risulta vuota (IconHealth).
     func applyDockIcon() {
-        if classicDockIcon, let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
-           let image = NSImage(contentsOf: url) {
-            NSApp?.applicationIconImage = image
-        } else {
-            NSApp?.applicationIconImage = nil
-        }
+        IconHealth.shared.apply(forceClassic: classicDockIcon)
     }
 
     /// Applica a tutta l'app l'aspetto scelto (Sistema = segue macOS).

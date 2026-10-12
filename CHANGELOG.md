@@ -4,6 +4,30 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.3.1 · 2026-10-12
+
+### Improvements
+- Apple Watch confirmation uses an automatic policy chain, `deviceOwnerAuthenticationWithBiometricsOrCompanion` → `deviceOwnerAuthenticationWithCompanion` → `deviceOwnerAuthenticationWithWatch`, restricted to the policies the Mac can evaluate. A policy that fails within 1.5 s with `authenticationFailed`, `biometryNotAvailable` or `watchNotAvailable` falls through to the next one. The last policy that succeeded is remembered and tried first.
+- New "Test the Watch via osascript" diagnostic: it runs the same LocalAuthentication request from an Apple-signed process (`Resources/Scripts/watch-probe.js`) to tell whether macOS refuses Watch approval for the locally signed app. A Terminal equivalent is `xcrun swift tools/watch-probe.swift`.
+- The Watch troubleshooting checklist (system setting, wrist detection, Bluetooth, Apple Account, comparison with an Apple app) appears in Devices, Setup and Diagnostics when watch-only policies fail instantly.
+- The diagnostics report opens with an automatic summary of detected problems. It also adds a dedicated Icon section (tier, build check, measured coverage, Dock fallback) and the Watch policy chain, learned method, raw policy values and the osascript probe result.
+- The ntfy alert checklist is shared by Setup and Diagnostics. New items: Immediate Delivery instead of Scheduled Summary, and a push test with the ntfy app closed (re-subscribe and enable Background App Refresh if messages only appear when the app opens).
+
+### Bug Fixes
+- The ntfy server check no longer reports false negatives. ntfy.sh writes messages to its cache in batches, so the check now retries after 1, 3 and 6 s, bypasses the URLSession cache, parses each JSON line and logs the attempt that found the message.
+- Liquid Glass icon: `Nod.icon/icon.json` now follows the structure Icon Composer writes.
+  - The background is a document-level `fill` gradient instead of a full-canvas image layer.
+  - Every layer has an explicit `position`.
+  - `supported-platforms` uses `"squares": "shared"`, and glass groups enable `specular`.
+- Liquid Glass icon: `build.sh` now invokes `actool` with the same options as Xcode. It then renders the bundle icon through IconServices from a fresh copy of the app (`tools/icon-check`, built with `Sources/IconMetrics.swift`), the same path the Dock uses.
+  - If the icon is nearly transparent or identical to the generic app icon, the build falls back to the classic `.icns`.
+  - The build writes previews to `build/icon-preview.png` and `build/icon-actool.png`.
+- Liquid Glass icon: at launch, Nod measures the icon the Dock draws and automatically applies the bundled classic icon when it is blank. Nod no longer resets `NSApp.applicationIconImage` when no fallback is needed.
+
+### Known Issues
+- If watch-only policies keep failing instantly while the osascript probe succeeds, macOS is refusing Watch approval for the locally signed app. Touch ID approval at the Mac works meanwhile.
+- The ntfy server check cannot detect delivery problems on the iPhone (notification settings, Focus, Scheduled Summary). Use the checklist.
+
 ## 0.3.0 · 2026-10-12
 
 ### New Features

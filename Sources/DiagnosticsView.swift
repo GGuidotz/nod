@@ -31,16 +31,7 @@ struct DiagnosticsView: View {
 
             NtfyDiagnostics(relay: model.relay)
 
-            Section {
-                Toggle(L("Usa l'icona classica nel Dock"), isOn: Binding(get: { model.prefs.classicDockIcon },
-                                                                          set: { model.prefs.classicDockIcon = $0 }))
-                LabeledContent(L("Icona compilata"), value: Bundle.main.infoDictionary?["NodIconTier"] as? String ?? "-")
-            } header: {
-                Text(L("Icona"))
-            } footer: {
-                Text(L("Se nel Dock l'icona resta vuota, questa opzione mostra quella classica mentre Nod è aperto."))
-                    .foregroundStyle(.secondary)
-            }
+            IconDiagnostics(icon: IconHealth.shared, prefs: model.prefs)
 
             Section {
                 ScrollView {
@@ -56,7 +47,7 @@ struct DiagnosticsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle(L("Diagnostica"))
-        .onAppear { refresh() }
+        .onAppear { refresh(); model.watch.refresh() }
         .onChange(of: log.entries.count) { refresh() }
     }
 
@@ -107,6 +98,37 @@ struct DiagnosticsView: View {
     }
 }
 
+private struct IconDiagnostics: View {
+    @ObservedObject var icon: IconHealth
+    @ObservedObject var prefs: Preferences
+
+    var body: some View {
+        Section {
+            HStack(alignment: .top, spacing: 16) {
+                if let preview = icon.preview {
+                    Image(nsImage: preview).resizable().frame(width: 64, height: 64)
+                        .accessibilityLabel(L("Anteprima dell'icona del bundle"))
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    LabeledContent(L("Icona compilata"), value: icon.tier)
+                    LabeledContent(L("Parte visibile"), value: icon.coverage.map(IconMetrics.percent) ?? "-")
+                    if let check = icon.buildCheck { LabeledContent(L("Controllo di build.sh"), value: check) }
+                    if icon.fallbackActive {
+                        Label(L("Risultava vuota: Nod mostra da solo l'icona classica."), systemImage: "arrow.uturn.backward.circle")
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
+            Toggle(L("Usa l'icona classica nel Dock"), isOn: $prefs.classicDockIcon)
+        } header: {
+            Text(L("Icona"))
+        } footer: {
+            Text(L("All'avvio Nod misura l'icona che il Dock disegna: se è vuota mette quella classica. Con questa opzione la classica resta sempre."))
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 private struct NtfyDiagnostics: View {
     @ObservedObject var relay: NotificationRelay
 
@@ -119,8 +141,12 @@ private struct NtfyDiagnostics: View {
             LabeledContent(L("Ultimo invio"), value: relay.lastPublish ?? "-")
             LabeledContent(L("Verifica sul server"), value: relay.lastServerCheck ?? "-")
             LabeledContent(L("Risposte"), value: relay.isListening ? L("In ascolto") : L("Non collegato"))
+            NtfyAlertChecklist(relay: relay)
         } header: {
             Text(L("Notifiche"))
+        } footer: {
+            Text(L("Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)."))
+                .foregroundStyle(.secondary)
         }
     }
 }
@@ -134,11 +160,21 @@ private struct WatchDiagnostics: View {
             Picker(L("Metodo di conferma"), selection: $prefs.watchMethod) {
                 ForEach(WatchMethod.allCases) { Text($0.title).tag($0) }
             }
+            if prefs.watchMethod == .automatic, !watch.currentChain.isEmpty {
+                LabeledContent(L("Ordine in automatico"), value: watch.currentChain.map(\.title).joined(separator: " → "))
+            }
             HStack {
                 Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova ogni metodo del Watch")) {
                     Task { await watch.testAllMethods() }
                 }
-                .disabled(watch.isAsking)
+                .disabled(watch.isAsking || watch.isProbing)
+                Button(watch.isProbing ? L("Guarda il Watch…") : L("Prova il Watch tramite osascript")) {
+                    Task { await watch.probeViaOsascript() }
+                }
+                .disabled(watch.isAsking || watch.isProbing)
+            }
+            if let probe = watch.probeResult {
+                LabeledContent(L("osascript (firmato Apple)"), value: probe)
             }
             ForEach(WatchMethod.concrete) { method in
                 if let result = watch.methodResults[method] {
@@ -148,10 +184,12 @@ private struct WatchDiagnostics: View {
             if let last = watch.attempts.last {
                 LabeledContent(L("Ultimo tentativo"), value: last.line)
             }
+            if watch.watchOnlyFailsFast { WatchTroubleshooting() }
         } header: {
             Text(L("Apple Watch"))
         } footer: {
-            Text(L("Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra."))
+            Text(L("Per ogni metodo compare la richiesta sul Mac: premi due volte il tasto laterale del Watch. Il metodo che funziona sceglilo qui sopra.")
+                 + " " + L("La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod."))
                 .foregroundStyle(.secondary)
         }
     }

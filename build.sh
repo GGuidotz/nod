@@ -38,6 +38,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD_NUMBER/" Resources/Info.plist > "$PLIST"
 cp CHANGELOG.md "$APP/Contents/Resources/CHANGELOG.md"
 cp -R Localization/*.lproj "$APP/Contents/Resources/"
+cp Resources/Scripts/*.js "$APP/Contents/Resources/"   # prove di Diagnostica (watch-probe.js)
 
 for arch in arm64 x86_64; do
   mkdir -p "$BUILD/$arch"
@@ -54,26 +55,44 @@ for s in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
-# Icona Liquid Glass (Resources/Icon/Nod.icon, formato Icon Composer): serve actool di Xcode. Accettata solo se il catalogo
-# compilato contiene davvero l'icona "Nod"; altrimenti si resta sulla classica (un catalogo vuoto lascia il Dock vuoto).
+# Icona Liquid Glass (Resources/Icon/Nod.icon, formato Icon Composer): serve actool di Xcode, con le stesse opzioni che usa
+# Xcode. Poi tools/icon-check la disegna come il Dock (IconServices): se risulta vuota, o uguale all'icona generica, si
+# resta sulla classica. Le anteprime finiscono in build/icon-preview.png e build/icon-actool.png.
 ICON_TIER=classic
+ICON_CHECK=""
 if [ "${NOD_ICON:-}" != classic ]; then
   if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app/Contents/Developer ]; then
     export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer   # Xcode anche se è selezionato solo CLT
   fi
   ACTOOL=$(xcrun --find actool 2>/dev/null || true)
-  ASSETUTIL=$(xcrun --find assetutil 2>/dev/null || command -v assetutil || true)
   if [ -n "$ACTOOL" ]; then
     rm -rf "$BUILD/icon-out"; mkdir -p "$BUILD/icon-out"
-    if "$ACTOOL" Resources/Icon/Nod.icon --compile "$BUILD/icon-out" --platform macosx --target-device mac \
-         --minimum-deployment-target 14.0 --app-icon Nod --output-partial-info-plist "$BUILD/icon-partial.plist" \
-         >"$BUILD/actool.log" 2>&1 && [ -f "$BUILD/icon-out/Assets.car" ] \
-       && { [ -z "$ASSETUTIL" ] || grep -Eq '"Name" *: *"Nod"' <<< "$("$ASSETUTIL" --info "$BUILD/icon-out/Assets.car" 2>/dev/null)"; }; then
+    if "$ACTOOL" Resources/Icon/Nod.icon --compile "$BUILD/icon-out" --output-format human-readable-text --notices --warnings \
+         --platform macosx --target-device mac --minimum-deployment-target 14.0 --app-icon Nod --include-all-app-icons \
+         --development-region en --output-partial-info-plist "$BUILD/icon-partial.plist" >"$BUILD/actool.log" 2>&1 \
+       && [ -f "$BUILD/icon-out/Assets.car" ]; then
+      ICON_NAME=$(/usr/bin/plutil -extract CFBundleIconName raw "$BUILD/icon-partial.plist" 2>/dev/null || echo Nod)
+      ASSETUTIL=$(xcrun --find assetutil 2>/dev/null || command -v assetutil || true)
+      [ -n "$ASSETUTIL" ] && "$ASSETUTIL" --info "$BUILD/icon-out/Assets.car" >"$BUILD/assetutil.json" 2>&1 || true
       cp "$BUILD/icon-out/Assets.car" "$APP/Contents/Resources/"
-      plist_set CFBundleIconName Nod
+      plist_set CFBundleIconName "$ICON_NAME"
       ICON_TIER="liquid-glass"
+      if swiftc -O -swift-version 5 tools/icon-check/main.swift Sources/IconMetrics.swift -o "$BUILD/icon-check" \
+           >>"$BUILD/actool.log" 2>&1; then
+        ICON_CHECK=$("$BUILD/icon-check" "$APP" "$BUILD/icon-out" "$BUILD" 2>>"$BUILD/actool.log") && rc=0 || rc=$?
+        if [ "$rc" -eq 1 ]; then
+          echo "Icona Liquid Glass vuota ($ICON_CHECK): uso l'icona classica. Anteprime in $BUILD/icon-preview.png e $BUILD/icon-actool.png."
+          rm -f "$APP/Contents/Resources/Assets.car"
+          /usr/bin/plutil -remove CFBundleIconName "$PLIST"
+          ICON_TIER=classic
+        elif [ "$rc" -ne 0 ]; then
+          ICON_CHECK="controllo non riuscito: $ICON_CHECK"
+        fi
+      else
+        ICON_CHECK="controllo non compilato (dettagli in $BUILD/actool.log)"
+      fi
     else
-      echo "Icona Liquid Glass non valida (dettagli in $BUILD/actool.log): uso l'icona classica."
+      echo "Icona Liquid Glass non compilata (dettagli in $BUILD/actool.log): uso l'icona classica."
     fi
   else
     echo "actool non trovato (serve Xcode): icona classica."
@@ -91,6 +110,7 @@ fi
 # Dati per la diagnostica e per gli aggiornamenti (Sources/Diagnostics.swift, Sources/Updater.swift).
 plist_set NodGitCommit "$COMMIT"
 plist_set NodIconTier "$ICON_TIER"
+[ -n "$ICON_CHECK" ] && plist_set NodIconCheck "$ICON_CHECK"
 plist_set NodSigningTier "$TIER"
 [ "$MODE" = dmg ] || plist_set NodSourcePath "$PWD"
 plutil -lint "$PLIST" >/dev/null
@@ -103,7 +123,7 @@ else
   echo "Attenzione: firma ad hoc. macOS chiederà di nuovo i permessi a ogni build. ./make-signing-identity.sh lo evita."
 fi
 codesign --verify --strict "$APP"
-echo "Pronto: $APP ($VERSION, build $BUILD_NUMBER, commit $COMMIT, firma $TIER, icona $ICON_TIER)"
+echo "Pronto: $APP ($VERSION, build $BUILD_NUMBER, commit $COMMIT, firma $TIER, icona $ICON_TIER${ICON_CHECK:+: $ICON_CHECK})"
 
 case "$MODE" in
   install)

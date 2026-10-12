@@ -48,6 +48,28 @@ struct StatusRow: View {
     }
 }
 
+/// Cosa controllare quando le richieste solo-Watch falliscono subito: macOS non le manda al Watch.
+struct WatchTroubleshooting: View {
+    private var items: [String] {
+        [L("Impostazioni di Sistema > Touch ID e password: \"Usa Apple Watch per sbloccare app e Mac\" attivo."),
+         L("Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice)."),
+         L("Bluetooth e Wi-Fi accesi sul Mac; Mac e Watch con lo stesso Apple ID."),
+         L("Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema."),
+         L("Altrimenti Diagnostica > \"Prova il Watch tramite osascript\": se così funziona, il limite è la firma di Nod.")]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(L("macOS non manda la richiesta al Watch. Controlla:"), systemImage: "exclamationmark.applewatch")
+                .foregroundStyle(.orange)
+            ForEach(items, id: \.self) { item in
+                Text("• " + item).font(.callout).fixedSize(horizontal: false, vertical: true)
+            }
+            Text(L("Intanto Nod usa Touch ID: al Mac approvi col dito.")).font(.callout).foregroundStyle(.secondary)
+        }
+    }
+}
+
 /// Giorni della settimana come pulsanti attivabili, da lunedì.
 struct WeekdayPicker: View {
     @Binding var selection: Set<Int>

@@ -71,12 +71,21 @@ Nod hai scelto *Server mio*. Poi Nod > Notifiche > *Invia prova*: Nod chiede al 
 Se le vedi nell'elenco dell'app ntfy ma non compaiono come avviso, i messaggi arrivano: manca la consegna push.
 
 1. **iPhone > Impostazioni > Notifiche > ntfy**: Consenti notifiche attivo, Banner, e Avvisi con priorità.
-2. **Full immersion**: nessuna attiva che blocchi ntfy (o aggiungi ntfy alle app consentite).
-3. **App Watch sull'iPhone > Notifiche > ntfy**: rispecchia gli avvisi dell'iPhone.
-4. **Prova con l'iPhone bloccato** e il Watch al polso, sbloccato: il Watch mostra le notifiche solo quando l'iPhone è
+2. **Stessa schermata, Consegna**: *Consegna immediata*, non *Riepilogo programmato* (con il riepilogo gli avvisi
+   arrivano solo agli orari del riepilogo).
+3. **Full immersion**: nessuna attiva che blocchi ntfy (o aggiungi ntfy alle app consentite).
+4. **App Watch sull'iPhone > Notifiche > ntfy**: rispecchia gli avvisi dell'iPhone.
+5. **Prova con l'iPhone bloccato** e il Watch al polso, sbloccato: il Watch mostra le notifiche solo quando l'iPhone è
    bloccato (se lo stai usando, l'avviso resta sull'iPhone).
-5. **Andata e ritorno**: Nod > Notifiche > *Invia prova*, poi tocca *Ricevuta*. Se Nod scrive "Risposta ricevuta dal Watch",
-   il percorso dei pulsanti funziona e resta solo da sistemare la visualizzazione (punti 1-4).
-6. Con un **server tuo**, senza `upstream-base-url` l'iPhone riceve le notifiche con molto ritardo.
+6. **Push o no**: chiudi l'app ntfy (dal selettore delle app) e invia una prova. Se il messaggio compare solo quando la
+   riapri, il push non arriva: in ntfy togli e aggiungi di nuovo il topic, e attiva *Impostazioni > ntfy > Aggiornamento
+   app in background*.
+7. **Andata e ritorno**: Nod > Notifiche > *Invia prova*, poi tocca *Ricevuta*. Se Nod scrive "Risposta ricevuta dal Watch",
+   il percorso dei pulsanti funziona e resta solo da sistemare la visualizzazione (punti 1-6).
+8. Con un **server tuo**, senza `upstream-base-url` l'iPhone riceve le notifiche con molto ritardo.
+
+La **verifica sul server** di Nod (Diagnostica > Notifiche) riprova dopo 1, 3 e 6 secondi: ntfy.sh scrive i messaggi in
+cache a gruppi, quindi una verifica immediata può non trovare un messaggio appena inviato. Se dopo 6 secondi lo trova, il
+Mac e il server sono a posto e il problema è nella consegna sull'iPhone (punti 1-6).
 
 Le approvazioni e "Ti stai allontanando" partono con priorità massima (5); la prova con priorità alta (4).

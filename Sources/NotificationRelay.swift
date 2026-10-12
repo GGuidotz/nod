@@ -84,26 +84,60 @@ final class NotificationRelay: ObservableObject {
     }
 
     /// Chiede al server se ha davvero il messaggio: distingue "non parte dal Mac" da "l'iPhone non lo mostra".
+    /// ntfy.sh scrive i messaggi in cache a gruppi, quindi subito dopo l'invio il messaggio può non esserci ancora:
+    /// tre tentativi (dopo 1, 3 e 6 s), senza la cache di URLSession (l'indirizzo è sempre lo stesso).
     private func verifyOnServer(id: String, server: URL) async {
         var components = URLComponents(url: server.appendingPathComponent(prefs.topic).appendingPathComponent("json"),
                                        resolvingAgainstBaseURL: false)
-        components?.queryItems = [URLQueryItem(name: "poll", value: "1"), URLQueryItem(name: "since", value: "5m")]
+        components?.queryItems = [URLQueryItem(name: "poll", value: "1"), URLQueryItem(name: "since", value: "10m")]
         guard let url = components?.url else { return }
         var request = URLRequest(url: url)
         request.timeoutInterval = 15
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         if let accessToken { request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") }
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-            let found = String(decoding: data, as: UTF8.self).contains("\"id\":\"\(id)\"")
-            lastServerCheck = "\(DiagnosticsLog.stamp(Date())) HTTP \(code), message \(found ? "found" : "NOT found")"
-            diag(.ntfy, "server check: HTTP \(code), message \(found ? "found" : "not found")")
-            lastEvent = found ? L("Il server ha ricevuto la notifica. Se non la vedi sul Watch, il problema è sull'iPhone.")
-                              : L("Il server non ha il messaggio (HTTP %d).", code)
-        } catch {
-            lastServerCheck = "\(DiagnosticsLog.stamp(Date())) error \(error.localizedDescription)"
-            diag(.ntfy, "server check failed: \(error.localizedDescription)")
+        let delays: [UInt64] = [1, 2, 3]   // cumulativi: 1, 3, 6 s
+        var lastCode = 0, lastCount = 0, lastError: String?
+        lastServerCheck = "\(DiagnosticsLog.stamp(Date())) checking…"
+        for (attempt, delay) in delays.enumerated() {
+            try? await Task.sleep(nanoseconds: delay * 1_000_000_000)
+            let elapsed = delays.prefix(attempt + 1).reduce(0, +)
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                lastCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                lastError = nil
+                let ids = Self.messageIDs(in: data)
+                lastCount = ids.count
+                if ids.contains(id) {
+                    lastServerCheck = "\(DiagnosticsLog.stamp(Date())) HTTP \(lastCode), message found on attempt \(attempt + 1) "
+                        + "(\(elapsed) s), \(ids.count) messages in the last 10 min"
+                    diag(.ntfy, "server check: found on attempt \(attempt + 1) after \(elapsed)s (\(ids.count) messages)")
+                    lastEvent = L("Il server ha ricevuto la notifica. Se non la vedi sul Watch, il problema è sull'iPhone.")
+                    return
+                }
+                diag(.ntfy, "server check attempt \(attempt + 1) after \(elapsed)s: HTTP \(lastCode), not yet (\(ids.count) messages)")
+            } catch {
+                lastError = error.localizedDescription
+                diag(.ntfy, "server check attempt \(attempt + 1) failed: \(error.localizedDescription)")
+            }
         }
+        if let lastError {
+            lastServerCheck = "\(DiagnosticsLog.stamp(Date())) error \(lastError)"
+            return
+        }
+        lastServerCheck = "\(DiagnosticsLog.stamp(Date())) HTTP \(lastCode), message NOT found after \(delays.count) attempts "
+            + "(\(lastCount) messages in the last 10 min)"
+        lastEvent = L("Il server non ha il messaggio (HTTP %d).", lastCode)
+    }
+
+    /// Gli id dei messaggi in una risposta `json?poll=1` (una riga JSON per messaggio).
+    private static func messageIDs(in data: Data) -> Set<String> {
+        var ids = Set<String>()
+        for line in data.split(separator: UInt8(ascii: "\n")) {
+            guard let object = try? JSONSerialization.jsonObject(with: Data(line)) as? [String: Any],
+                  (object["event"] as? String ?? "message") == "message", let id = object["id"] as? String else { continue }
+            ids.insert(id)
+        }
+        return ids
     }
 
     func sendTest() async {

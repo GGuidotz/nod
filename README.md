@@ -34,8 +34,21 @@ Servono macOS 14+ e gli strumenti a riga di comando (`xcode-select --install`); 
 ./build.sh --install         # compila, firma, copia in /Applications e apre
 ```
 
-Con Xcode installato, `build.sh` compila anche l'icona Liquid Glass (`Resources/Icon/Nod.icon`, formato Icon Composer);
-altrimenti usa l'icona classica (`Resources/Icon/AppIcon-1024.png`, generata da `tools/render-icon.py`).
+Con Xcode installato, `build.sh` compila anche l'icona Liquid Glass (`Resources/Icon/Nod.icon`, formato Icon Composer) e la
+controlla disegnandola come il Dock (`tools/icon-check`): se risulta vuota usa l'icona classica
+(`Resources/Icon/AppIcon-1024.png`, generata da `tools/render-icon.py`) e lascia le anteprime in `build/icon-preview.png` e
+`build/icon-actool.png`. Senza Xcode, icona classica.
+
+## Se il Watch non riceve la richiesta
+
+Diagnostica > *Prova il Watch tramite osascript* fa la stessa richiesta da un processo firmato Apple. Dal Terminale:
+
+```
+xcrun swift tools/watch-probe.swift          # solo Watch
+xcrun swift tools/watch-probe.swift both     # Touch ID o Watch
+```
+
+Se così il Watch la riceve e da Nod no, il limite è la firma locale di Nod; intanto Nod usa Touch ID.
 
 ## Pubblicare una versione
 
@@ -76,7 +89,8 @@ Licenza MIT.
 | `Sources/Preferences.swift` | Preferenze e regola di presenza (app, giorni, fascia oraria) |
 | `Sources/NotificationRelay.swift` | ntfy: notifiche con pulsanti, token monouso, ascolto delle risposte |
 | `Sources/HeadMotion.swift` | AirPods: indossate, assetto, annuire/scuotere, camminata |
-| `Sources/WatchConfirm.swift` | Conferma col tasto laterale del Watch |
+| `Sources/WatchConfirm.swift` | Conferma col tasto laterale del Watch (catena di politiche, prova tramite osascript) |
+| `Sources/IconHealth.swift`, `IconMetrics.swift` | Controllo dell'icona del Dock all'avvio e in `build.sh` (`tools/icon-check`) |
 | `Sources/ApprovalFlow.swift` | Flusso di un'approvazione (oggi in prova) |
 | `Sources/CocaineBridge.swift` | Cocaine tramite la sua riga di comando |
 | `packaging/homebrew/Casks/nod.rb` | Il cask per il tap |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Disegna l'icona di Nod (1024 px) con effetto vetro statico: il fallback .icns quando Icon Composer non c'è.
 Concetto: la spunta è il percorso di un cenno del capo (giù, poi su), in vetro chiaro, con due eco più in alto che
-svaniscono (il movimento della testa), su un fondo blu notte che vira al ciano. Stessa geometria degli strati SVG di Resources/Icon/Nod.icon.
+svaniscono (il movimento della testa), su un fondo blu notte che vira al ciano. Stessa geometria degli strati PNG di Resources/Icon/Nod.icon.
     python3 tools/render-icon.py Resources/Icon/AppIcon-1024.png
     python3 tools/render-icon.py --layers Resources/Icon/Nod.icon/Assets
 """
@@ -109,11 +109,11 @@ def render(squircle=True):
     return Image.alpha_composite(sh, canvas_art)
 
 def render_layers(outdir):
-    """Strati per Icon Composer (Nod.icon/Assets): sfondo opaco a tutta tela e forme bianche nette su trasparente.
-    Il vetro, i riflessi e le ombre li aggiunge il sistema."""
+    """Strati per Icon Composer (Nod.icon/Assets): forme bianche nette su trasparente, a tutta tela 1024 (posizione 0,0).
+    Lo sfondo non è uno strato: è il "fill" di icon.json, come lo scrive Icon Composer. Vetro, riflessi e ombre li
+    aggiunge il sistema."""
     import os
     os.makedirs(outdir, exist_ok=True)
-    gradient_bg(1024).save(os.path.join(outdir, "background.png"))
     for name, dy in (("check.png", 0), ("echo-near.png", -78), ("echo-far.png", -150)):
         m = stroke_mask(N, [(x, y + dy * S) for x, y in check_points(S)], 128 * S).resize((1024, 1024), Image.LANCZOS)
         layer = Image.new("RGBA", (1024, 1024), (255, 255, 255, 0))
