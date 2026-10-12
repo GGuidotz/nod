@@ -22,6 +22,10 @@
 	<string>14.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 gguidotz · github.com/GGuidotz/nod · giulioguidotz@yahoo.com</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMotionUsageDescription</key>

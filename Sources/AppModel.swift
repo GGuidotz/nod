@@ -54,13 +54,15 @@ final class AppModel: ObservableObject {
         self.watch = watch
         self.relay = relay
         self.presence = presence
-        approvals = ApprovalFlow(head: head, watch: watch, prefs: prefs)
+        approvals = ApprovalFlow(head: head, watch: watch, relay: relay, prefs: prefs)
     }
 
     var appVersion: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
 
     func didLaunch() {
+        prefs.applyAppearance()
         cocaine.refresh()
+        watch.refresh()
         if prefs.setupCompleted, prefs.headMotionEnabled { head.start() }
         presence.start()
         relay.startListening()

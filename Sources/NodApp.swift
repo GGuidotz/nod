@@ -13,9 +13,9 @@ struct NodApp: App {
         Window("Nod", id: "main") {
             MainView()
                 .environmentObject(model)
-                .frame(minWidth: 760, minHeight: 500)
+                .frame(minWidth: 780, minHeight: 620)
         }
-        .defaultSize(width: 880, height: 580)
+        .defaultSize(width: 920, height: 680)
         .commands { NodCommands(model: model) }
 
         Settings {
@@ -27,7 +27,7 @@ struct NodApp: App {
             MenuBarMenu()
                 .environmentObject(model)
         } label: {
-            MenuBarLabel(presence: model.presence)
+            MenuBarLabel(presence: model.presence, prefs: model.prefs)
         }
     }
 }
@@ -35,9 +35,10 @@ struct NodApp: App {
 /// L'icona nella barra dei menu segue lo stato della presenza.
 struct MenuBarLabel: View {
     @ObservedObject var presence: PresenceEngine
+    @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Image(systemName: presence.state.symbol)
+        Image(nsImage: MenuBarGlyph.image(state: presence.state, style: prefs.menuBarStyle))
             .accessibilityLabel("Nod, \(presence.state.title)")
     }
 }
@@ -56,6 +57,9 @@ struct NodCommands: Commands {
     @ObservedObject var model: AppModel
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("Informazioni su Nod") { AboutPanel.show() }
+        }
         CommandGroup(after: .appInfo) {
             Button("Novità di Nod…") { model.showWhatsNew() }
             Button("Ripeti configurazione…") { model.startSetup(.full) }

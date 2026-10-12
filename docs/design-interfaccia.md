@@ -9,6 +9,18 @@ configurare, controllare lo stato e provare. **L'elemento per cui si ricorda**: 
 tempo reale (`HeadIndicator`), nella configurazione e in Dispositivi. Non è decorazione: dimostra che il sensore funziona ed è
 lo stesso gesto con cui approvi. Tutto il resto è sistema: SF Pro, colori semantici, controlli standard.
 
+## Versione 0.2.0: Liquid Glass
+
+| Scelta | Riferimento |
+|---|---|
+| Icona: la spunta è il percorso di un cenno (giù, poi su), con due eco che svaniscono sopra: il movimento della testa. Strati vettoriali in `Resources/Icon/Nod.icon` (Icon Composer) con vetro, riflessi e traslucenza del sistema; fallback `.icns` disegnato da `tools/render-icon.py` | `app-icons.md › Layer design`, `› Design` ("filled, overlapping shapes"), `› Visual effects` |
+| Vetro solo sui controlli che galleggiano: la barra in basso della configurazione (passi, Indietro, Continua) e i pulsanti; il contenuto usa schede di materiale standard | `liquid-glass.md › Where the material belongs` |
+| Un solo pulsante colorato per vista (Continua, Invia prova, Prova la conferma) | `liquid-glass.md › Color on glass` |
+| Aurora animata nel livello del contenuto, così il vetro ha qualcosa da riflettere; ferma con Riduci movimento | `liquid-glass.md › Differentiate controls from content`, `sidebars.md › Best practices` |
+| Glifo della barra dei menu come immagine modello (template): macOS lo colora per barra chiara, scura e selezionata | `the-menu-bar.md › Menu bar extras` |
+| Tema Sistema / Chiaro / Scuro nelle impostazioni: richiesto esplicitamente, contro il consiglio HIG di non avere un selettore di aspetto proprio. Il predefinito resta Sistema | `dark-mode.md` (scelta consapevole) |
+| Crediti nel pannello standard Informazioni su Nod e in Impostazioni > Info | `the-menu-bar.md › App menu` |
+
 ## Struttura
 
 | Parte | Scelta | Riferimento |

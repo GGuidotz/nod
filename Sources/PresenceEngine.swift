@@ -94,7 +94,7 @@ final class PresenceEngine: ObservableObject {
         Task {
             _ = await relay?.send(title: "Ti stai allontanando",
                                   message: "Senza risposta tra \(minutes) min: \(fallback.title.lowercased()).",
-                                  buttons: buttons, lifetime: TimeInterval(minutes * 60))
+                                  buttons: buttons, lifetime: TimeInterval(minutes * 60), priority: 5)
         }
         timeoutTask?.cancel()
         timeoutTask = Task { [weak self] in

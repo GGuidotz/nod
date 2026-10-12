@@ -15,16 +15,33 @@ struct MainView: View {
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
         } detail: {
-            switch model.selection ?? .status {
-            case .status: StatusView()
-            case .approvals: ApprovalsView(flow: model.approvals, cocaine: model.cocaine)
-            case .presence: PresenceView(presence: model.presence, prefs: model.prefs)
-            case .devices: DevicesView(head: model.head, watch: model.watch, prefs: model.prefs)
-            case .whatsNew: WhatsNewView()
+            ZStack {
+                DetailBackground()
+                Group {
+                    switch model.selection ?? .status {
+                    case .status: StatusView()
+                    case .approvals: ApprovalsView(flow: model.approvals, cocaine: model.cocaine)
+                    case .presence: PresenceView(presence: model.presence, prefs: model.prefs)
+                    case .devices: DevicesView(head: model.head, watch: model.watch, prefs: model.prefs)
+                    case .whatsNew: WhatsNewView()
+                    }
+                }
+                .scrollContentBackground(.hidden)
             }
         }
         .sheet(item: $model.setup) { session in
             SetupView(session: session).environmentObject(model)
+        }
+    }
+}
+
+/// Aurora tenue dietro i moduli; su macOS 26 si estende sotto la barra laterale di vetro.
+private struct DetailBackground: View {
+    var body: some View {
+        if #available(macOS 26.0, *) {
+            AuroraBackground(intensity: 0.35).backgroundExtensionEffect().ignoresSafeArea()
+        } else {
+            AuroraBackground(intensity: 0.35).ignoresSafeArea()
         }
     }
 }
@@ -102,6 +119,10 @@ struct ApprovalsView: View {
                 }
             }
             Section {
+                LabeledContent("Modo adesso") {
+                    Label(flow.usesGestures ? "AirPods e Watch" : "Solo Watch",
+                          systemImage: flow.usesGestures ? "airpodspro" : "applewatch")
+                }
                 phaseView
                 HStack {
                     Button("Prova un'approvazione") { flow.demo() }
@@ -110,7 +131,8 @@ struct ApprovalsView: View {
             } header: {
                 Text("Prova")
             } footer: {
-                Text("Annuisci per approvare, poi premi due volte il tasto laterale del Watch. Scuoti la testa per negare. "
+                Text("Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. "
+                     + "Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. "
                      + "\"Consenti sempre\" non è mai disponibile da qui: resta nel notch di Cocaine o nel terminale.")
                     .foregroundStyle(.secondary)
             }
@@ -128,14 +150,19 @@ struct ApprovalsView: View {
                 Text(summary)
                 Text("Annuisci o scuoti la testa, ancora \(Text(until, style: .timer))").foregroundStyle(.secondary)
             }
-        case .confirmingOnWatch(let summary):
-            Label("Conferma sul Watch: \(summary)", systemImage: "applewatch")
-        case .approved(let summary):
-            Label("Approvata: \(summary)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-        case .denied(let summary):
-            Label("Negata: \(summary)", systemImage: "xmark.circle.fill").foregroundStyle(.red)
+        case .confirmingOnWatch(let summary, let notified):
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Conferma sul Watch: \(summary)", systemImage: "applewatch")
+                Text(notified ? "Doppio clic sul tasto laterale, oppure rispondi alla notifica sul Watch."
+                              : "Doppio clic sul tasto laterale per approvare, Nega per rifiutare.")
+                    .foregroundStyle(.secondary)
+            }
+        case .approved(let summary, let by):
+            Label("Approvata \(by): \(summary)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+        case .denied(let summary, let by):
+            Label("Negata \(by): \(summary)", systemImage: "xmark.circle.fill").foregroundStyle(.red)
         case .expired(let summary):
-            Label("Nessun gesto in tempo: \(summary)", systemImage: "clock").foregroundStyle(.secondary)
+            Label("Nessuna risposta in tempo: \(summary)", systemImage: "clock").foregroundStyle(.secondary)
         case .failed(let summary, let reason):
             Label("\(reason) \(summary)", systemImage: "exclamationmark.circle").foregroundStyle(.orange)
         }
@@ -199,8 +226,13 @@ struct DevicesView: View {
             Section("Apple Watch") {
                 StatusRow(title: "Conferme", value: watch.isAvailable ? "Pronto" : (watch.unavailableReason ?? "Non disponibile"),
                           ok: watch.isAvailable)
-                Button("Prova la conferma") { Task { _ = await watch.confirm("provare la conferma con Apple Watch") } }
-                    .disabled(watch.isAsking)
+                Button(watch.isAsking ? "Guarda il Watch…" : "Prova la conferma") {
+                    Task { _ = await watch.confirm("provare la conferma con Apple Watch") }
+                }
+                .disabled(watch.isAsking)
+                if let outcome = watch.lastOutcome {
+                    Text(outcome.title).foregroundStyle(.secondary)
+                }
             }
         }
         .formStyle(.grouped)

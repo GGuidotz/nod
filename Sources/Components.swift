@@ -100,12 +100,12 @@ struct PresenceRuleEditor: View {
         } header: {
             Text("Tempi")
         } footer: {
-            Text(summary).foregroundStyle(.secondary)
+            Text(Self.summary(prefs.leavingRule)).foregroundStyle(.secondary)
         }
     }
 
-    private var summary: String {
-        let r = prefs.leavingRule
+    /// La regola scritta per intero, aggiornata mentre la modifichi.
+    static func summary(_ r: LeavingRule) -> String {
         let apps = r.apps.map(\.name).formatted(.list(type: .or))
         guard !r.apps.isEmpty, !r.schedule.weekdays.isEmpty else {
             return "Senza app o giorni scelti, quando non rispondi non succede niente."
@@ -115,7 +115,7 @@ struct PresenceRuleEditor: View {
             + "Altrimenti non succede niente. Quando torni, Cocaine torna com'era."
     }
 
-    private func clock(_ m: Int) -> String { String(format: "%d:%02d", m / 60, m % 60) }
+    private static func clock(_ m: Int) -> String { String(format: "%d:%02d", m / 60, m % 60) }
 
     /// Minuti dalla mezzanotte <-> Date per il DatePicker.
     private func minutes(_ key: WritableKeyPath<WorkSchedule, Int>) -> Binding<Date> {

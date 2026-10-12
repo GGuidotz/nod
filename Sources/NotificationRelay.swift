@@ -15,6 +15,8 @@ struct NtfyButton {
 final class NotificationRelay: ObservableObject {
     @Published private(set) var isListening = false
     @Published private(set) var lastEvent: String?
+    /// L'ultima volta che un pulsante di una notifica è tornato fino al Mac: prova che il percorso funziona.
+    @Published private(set) var lastRoundTrip: Date?
 
     private let prefs: Preferences
     private var pending: [String: (expires: Date, action: @MainActor () -> Void)] = [:]
@@ -64,7 +66,7 @@ final class NotificationRelay: ObservableObject {
 
     func sendTest() async {
         _ = await send(title: "Nod: prova", message: "Fai doppio tap sul Watch.",
-                       buttons: [NtfyButton(label: "Ricevuta") { [weak self] in self?.lastEvent = "Doppio tap ricevuto." },
+                       buttons: [NtfyButton(label: "Ricevuta") { [weak self] in self?.lastEvent = "Risposta ricevuta dal Watch." },
                                  NtfyButton(label: "Ignora") { [weak self] in self?.lastEvent = "Hai scelto Ignora." }])
     }
 
@@ -113,6 +115,7 @@ final class NotificationRelay: ObservableObject {
         guard let entry = pending[token] else { return }
         pending = pending.filter { $0.value.expires != entry.expires }
         guard entry.expires > Date() else { lastEvent = "Risposta arrivata dopo la scadenza: ignorata."; return }
+        lastRoundTrip = Date()
         entry.action()
     }
 

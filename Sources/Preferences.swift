@@ -2,6 +2,7 @@
 
 import Foundation
 import Security
+import AppKit
 import SwiftUI
 
 /// Un'app che, se aperta, rende "tieni sveglio" la scelta predefinita quando ti allontani.
@@ -91,6 +92,10 @@ final class Preferences: ObservableObject {
     @Published var topic: String { didSet { defaults.set(topic, forKey: "topic") } }
     @Published var leavingRule: LeavingRule { didSet { save(leavingRule, "leavingRule") } }
     @Published var leavingIdleSeconds: Int { didSet { defaults.set(leavingIdleSeconds, forKey: "leavingIdleSeconds") } }
+    @Published var appearance: AppAppearance {
+        didSet { defaults.set(appearance.rawValue, forKey: "appearance"); applyAppearance() }
+    }
+    @Published var menuBarStyle: MenuBarStyle { didSet { defaults.set(menuBarStyle.rawValue, forKey: "menuBarStyle") } }
 
     private init() {
         setupCompleted = defaults.bool(forKey: "setupCompleted")
@@ -103,7 +108,14 @@ final class Preferences: ObservableObject {
         leavingIdleSeconds = defaults.object(forKey: "leavingIdleSeconds") as? Int ?? 30
         leavingRule = (defaults.data(forKey: "leavingRule")).flatMap { try? JSONDecoder().decode(LeavingRule.self, from: $0) }
             ?? LeavingRule()
+        appearance = AppAppearance(rawValue: defaults.string(forKey: "appearance") ?? "") ?? .system
+        menuBarStyle = MenuBarStyle(rawValue: defaults.string(forKey: "menuBarStyle") ?? "") ?? .filled
         defaults.set(topic, forKey: "topic")
+    }
+
+    /// Applica a tutta l'app l'aspetto scelto (Sistema = segue macOS).
+    func applyAppearance() {
+        NSApp?.appearance = appearance.nsAppearance
     }
 
     /// L'indirizzo del server in uso, senza "/" finale.

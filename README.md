@@ -3,6 +3,10 @@
 Approvazioni a mani libere e presenza per [Cocaine](https://github.com/Mattiakart/cocaine), con AirPods e Apple Watch.
 Progetto indipendente, non affiliato a Cocaine.
 
+## Autore
+
+Sviluppato da **gguidotz**: [github.com/GGuidotz/nod](https://github.com/GGuidotz/nod) · giulioguidotz@yahoo.com
+
 ## Installazione (per chi la usa)
 
 ```
@@ -22,7 +26,8 @@ Servono macOS 14+ e gli strumenti a riga di comando (`xcode-select --install`); 
 ./build.sh --install         # compila, firma, copia in /Applications e apre
 ```
 
-Il codice è stato scritto senza poterlo compilare (ambiente Linux): la prima build potrebbe segnalare errori da sistemare.
+Con Xcode installato, `build.sh` compila anche l'icona Liquid Glass (`Resources/Icon/Nod.icon`, formato Icon Composer);
+altrimenti usa l'icona classica (`Resources/Icon/AppIcon-1024.png`, generata da `tools/render-icon.py`).
 
 ## Pubblicare una versione
 

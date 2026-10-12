@@ -55,3 +55,18 @@ ntfy.esempio.it {
 
 Il token finisce nel Portachiavi del Mac e nei pulsanti delle notifiche (che passano solo dal tuo server). Per cambiarlo:
 `ntfy token remove`, poi `ntfy token add` e aggiorna Nod.
+
+## Se le notifiche non arrivano sul Watch
+
+Se le vedi nell'elenco dell'app ntfy ma non compaiono come avviso, i messaggi arrivano: manca la consegna push.
+
+1. **iPhone > Impostazioni > Notifiche > ntfy**: Consenti notifiche attivo, Banner, e Avvisi con priorità.
+2. **Full immersion**: nessuna attiva che blocchi ntfy (o aggiungi ntfy alle app consentite).
+3. **App Watch sull'iPhone > Notifiche > ntfy**: rispecchia gli avvisi dell'iPhone.
+4. **Prova con l'iPhone bloccato** e il Watch al polso, sbloccato: il Watch mostra le notifiche solo quando l'iPhone è
+   bloccato (se lo stai usando, l'avviso resta sull'iPhone).
+5. **Andata e ritorno**: Nod > Notifiche > *Invia prova*, poi tocca *Ricevuta*. Se Nod scrive "Risposta ricevuta dal Watch",
+   il percorso dei pulsanti funziona e resta solo da sistemare la visualizzazione (punti 1-4).
+6. Con un **server tuo**, senza `upstream-base-url` l'iPhone riceve le notifiche con molto ritardo.
+
+Le approvazioni e "Ti stai allontanando" partono con priorità massima (5); la prova con priorità alta (4).
