@@ -36,6 +36,9 @@ final class PresenceEngine: ObservableObject {
     @Published private(set) var log: [(date: Date, text: String)] = []
 
     weak var relay: NotificationRelay?
+    weak var reminders: ReminderRelay?
+    /// L'avviso di Promemoria di "Ti stai allontanando", da cancellare quando c'è una decisione.
+    private var leavingReminderID: String?
     private let prefs: Preferences
     private let head: HeadMotionMonitor
     private let cocaine: CocaineBridge
@@ -96,6 +99,9 @@ final class PresenceEngine: ObservableObject {
                                   message: L("Senza risposta tra %d min: %@.", minutes, fallback.title.lowercased()),
                                   buttons: buttons, lifetime: TimeInterval(minutes * 60), priority: 5)
         }
+        leavingReminderID = reminders?.alert(title: L("Ti stai allontanando"),
+                                             notes: L("Senza risposta tra %d min: %@.", minutes, fallback.title.lowercased()),
+                                             lifetime: TimeInterval(minutes * 60))
         timeoutTask?.cancel()
         timeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(minutes) * 60 * 1_000_000_000)
@@ -107,6 +113,8 @@ final class PresenceEngine: ObservableObject {
     func markHere(manual: Bool) {
         guard state != .here else { return }
         timeoutTask?.cancel()
+        reminders?.clear(leavingReminderID)
+        leavingReminderID = nil
         state = .here
         since = Date()
         note(manual ? L("Hai detto che sei al Mac.") : L("Sei tornato al Mac."))
@@ -119,6 +127,8 @@ final class PresenceEngine: ObservableObject {
     private func apply(_ action: LeavingAction, answered: Bool) {
         guard state == .leaving else { return }
         timeoutTask?.cancel()
+        reminders?.clear(leavingReminderID)
+        leavingReminderID = nil
         decision = action
         state = .away
         note(answered ? L("Hai scelto: %@.", action.title) : L("Nessuna risposta, regola: %@.", action.title))

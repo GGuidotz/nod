@@ -15,7 +15,8 @@ enum SetupStep: String, CaseIterable, Identifiable {
     /// La versione che ha introdotto il passaggio: dopo un aggiornamento compaiono solo quelli più nuovi di ciò che hai visto.
     var introducedIn: String {
         switch self {
-        case .notifications, .appearance: "0.3.0"
+        case .notifications: "0.3.2"
+        case .appearance: "0.3.0"
         default: "0.1.0"
         }
     }
@@ -91,7 +92,7 @@ struct SetupView: View {
         case .cocaine: CocaineStep(cocaine: model.cocaine)
         case .airpods: AirPodsStep(head: model.head, prefs: model.prefs)
         case .watch: WatchStep(watch: model.watch)
-        case .notifications: NotificationsStep(prefs: model.prefs, relay: model.relay)
+        case .notifications: NotificationsStep(prefs: model.prefs, relay: model.relay, reminders: model.reminders)
         case .presence: PresenceStep(prefs: model.prefs)
         case .appearance: AppearanceStep(prefs: model.prefs)
         case .done: DoneStep(model: model)
@@ -319,7 +320,7 @@ private struct WatchStep: View {
                             .foregroundStyle(isConfirmed(outcome) ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.orange))
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if watch.watchOnlyFailsFast { WatchTroubleshooting() }
+                    if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
                 }
             }
             .contentCard(padding: 22)
@@ -336,6 +337,7 @@ private struct WatchStep: View {
 private struct NotificationsStep: View {
     @ObservedObject var prefs: Preferences
     @ObservedObject var relay: NotificationRelay
+    @ObservedObject var reminders: ReminderRelay
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -353,6 +355,11 @@ private struct NotificationsStep: View {
                 NtfyAlertChecklist(relay: relay)
                     .contentCard()
             }
+            VStack(alignment: .leading, spacing: 8) {
+                Label(L("Promemoria: l'avviso nativo, senza app"), systemImage: "checklist").font(.headline)
+                RemindersControls(reminders: reminders, prefs: prefs)
+            }
+            .contentCard()
             Form { ServerSettingsSection(prefs: prefs, relay: relay) }
                 .formStyle(.grouped)
                 .scrollContentBackground(.hidden)
@@ -364,6 +371,7 @@ private struct NotificationsStep: View {
 /// Se i messaggi arrivano nell'app ntfy ma non come avviso: cosa controllare sull'iPhone e sul Watch. Anche in Diagnostica.
 struct NtfyAlertChecklist: View {
     @ObservedObject var relay: NotificationRelay
+    @AppStorage("check.reinstall") private var reinstall = false
     @AppStorage("check.allowed") private var allowed = false
     @AppStorage("check.delivery") private var delivery = false
     @AppStorage("check.focus") private var focus = false
@@ -374,6 +382,9 @@ struct NtfyAlertChecklist: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(.headline)
+            ChecklistRow(text: L("Disinstalla e reinstalla l'app ntfy"),
+                         detail: L("Al primo avvio consenti le notifiche, poi aggiungi di nuovo il topic: così l'iPhone si registra di nuovo per il push."),
+                         done: $reinstall)
             ChecklistRow(text: L("iPhone > Impostazioni > Notifiche > ntfy"),
                          detail: L("Consenti notifiche, Banner, Avvisi con priorità."), done: $allowed)
             ChecklistRow(text: L("Consegna immediata, non Riepilogo programmato"),

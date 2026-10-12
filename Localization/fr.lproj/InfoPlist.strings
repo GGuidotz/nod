@@ -1,2 +1,4 @@
 "NSMotionUsageDescription" = "Nod lit les mouvements de la tête de vos AirPods pour reconnaître quand vous hochez, secouez la tête ou vous éloignez.";
 "NSAppleEventsUsageDescription" = "Nod ouvre Terminal pour exécuter la commande de mise à jour quand vous le demandez.";
+"NSRemindersFullAccessUsageDescription" = "Nod crée les alertes pour la Watch dans la liste \"Nod\" de Rappels et les supprime après votre réponse.";
+"NSRemindersUsageDescription" = "Nod crée les alertes pour la Watch dans la liste \"Nod\" de Rappels et les supprime après votre réponse.";

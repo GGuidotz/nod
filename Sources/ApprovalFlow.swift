@@ -1,8 +1,9 @@
 // Il flusso di un'approvazione. Sceglie da solo come chiedertela:
 //   AirPods indossate → suono (e riassunto parlato, se lo vuoi), 15 s per un gesto: annuisci → conferma sul Watch,
 //                       scuoti → Nega subito (negare non esegue nulla).
-//   Senza AirPods     → subito la richiesta sul Watch (doppio clic = Approva, Nega = Nega) e insieme la notifica sul Watch
-//                       con Approva / Nega. La prima risposta vince e chiude l'altra.
+//   Senza AirPods     → subito la richiesta di sistema (Touch ID o doppio clic sul Watch; Nega = Nega) e insieme la
+//                       notifica ntfy con Approva / Nega e, se attivo, l'avviso di Promemoria. La prima risposta vince
+//                       e chiude le altre.
 // "Consenti sempre" non c'è mai. Finché le richieste vere dell'AI non sono collegate a Cocaine gira in modalità prova.
 
 import AppKit
@@ -33,20 +34,24 @@ final class ApprovalFlow: ObservableObject {
     private let head: HeadMotionMonitor
     private let watch: WatchConfirmer
     private let relay: NotificationRelay
+    private let reminders: ReminderRelay
     private let prefs: Preferences
     private let speech = AVSpeechSynthesizer()
     private var windowTask: Task<Void, Never>?
     private var completion: ((Bool) -> Void)?
     /// Cambia a ogni richiesta: risposte tardive di una richiesta vecchia vengono ignorate.
     private var generation = 0
+    /// L'avviso di Promemoria della richiesta in corso, da cancellare alla fine.
+    private var reminderID: String?
 
     static let gestureWindow: TimeInterval = 15
-    static let watchWindow: TimeInterval = 120
+    static let watchWindow: TimeInterval = 300
 
-    init(head: HeadMotionMonitor, watch: WatchConfirmer, relay: NotificationRelay, prefs: Preferences) {
+    init(head: HeadMotionMonitor, watch: WatchConfirmer, relay: NotificationRelay, reminders: ReminderRelay, prefs: Preferences) {
         self.head = head
         self.watch = watch
         self.relay = relay
+        self.reminders = reminders
         self.prefs = prefs
     }
 
@@ -71,6 +76,8 @@ final class ApprovalFlow: ObservableObject {
         windowTask?.cancel()
         head.onGesture = nil
         watch.cancel()
+        reminders.clear(reminderID)
+        reminderID = nil
         completion = nil
         phase = .idle
     }
@@ -118,6 +125,9 @@ final class ApprovalFlow: ObservableObject {
             }
             Task { _ = await relay.send(title: L("Nod: approvazione"), message: summary, buttons: [approve, deny],
                                         lifetime: Self.watchWindow, priority: 5) }
+            reminderID = reminders.alert(title: L("Nod: approvazione"),
+                                         notes: summary + "\n" + L("Approva con Touch ID al Mac o con la notifica ntfy."),
+                                         lifetime: Self.watchWindow)
         }
         Task {
             let outcome = await watch.confirm(L("approvare: %@", summary))
@@ -150,6 +160,8 @@ final class ApprovalFlow: ObservableObject {
 
     private func finish(_ final: Phase, allow: Bool?, generation gen: Int) {
         guard gen == generation else { return }
+        reminders.clear(reminderID)
+        reminderID = nil
         phase = final
         if let allow { completion?(allow) }
         completion = nil

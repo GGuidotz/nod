@@ -39,6 +39,7 @@ final class AppModel: ObservableObject {
     let head: HeadMotionMonitor
     let watch: WatchConfirmer
     let relay: NotificationRelay
+    let reminders: ReminderRelay
     let presence: PresenceEngine
     let approvals: ApprovalFlow
     let updater: Updater
@@ -48,16 +49,18 @@ final class AppModel: ObservableObject {
 
     private init() {
         let prefs = Preferences.shared, cocaine = CocaineBridge(), head = HeadMotionMonitor(), watch = WatchConfirmer(prefs: prefs)
-        let relay = NotificationRelay(prefs: prefs)
+        let relay = NotificationRelay(prefs: prefs), reminders = ReminderRelay(prefs: prefs)
         let presence = PresenceEngine(prefs: prefs, head: head, cocaine: cocaine)
         presence.relay = relay
+        presence.reminders = reminders
         self.prefs = prefs
         self.cocaine = cocaine
         self.head = head
         self.watch = watch
         self.relay = relay
+        self.reminders = reminders
         self.presence = presence
-        approvals = ApprovalFlow(head: head, watch: watch, relay: relay, prefs: prefs)
+        approvals = ApprovalFlow(head: head, watch: watch, relay: relay, reminders: reminders, prefs: prefs)
         updater = Updater(prefs: prefs)
     }
 
@@ -69,6 +72,7 @@ final class AppModel: ObservableObject {
              + "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
         prefs.applyAppearance()
         prefs.applyDockIcon()
+        prefs.migrateClassicDockIcon()
         updater.start()
         cocaine.refresh()
         watch.refresh()

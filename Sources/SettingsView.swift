@@ -15,7 +15,7 @@ struct SettingsView: View {
                 .tabItem { Label(L("Generale"), systemImage: "gearshape") }
             AppearanceSettings(prefs: model.prefs)
                 .tabItem { Label(L("Aspetto"), systemImage: "paintpalette") }
-            NotificationSettings(prefs: model.prefs, relay: model.relay)
+            NotificationSettings(prefs: model.prefs, relay: model.relay, reminders: model.reminders)
                 .tabItem { Label(L("Notifiche"), systemImage: "applewatch.radiowaves.left.and.right") }
             UpdatesSettings(updater: model.updater, prefs: model.prefs)
                 .tabItem { Label(L("Aggiornamenti"), systemImage: "arrow.down.circle") }
@@ -79,6 +79,7 @@ private struct AppearanceSettings: View {
 private struct NotificationSettings: View {
     @ObservedObject var prefs: Preferences
     @ObservedObject var relay: NotificationRelay
+    @ObservedObject var reminders: ReminderRelay
 
     var body: some View {
         Form {
@@ -95,9 +96,12 @@ private struct NotificationSettings: View {
             } footer: {
                 Text(L("Un nuovo topic scollega l'iPhone: dovrai iscriverti di nuovo in ntfy.")).foregroundStyle(.secondary)
             }
+            Section(L("Promemoria")) {
+                RemindersControls(reminders: reminders, prefs: prefs)
+            }
         }
         .formStyle(.grouped)
-        .frame(height: 400)
+        .frame(height: 560)
     }
 }
 

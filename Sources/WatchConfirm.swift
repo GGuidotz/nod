@@ -52,6 +52,11 @@ final class WatchConfirmer: ObservableObject {
     /// Esito della prova tramite osascript (processo firmato Apple).
     @Published private(set) var probeResult: String?
     @Published private(set) var isProbing = false
+    /// Anche osascript (firmato Apple) è stato rifiutato subito: il limite è di macOS su questo Mac, non della firma di Nod.
+    /// Resta salvato fra un avvio e l'altro, finché una nuova prova non dice altro.
+    @Published private(set) var probeRefusedFast = UserDefaults.standard.bool(forKey: "watch.probeRefusedFast") {
+        didSet { UserDefaults.standard.set(probeRefusedFast, forKey: "watch.probeRefusedFast") }
+    }
     /// L'ordine dei metodi che Nod proverà adesso (aggiornato da `refresh`).
     @Published private(set) var currentChain: [WatchMethod] = []
 
@@ -97,6 +102,12 @@ final class WatchConfirmer: ObservableObject {
         else { return false }
         return last.seconds < 1.5 && last.code.map { Self.fastFailCodes.contains($0) } == true
     }
+
+    /// Il doppio clic sul Watch non è disponibile per nessuna app su questo Mac (Nod e osascript rifiutati subito).
+    /// Basta la prova da osascript: è una richiesta solo-Watch da un processo firmato Apple.
+    var systemRefusesWatch: Bool { probeRefusedFast }
+    /// Mostrare la lista di controllo del Watch.
+    var needsTroubleshooting: Bool { watchOnlyFailsFast || systemRefusesWatch }
 
     /// Chiede la conferma sul Watch. `reason` completa la frase di sistema "Nod sta cercando di …".
     func confirm(_ reason: String) async -> Outcome {
@@ -157,6 +168,7 @@ final class WatchConfirmer: ObservableObject {
         probeResult = nil
         diag(.watch, "osascript probe started (\(method.rawValue), policy \(policy.rawValue))")
         let reason = L("provare il Watch da osascript")
+        let start = Date()
         let output = await Task.detached { () -> String in
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
@@ -170,6 +182,7 @@ final class WatchConfirmer: ObservableObject {
             return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
         }.value
         probeResult = output.isEmpty ? L("Nessuna risposta da osascript.") : output
+        probeRefusedFast = Date().timeIntervalSince(start) < 3 && output.contains("error -1")
         isProbing = false
         diag(.watch, "osascript probe: \(output)")
     }

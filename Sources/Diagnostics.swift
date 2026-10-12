@@ -7,7 +7,7 @@ import Foundation
 import LocalAuthentication
 
 enum DiagCategory: String {
-    case app, watch, ntfy, presence, airpods, cocaine, update, icon
+    case app, watch, ntfy, reminders, presence, airpods, cocaine, update, icon
 }
 
 @MainActor
@@ -163,7 +163,7 @@ enum DiagnosticsReport {
         row("Chain", model.watch.chain().map(\.rawValue).joined(separator: " → "))
         row("Policy raw values", WatchMethod.concrete.map { "\($0.rawValue)=\($0.policy.map { String($0.rawValue) } ?? "-")" }
             .joined(separator: ", "))
-        row("osascript probe", model.watch.probeResult ?? "not run")
+        row("osascript probe", model.watch.probeResult ?? (model.watch.probeRefusedFast ? "refused instantly (earlier run)" : "not run"))
         for method in WatchMethod.concrete {
             guard let policy = method.policy else { row(method.rawValue, "not available on this macOS"); continue }
             var error: NSError?
@@ -182,6 +182,13 @@ enum DiagnosticsReport {
         row("Last publish", model.relay.lastPublish ?? "-")
         row("Server check", model.relay.lastServerCheck ?? "-")
         row("Last round trip", model.relay.lastRoundTrip.map(DiagnosticsLog.stamp) ?? "-")
+        row("Last late reply", model.relay.lastLateReply ?? "-")
+
+        section("Reminders (iCloud)")
+        row("Alerts", model.prefs.remindersEnabled ? "on" : "off")
+        row("Access", model.reminders.access.rawValue)
+        row("List", model.reminders.listStatus ?? "-")
+        row("Last alert", model.reminders.lastAlert ?? "-")
 
         section("Presence")
         row("State", model.presence.state.rawValue)
@@ -199,7 +206,11 @@ enum DiagnosticsReport {
     @MainActor
     private static func summary(model: AppModel) -> [String] {
         var findings: [String] = []
-        if model.watch.watchOnlyFailsFast {
+        if model.watch.systemRefusesWatch {
+            findings.append("Apple Watch: system-level. macOS refuses Watch approval for every process, Apple-signed osascript included, "
+                            + "so Nod's signature is not the cause. Approvals use Touch ID at the Mac; away from the Mac, ntfy and "
+                            + "Reminders alerts.")
+        } else if model.watch.watchOnlyFailsFast {
             findings.append("Apple Watch: watch-only policies (companion/watch) fail instantly, so macOS does not forward the request to the "
                             + "Watch. Check System Settings > Touch ID & Password > Apple Watch, wrist detection and Bluetooth, then run "
                             + "Diagnostics > Test the Watch via osascript. Touch ID keeps working meanwhile.")
@@ -216,6 +227,16 @@ enum DiagnosticsReport {
             }
         }
         if !model.relay.isListening { findings.append("ntfy: not listening for replies.") }
+        if let late = model.relay.lastLateReply {
+            findings.append("ntfy: a button reply reached the Mac after its expiry (\(late)): buttons work, the alert arrived late or "
+                            + "was only seen in the app.")
+        }
+        if model.prefs.remindersEnabled, model.reminders.access != .granted {
+            findings.append("Reminders: alerts are on but access is \(model.reminders.access.rawValue).")
+        }
+        if model.reminders.listIsLocal {
+            findings.append("Reminders: the \"Nod\" list is on this Mac only, so the iPhone and Watch never see it.")
+        }
         let icon = IconHealth.shared
         if icon.fallbackActive {
             findings.append("Icon: the bundle icon looks empty (coverage \(icon.coverage.map(IconMetrics.percent) ?? "?")): "

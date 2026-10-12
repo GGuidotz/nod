@@ -37,6 +37,10 @@
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Nod apre il Terminale per eseguire il comando di aggiornamento quando glielo chiedi.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Nod crea nella lista "Nod" di Promemoria gli avvisi per il Watch e li cancella dopo la tua risposta.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Nod crea nella lista "Nod" di Promemoria gli avvisi per il Watch e li cancella dopo la tua risposta.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Nod legge il movimento della testa dalle AirPods per riconoscere quando annuisci, scuoti la testa o ti allontani.</string>
 </dict>

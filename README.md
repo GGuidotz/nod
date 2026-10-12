@@ -9,6 +9,7 @@ Progetto indipendente, non affiliato a Cocaine.
 - **Presenza**: quando ti allontani il Watch ti chiede se tenere sveglio il Mac; senza risposta decide la tua regola.
 - **Lingue**: italiano, inglese, francese, spagnolo (Impostazioni > Aspetto > Lingua).
 - **Aggiornamenti**: controllo automatico, novità della nuova versione e comando pronto (anche "Aggiorna nel Terminale").
+- **Avvisi sul Watch**: notifica ntfy con pulsanti e, se vuoi, avviso nativo di Promemoria (iCloud), senza app da installare.
 - **Diagnostica**: report automatico senza segreti, da salvare e allegare a una segnalazione.
 
 ## Autore
@@ -88,6 +89,7 @@ Licenza MIT.
 | `Sources/PresenceEngine.swift` | In uscita / lontano / al Mac, proposta sul Watch, regola senza risposta |
 | `Sources/Preferences.swift` | Preferenze e regola di presenza (app, giorni, fascia oraria) |
 | `Sources/NotificationRelay.swift` | ntfy: notifiche con pulsanti, token monouso, ascolto delle risposte |
+| `Sources/ReminderRelay.swift` | Avvisi con Promemoria (lista "Nod" di iCloud), cancellati dopo la risposta |
 | `Sources/HeadMotion.swift` | AirPods: indossate, assetto, annuire/scuotere, camminata |
 | `Sources/WatchConfirm.swift` | Conferma col tasto laterale del Watch (catena di politiche, prova tramite osascript) |
 | `Sources/IconHealth.swift`, `IconMetrics.swift` | Controllo dell'icona del Dock all'avvio e in `build.sh` (`tools/icon-check`) |

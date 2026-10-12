@@ -1,6 +1,7 @@
 /* Nod: en. Generato da tools/translations.py: modifica lì. */
 
 "%@: riconosciuto." = "%@: recognized.";
+"Accesso a Promemoria negato: Impostazioni di Sistema > Privacy e sicurezza > Promemoria." = "Reminders access denied: System Settings > Privacy & Security > Reminders.";
 "Adesso" = "Now";
 "Aggiorna a Nod %@ nel Terminale" = "Update to Nod %@ in Terminal";
 "Aggiorna nel Terminale" = "Update in Terminal";
@@ -13,6 +14,7 @@
 "AirPods non usate" = "AirPods not used";
 "AirPods pronte" = "AirPods ready";
 "Al Mac" = "At the Mac";
+"Al primo avvio consenti le notifiche, poi aggiungi di nuovo il topic: così l'iPhone si registra di nuovo per il push." = "On first launch allow notifications, then add the topic again: this registers the iPhone for push again.";
 "Al prossimo passo macOS ti chiede il permesso Movimento e fitness. I dati restano su questo Mac." = "Next, macOS asks for the Motion & Fitness permission. The data stays on this Mac.";
 "All'avvio Nod misura l'icona che il Dock disegna: se è vuota mette quella classica. Con questa opzione la classica resta sempre." = "At launch Nod measures the icon the Dock draws: if it is blank, it switches to the classic one. With this option the classic icon is always used.";
 "Alle" = "To";
@@ -30,6 +32,7 @@
 "Apple Watch" = "Apple Watch";
 "Apple Watch non disponibile." = "Apple Watch not available.";
 "Approva" = "Approve";
+"Approva con Touch ID al Mac o con la notifica ntfy." = "Approve with Touch ID at the Mac or with the ntfy notification.";
 "Approva l'AI con un cenno. Lascia la scrivania senza pensarci." = "Approve the AI with a nod. Leave your desk without a second thought.";
 "Approvata %@: %@" = "Approved %@: %@";
 "Approvazioni" = "Approvals";
@@ -43,6 +46,7 @@
 "Aspetto" = "Appearance";
 "Attiva Impostazioni di Sistema > Touch ID e password > Apple Watch, poi riprova." = "Turn on System Settings > Touch ID & Password > Apple Watch, then try again.";
 "Automatico" = "Automatic";
+"Avvisi anche con Promemoria" = "Also alert with Reminders";
 "Barra dei menu" = "Menu bar";
 "Blocca l'iPhone e tieni il Watch al polso" = "Lock the iPhone and keep the Watch on your wrist";
 "Bluetooth e Wi-Fi accesi sul Mac; Mac e Watch con lo stesso Apple ID." = "Bluetooth and Wi-Fi on for the Mac; Mac and Watch on the same Apple Account.";
@@ -68,6 +72,7 @@
 "Configura più tardi" = "Set Up Later";
 "Configurazione" = "Setup";
 "Consegna immediata, non Riepilogo programmato" = "Immediate Delivery, not Scheduled Summary";
+"Consenti l'accesso a Promemoria" = "Allow Reminders access";
 "Consenti notifiche, Banner, Avvisi con priorità." = "Allow Notifications, Banners, Time Sensitive Notifications.";
 "Continua" = "Continue";
 "Controlla aggiornamenti…" = "Check for Updates…";
@@ -88,6 +93,7 @@
 "Dalle" = "From";
 "Diagnostica" = "Diagnostics";
 "Diagnostica di Nod" = "Nod Diagnostics";
+"Disinstalla e reinstalla l'app ntfy" = "Delete and reinstall the ntfy app";
 "Disponibile Nod %@" = "Nod %@ is available";
 "Disponibile la versione %@" = "Version %@ is available";
 "Dispositivi" = "Devices";
@@ -117,6 +123,7 @@
 "Il server ha risposto %d." = "The server replied %d.";
 "Il server non ha il messaggio (HTTP %d)." = "The server doesn't have the message (HTTP %d).";
 "Impostazioni di Sistema > Touch ID e password: \"Usa Apple Watch per sbloccare app e Mac\" attivo." = "System Settings > Touch ID & Password: \"Use Apple Watch to unlock applications and your Mac\" on.";
+"Impostazioni di Sistema > Touch ID e password: spegni e riaccendi l'opzione Apple Watch, poi riavvia il Mac e il Watch." = "System Settings > Touch ID & Password: turn the Apple Watch option off and on again, then restart the Mac and the Watch.";
 "Impostazioni…" = "Settings…";
 "In arrivo" = "Coming soon";
 "In ascolto" = "Listening";
@@ -133,6 +140,7 @@
 "Inizia a usare Nod" = "Start Using Nod";
 "Installato" = "Installed";
 "Intanto Nod usa Touch ID: al Mac approvi col dito." = "Meanwhile Nod uses Touch ID: at the Mac you approve with your finger.";
+"Intanto approvi con Touch ID al Mac e, da lontano, con la notifica o l'avviso di Promemoria." = "Meanwhile you approve with Touch ID at the Mac and, away from it, with the notification or the Reminders alert.";
 "Invia notifica di prova" = "Send Test Notification";
 "Invia per email" = "Send by Email";
 "Invia prova" = "Send Test";
@@ -142,6 +150,7 @@
 "Le richieste vere dell'AI non sono ancora collegate a Cocaine: quando lo saranno arriveranno qui. Intanto puoi provare il flusso completo." = "Real AI requests aren't connected to Cocaine yet: once they are, they'll show up here. Meanwhile you can try the full flow.";
 "Leggi ad alta voce le richieste di approvazione" = "Read approval requests aloud";
 "Lingua" = "Language";
+"Lista" = "List";
 "Lontano" = "Away";
 "Mac sveglio" = "Mac awake";
 "Mai" = "Never";
@@ -155,6 +164,7 @@
 "Nell'app tocca +, attiva \"Use another server\" con l'indirizzo del tuo server, e incolla questo nome di topic:" = "In the app tap +, turn on \"Use another server\" with your server address, and paste this topic name:";
 "Nella tua fascia oraria" = "Within your hours";
 "Nessun Apple Watch sbloccato vicino al Mac." = "No unlocked Apple Watch near the Mac.";
+"Nessun account iCloud con Promemoria su questo Mac." = "No iCloud account with Reminders on this Mac.";
 "Nessuna Full immersion che blocchi ntfy" = "No Focus blocking ntfy";
 "Nessuna richiesta in attesa." = "No pending requests.";
 "Nessuna risposta da osascript." = "No answer from osascript.";
@@ -163,6 +173,7 @@
 "Niente" = "Nothing";
 "No" = "No";
 "Nod" = "Nod";
+"Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Non ha pulsanti: rispondi con Touch ID al Mac o con la notifica ntfy." = "Nod creates a reminder in the iCloud \"Nod\" list: the alert reaches iPhone and Watch with no app to install, usually within a minute. It has no buttons: answer with Touch ID at the Mac or with the ntfy notification.";
 "Nod in ascolto delle risposte" = "Nod listening for replies";
 "Nod lavora con Cocaine, le tue AirPods e il tuo Apple Watch. Ogni passaggio si prova subito." = "Nod works with Cocaine, your AirPods and your Apple Watch. You try every step right away.";
 "Nod legge il movimento della testa per capire quando annuisci, scuoti la testa o ti alzi e cammini. Sono facoltative: senza, basta il Watch." = "Nod reads head motion to tell when you nod, shake your head, or get up and walk. They're optional: without them, the Watch is enough.";
@@ -210,9 +221,14 @@
 "Presenza" = "Presence";
 "Presenza: %@" = "Presence: %@";
 "Progetto indipendente, non affiliato a Cocaine." = "Independent project, not affiliated with Cocaine.";
+"Promemoria" = "Reminders";
+"Promemoria creato: l'avviso arriva sul Watch appena iCloud lo sincronizza." = "Reminder created: the alert reaches the Watch as soon as iCloud syncs it.";
+"Promemoria non creato: %@" = "Reminder not created: %@";
+"Promemoria: l'avviso nativo, senza app" = "Reminders: the native alert, no app needed";
 "Pronto" = "Ready";
 "Pronto per le conferme" = "Ready for confirmations";
 "Prova" = "Try It";
+"Prova Promemoria" = "Test Reminders";
 "Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema." = "Try an Apple app, for example Passwords: if the Watch doesn't offer the double-click there either, it's a system setting.";
 "Prova il Watch tramite osascript" = "Test the Watch via osascript";
 "Prova invio ntfy" = "Test ntfy Delivery";
@@ -221,6 +237,7 @@
 "Prova un'approvazione" = "Try an Approval";
 "Prova: Claude vuole eseguire npm test nel progetto di esempio." = "Test: Claude wants to run npm test in the sample project.";
 "Prova: annuisci due o tre volte, poi scuoti la testa." = "Try it: nod two or three times, then shake your head.";
+"Puoi ancora provare:" = "You can still try:";
 "Quando arriva fino al Mac si spunta da sola." = "It ticks itself once it reaches the Mac.";
 "Quando ti allontani" = "When you step away";
 "Report" = "Report";
@@ -232,7 +249,7 @@
 "Richieste dell'AI" = "AI requests";
 "Ripeti configurazione…" = "Run Setup Again…";
 "Risposta arrivata alle %@." = "Reply arrived at %@.";
-"Risposta arrivata dopo la scadenza: ignorata." = "Reply arrived after it expired: ignored.";
+"Risposta arrivata dopo la scadenza (dopo %d min): ignorata. I pulsanti arrivano al Mac, ma l'avviso è arrivato tardi o l'hai visto solo aprendo l'app." = "Reply arrived after expiry (after %d min): ignored. The buttons reach the Mac, but the alert came late or you only saw it by opening the app.";
 "Risposta ricevuta dal Watch." = "Reply received from the Watch.";
 "Risposte" = "Replies";
 "Risultava vuota: Nod mostra da solo l'icona classica." = "It looked blank: Nod shows the classic icon by itself.";
@@ -246,11 +263,13 @@
 "Se compare solo aprendo l'app, il push non arriva: in ntfy togli e aggiungi di nuovo il topic, poi attiva Aggiornamento app in background per ntfy." = "If it only shows up when you open the app, push isn't arriving: in ntfy remove and re-add the topic, then turn on Background App Refresh for ntfy.";
 "Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)." = "If the server check finds the message but no alert appears, the path to the server works: what's left is delivery on the iPhone (list above).";
 "Se ti allontani con %@ aperto, nei giorni scelti tra %@ e %@, e non rispondi entro %d min, Cocaine tiene sveglio il Mac. Altrimenti non succede niente. Quando torni, Cocaine torna com'era." = "If you step away with %@ open, on the chosen days between %@ and %@, and don't answer within %d min, Cocaine keeps the Mac awake. Otherwise nothing happens. When you're back, Cocaine returns to how it was.";
+"Se vedi questo avviso sul Watch, Promemoria funziona." = "If you see this alert on the Watch, Reminders works.";
 "Sei tornato al Mac." = "You're back at the Mac.";
 "Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. " = "Without AirPods: double-click to approve, Deny in the request or the Deny button of the notification on the Watch. ";
 "Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare." = "Without AirPods: double-click to approve, Deny or the notification to refuse.";
 "Senza app o giorni scelti, quando non rispondi non succede niente." = "With no apps or days chosen, nothing happens when you don't answer.";
 "Senza risposta tra %d min: %@." = "No answer in %d min: %@.";
+"Serve l'accesso a Promemoria." = "Reminders access is needed.";
 "Server" = "Server";
 "Server delle notifiche" = "Notification server";
 "Server mio" = "My own server";
@@ -263,6 +282,7 @@
 "Stessa schermata: con il riepilogo gli avvisi arrivano solo agli orari del riepilogo." = "Same screen: with the summary, alerts only arrive at the summary times.";
 "Sto uscendo…" = "I'm Leaving…";
 "Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita." = "On ntfy.sh the service operator can read notification text: Nod keeps it minimal. Your own server avoids this.";
+"Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple." = "On this Mac the Watch double-click isn't available: macOS refuses it to every app, Apple's included.";
 "Sviluppato da %@" = "Developed by %@";
 "Sì" = "Yes";
 "Tema" = "Theme";
@@ -280,6 +300,7 @@
 "Tu" = "You";
 "Tutto pronto" = "All set";
 "Ultimi eventi" = "Recent events";
+"Ultimo avviso" = "Last alert";
 "Ultimo controllo" = "Last check";
 "Ultimo gesto: %@, alle %@" = "Last gesture: %@, at %@";
 "Ultimo invio" = "Last delivery";

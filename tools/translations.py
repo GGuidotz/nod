@@ -228,7 +228,6 @@ T = {
 "Richieste dell'AI": ("AI requests", "Demandes de l'IA", "Solicitudes de la IA"),
 "Ripeti configurazione…": ("Run Setup Again…", "Refaire la configuration…", "Repetir configuración…"),
 "Risposta arrivata alle %@.": ("Reply arrived at %@.", "Réponse arrivée à %@.", "Respuesta recibida a las %@."),
-"Risposta arrivata dopo la scadenza: ignorata.": ("Reply arrived after it expired: ignored.", "Réponse arrivée après expiration : ignorée.", "Respuesta recibida tras caducar: ignorada."),
 "Risposta ricevuta dal Watch.": ("Reply received from the Watch.", "Réponse reçue de la Watch.", "Respuesta recibida del Watch."),
 "Risposte": ("Replies", "Réponses", "Respuestas"),
 "Salvato: %@": ("Saved: %@", "Enregistré : %@", "Guardado: %@"),
@@ -365,6 +364,57 @@ T = {
      "macOS no envía la solicitud al Watch. Comprueba:"),
 "osascript (firmato Apple)": ("osascript (Apple-signed)", "osascript (signé par Apple)", "osascript (firmado por Apple)"),
 "provare il Watch da osascript": ("test the Watch from osascript", "tester la Watch depuis osascript", "probar el Watch desde osascript"),
+"Accesso a Promemoria negato: Impostazioni di Sistema > Privacy e sicurezza > Promemoria.":
+    ("Reminders access denied: System Settings > Privacy & Security > Reminders.",
+     "Accès à Rappels refusé : Réglages Système > Confidentialité et sécurité > Rappels.",
+     "Acceso a Recordatorios denegado: Ajustes del Sistema > Privacidad y seguridad > Recordatorios."),
+"Al primo avvio consenti le notifiche, poi aggiungi di nuovo il topic: così l'iPhone si registra di nuovo per il push.":
+    ("On first launch allow notifications, then add the topic again: this registers the iPhone for push again.",
+     "Au premier lancement, autorisez les notifications, puis ajoutez de nouveau le topic : l'iPhone se réinscrit ainsi au push.",
+     "En el primer inicio permite las notificaciones y vuelve a añadir el topic: así el iPhone se registra de nuevo para el push."),
+"Approva con Touch ID al Mac o con la notifica ntfy.":
+    ("Approve with Touch ID at the Mac or with the ntfy notification.", "Approuvez avec Touch ID au Mac ou avec la notification ntfy.",
+     "Aprueba con Touch ID en el Mac o con la notificación de ntfy."),
+"Avvisi anche con Promemoria": ("Also alert with Reminders", "Alertes aussi avec Rappels", "Avisos también con Recordatorios"),
+"Consenti l'accesso a Promemoria": ("Allow Reminders access", "Autoriser l'accès à Rappels", "Permitir acceso a Recordatorios"),
+"Disinstalla e reinstalla l'app ntfy": ("Delete and reinstall the ntfy app", "Supprimez et réinstallez l'app ntfy", "Elimina y vuelve a instalar la app ntfy"),
+"Impostazioni di Sistema > Touch ID e password: spegni e riaccendi l'opzione Apple Watch, poi riavvia il Mac e il Watch.":
+    ("System Settings > Touch ID & Password: turn the Apple Watch option off and on again, then restart the Mac and the Watch.",
+     "Réglages Système > Touch ID et mot de passe : désactivez puis réactivez l'option Apple Watch, puis redémarrez le Mac et la Watch.",
+     "Ajustes del Sistema > Touch ID y contraseña: desactiva y vuelve a activar la opción Apple Watch, luego reinicia el Mac y el Watch."),
+"Intanto approvi con Touch ID al Mac e, da lontano, con la notifica o l'avviso di Promemoria.":
+    ("Meanwhile you approve with Touch ID at the Mac and, away from it, with the notification or the Reminders alert.",
+     "En attendant, vous approuvez avec Touch ID au Mac et, à distance, avec la notification ou l'alerte de Rappels.",
+     "Mientras tanto apruebas con Touch ID en el Mac y, a distancia, con la notificación o el aviso de Recordatorios."),
+"Lista": ("List", "Liste", "Lista"),
+"Nessun account iCloud con Promemoria su questo Mac.":
+    ("No iCloud account with Reminders on this Mac.", "Aucun compte iCloud avec Rappels sur ce Mac.", "No hay ninguna cuenta de iCloud con Recordatorios en este Mac."),
+"Nod crea un promemoria nella lista \\\"Nod\\\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Non ha pulsanti: rispondi con Touch ID al Mac o con la notifica ntfy.":
+    ("Nod creates a reminder in the iCloud \\\"Nod\\\" list: the alert reaches iPhone and Watch with no app to install, usually within a minute. It has no buttons: answer with Touch ID at the Mac or with the ntfy notification.",
+     "Nod crée un rappel dans la liste iCloud \\\"Nod\\\" : l'alerte arrive sur l'iPhone et la Watch sans app à installer, généralement en moins d'une minute. Elle n'a pas de boutons : répondez avec Touch ID au Mac ou avec la notification ntfy.",
+     "Nod crea un recordatorio en la lista \\\"Nod\\\" de iCloud: el aviso llega al iPhone y al Watch sin instalar apps, normalmente en menos de un minuto. No tiene botones: responde con Touch ID en el Mac o con la notificación de ntfy."),
+"Promemoria": ("Reminders", "Rappels", "Recordatorios"),
+"Promemoria creato: l'avviso arriva sul Watch appena iCloud lo sincronizza.":
+    ("Reminder created: the alert reaches the Watch as soon as iCloud syncs it.",
+     "Rappel créé : l'alerte arrive sur la Watch dès qu'iCloud le synchronise.",
+     "Recordatorio creado: el aviso llega al Watch en cuanto iCloud lo sincroniza."),
+"Promemoria non creato: %@": ("Reminder not created: %@", "Rappel non créé : %@", "Recordatorio no creado: %@"),
+"Promemoria: l'avviso nativo, senza app": ("Reminders: the native alert, no app needed", "Rappels : l'alerte native, sans app", "Recordatorios: el aviso nativo, sin apps"),
+"Prova Promemoria": ("Test Reminders", "Tester Rappels", "Probar Recordatorios"),
+"Puoi ancora provare:": ("You can still try:", "Vous pouvez encore essayer :", "Todavía puedes probar:"),
+"Risposta arrivata dopo la scadenza (dopo %d min): ignorata. I pulsanti arrivano al Mac, ma l'avviso è arrivato tardi o l'hai visto solo aprendo l'app.":
+    ("Reply arrived after expiry (after %d min): ignored. The buttons reach the Mac, but the alert came late or you only saw it by opening the app.",
+     "Réponse arrivée après l'expiration (après %d min) : ignorée. Les boutons arrivent au Mac, mais l'alerte est arrivée tard ou vous ne l'avez vue qu'en ouvrant l'app.",
+     "Respuesta recibida después de caducar (tras %d min): ignorada. Los botones llegan al Mac, pero el aviso llegó tarde o solo lo viste al abrir la app."),
+"Se vedi questo avviso sul Watch, Promemoria funziona.":
+    ("If you see this alert on the Watch, Reminders works.", "Si vous voyez cette alerte sur la Watch, Rappels fonctionne.",
+     "Si ves este aviso en el Watch, Recordatorios funciona."),
+"Serve l'accesso a Promemoria.": ("Reminders access is needed.", "L'accès à Rappels est nécessaire.", "Se necesita acceso a Recordatorios."),
+"Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple.":
+    ("On this Mac the Watch double-click isn't available: macOS refuses it to every app, Apple's included.",
+     "Sur ce Mac, le double-clic sur la Watch n'est pas disponible : macOS le refuse à toutes les apps, y compris celles d'Apple.",
+     "En este Mac el doble clic en el Watch no está disponible: macOS lo rechaza a todas las apps, incluidas las de Apple."),
+"Ultimo avviso": ("Last alert", "Dernière alerte", "Último aviso"),
 }
 
 INFOPLIST = {
@@ -378,6 +428,13 @@ APPLE_EVENTS = {
     "fr": "Nod ouvre Terminal pour exécuter la commande de mise à jour quand vous le demandez.",
     "es": "Nod abre Terminal para ejecutar el comando de actualización cuando se lo pides.",
     "it": "Nod apre il Terminale per eseguire il comando di aggiornamento quando glielo chiedi.",
+}
+
+REMINDERS = {
+    "en": "Nod creates Watch alerts in the \\\"Nod\\\" Reminders list and deletes them after you answer.",
+    "fr": "Nod crée les alertes pour la Watch dans la liste \\\"Nod\\\" de Rappels et les supprime après votre réponse.",
+    "es": "Nod crea los avisos para el Watch en la lista \\\"Nod\\\" de Recordatorios y los borra después de tu respuesta.",
+    "it": "Nod crea nella lista \\\"Nod\\\" di Promemoria gli avvisi per il Watch e li cancella dopo la tua risposta.",
 }
 
 if __name__ == "__main__":
@@ -396,4 +453,6 @@ if __name__ == "__main__":
         with open(os.path.join(root, f"{lang}.lproj", "InfoPlist.strings"), "w", encoding="utf-8") as f:
             f.write(f'"NSMotionUsageDescription" = "{INFOPLIST[lang]}";\n')
             f.write(f'"NSAppleEventsUsageDescription" = "{APPLE_EVENTS[lang]}";\n')
+            f.write(f'"NSRemindersFullAccessUsageDescription" = "{REMINDERS[lang]}";\n')
+            f.write(f'"NSRemindersUsageDescription" = "{REMINDERS[lang]}";\n')
     print(f"{len(T)} voci scritte")

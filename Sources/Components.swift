@@ -48,25 +48,71 @@ struct StatusRow: View {
     }
 }
 
-/// Cosa controllare quando le richieste solo-Watch falliscono subito: macOS non le manda al Watch.
+/// Cosa controllare quando le richieste solo-Watch falliscono subito: macOS non le manda al Watch. Con `systemLevel`
+/// (rifiutata anche a osascript, firmato Apple) il limite è del sistema: lo dice e propone l'unico rimedio noto.
 struct WatchTroubleshooting: View {
+    var systemLevel = false
+
     private var items: [String] {
-        [L("Impostazioni di Sistema > Touch ID e password: \"Usa Apple Watch per sbloccare app e Mac\" attivo."),
-         L("Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice)."),
-         L("Bluetooth e Wi-Fi accesi sul Mac; Mac e Watch con lo stesso Apple ID."),
-         L("Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema."),
-         L("Altrimenti Diagnostica > \"Prova il Watch tramite osascript\": se così funziona, il limite è la firma di Nod.")]
+        if systemLevel {
+            return [L("Impostazioni di Sistema > Touch ID e password: spegni e riaccendi l'opzione Apple Watch, poi riavvia il Mac e il Watch."),
+                    L("Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice).")]
+        }
+        return [L("Impostazioni di Sistema > Touch ID e password: \"Usa Apple Watch per sbloccare app e Mac\" attivo."),
+                L("Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice)."),
+                L("Bluetooth e Wi-Fi accesi sul Mac; Mac e Watch con lo stesso Apple ID."),
+                L("Prova con un'app Apple, per esempio Password: se neanche lì il Watch propone il doppio clic, è un'impostazione del sistema."),
+                L("Altrimenti Diagnostica > \"Prova il Watch tramite osascript\": se così funziona, il limite è la firma di Nod.")]
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label(L("macOS non manda la richiesta al Watch. Controlla:"), systemImage: "exclamationmark.applewatch")
+            Label(systemLevel ? L("Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple.")
+                              : L("macOS non manda la richiesta al Watch. Controlla:"),
+                  systemImage: "exclamationmark.applewatch")
                 .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
+            if systemLevel { Text(L("Puoi ancora provare:")).font(.callout) }
             ForEach(items, id: \.self) { item in
                 Text("• " + item).font(.callout).fixedSize(horizontal: false, vertical: true)
             }
-            Text(L("Intanto Nod usa Touch ID: al Mac approvi col dito.")).font(.callout).foregroundStyle(.secondary)
+            Text(systemLevel ? L("Intanto approvi con Touch ID al Mac e, da lontano, con la notifica o l'avviso di Promemoria.")
+                             : L("Intanto Nod usa Touch ID: al Mac approvi col dito."))
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+/// Promemoria come secondo canale verso il Watch: permesso, interruttore e prova. Nelle Impostazioni, nella
+/// configurazione e in Diagnostica.
+struct RemindersControls: View {
+    @ObservedObject var reminders: ReminderRelay
+    @ObservedObject var prefs: Preferences
+
+    private var enabled: Binding<Bool> {
+        Binding(get: { prefs.remindersEnabled && reminders.access == .granted },
+                set: { on in
+                    if on, reminders.access != .granted { Task { await reminders.requestAccess() } } else { prefs.remindersEnabled = on }
+                })
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Toggle(L("Avvisi anche con Promemoria"), isOn: enabled)
+            Text(L("Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Non ha pulsanti: rispondi con Touch ID al Mac o con la notifica ntfy."))
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            HStack {
+                if reminders.access != .granted {
+                    Button(L("Consenti l'accesso a Promemoria")) { Task { await reminders.requestAccess() } }
+                }
+                Button(L("Prova Promemoria")) { reminders.sendTest() }
+                    .disabled(reminders.access != .granted)
+            }
+            if let event = reminders.lastEvent {
+                Text(event).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .onAppear { reminders.refreshAccess() }
     }
 }
 

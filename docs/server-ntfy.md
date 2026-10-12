@@ -70,6 +70,8 @@ Nod hai scelto *Server mio*. Poi Nod > Notifiche > *Invia prova*: Nod chiede al 
 
 Se le vedi nell'elenco dell'app ntfy ma non compaiono come avviso, i messaggi arrivano: manca la consegna push.
 
+0. **Solo nell'app, mai come avviso**: disinstalla l'app ntfy, reinstallala, consenti le notifiche al primo avvio e
+   aggiungi di nuovo il topic. Così l'iPhone si registra di nuovo per il push.
 1. **iPhone > Impostazioni > Notifiche > ntfy**: Consenti notifiche attivo, Banner, e Avvisi con priorità.
 2. **Stessa schermata, Consegna**: *Consegna immediata*, non *Riepilogo programmato* (con il riepilogo gli avvisi
    arrivano solo agli orari del riepilogo).
@@ -87,5 +89,11 @@ Se le vedi nell'elenco dell'app ntfy ma non compaiono come avviso, i messaggi ar
 La **verifica sul server** di Nod (Diagnostica > Notifiche) riprova dopo 1, 3 e 6 secondi: ntfy.sh scrive i messaggi in
 cache a gruppi, quindi una verifica immediata può non trovare un messaggio appena inviato. Se dopo 6 secondi lo trova, il
 Mac e il server sono a posto e il problema è nella consegna sull'iPhone (punti 1-6).
+
+## In alternativa: Promemoria
+
+Nod > Impostazioni > Notifiche > *Avvisi anche con Promemoria*: Nod crea un promemoria con allarme immediato nella lista
+"Nod" di iCloud, e l'avviso arriva su iPhone e Watch senza nessuna app (di solito entro un minuto). Non ha pulsanti: si
+risponde con Touch ID al Mac o con la notifica ntfy. Dopo la risposta o la scadenza Nod lo cancella.
 
 Le approvazioni e "Ti stai allontanando" partono con priorità massima (5); la prova con priorità alta (4).

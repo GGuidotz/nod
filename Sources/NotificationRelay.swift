@@ -22,7 +22,9 @@ final class NotificationRelay: ObservableObject {
     @Published private(set) var lastServerCheck: String?
 
     private let prefs: Preferences
-    private var pending: [String: (expires: Date, action: @MainActor () -> Void)] = [:]
+    private var pending: [String: (sent: Date, expires: Date, action: @MainActor () -> Void)] = [:]
+    /// Per la diagnostica: l'ultima risposta arrivata dopo la scadenza (prova comunque che i pulsanti arrivano al Mac).
+    @Published private(set) var lastLateReply: String?
     private var listenTask: Task<Void, Never>?
 
     init(prefs: Preferences) { self.prefs = prefs }
@@ -42,13 +44,14 @@ final class NotificationRelay: ObservableObject {
             diag(.ntfy, "publish skipped: invalid server URL")
             return false
         }
-        let expires = Date().addingTimeInterval(lifetime)
-        pending = pending.filter { $0.value.expires > Date() }
+        let sent = Date(), expires = sent.addingTimeInterval(lifetime)
+        // Le voci scadute restano un'ora: una risposta in ritardo si riconosce e si annota, ma resta ignorata.
+        pending = pending.filter { $0.value.expires > Date().addingTimeInterval(-3600) }
 
         var actions: [[String: Any]] = []
         for button in buttons.prefix(3) {
             let token = Self.randomToken()
-            pending[token] = (expires, button.onTap)
+            pending[token] = (sent, expires, button.onTap)
             var action: [String: Any] = ["action": "http", "label": button.label,
                                          "url": server.appendingPathComponent(replyTopic).absoluteString,
                                          "method": "POST", "body": token, "clear": true]
@@ -143,7 +146,8 @@ final class NotificationRelay: ObservableObject {
     func sendTest() async {
         _ = await send(title: L("Nod: prova"), message: L("Fai doppio tap sul Watch."),
                        buttons: [NtfyButton(label: L("Ricevuta")) { [weak self] in self?.lastEvent = L("Risposta ricevuta dal Watch.") },
-                                 NtfyButton(label: L("Ignora")) { [weak self] in self?.lastEvent = L("Hai scelto Ignora.") }])
+                                 NtfyButton(label: L("Ignora")) { [weak self] in self?.lastEvent = L("Hai scelto Ignora.") }],
+                       lifetime: 600)
     }
 
     // MARK: risposte
@@ -199,8 +203,10 @@ final class NotificationRelay: ObservableObject {
         guard let entry = pending[token] else { return }
         pending = pending.filter { $0.value.expires != entry.expires }
         guard entry.expires > Date() else {
-            lastEvent = L("Risposta arrivata dopo la scadenza: ignorata.")
-            diag(.ntfy, "reply after expiry ignored")
+            let minutes = max(1, Int(Date().timeIntervalSince(entry.sent) / 60))
+            lastEvent = L("Risposta arrivata dopo la scadenza (dopo %d min): ignorata. I pulsanti arrivano al Mac, ma l'avviso è arrivato tardi o l'hai visto solo aprendo l'app.", minutes)
+            lastLateReply = "\(DiagnosticsLog.stamp(Date())) after \(minutes) min (expired)"
+            diag(.ntfy, "reply after expiry ignored (\(minutes) min after publish)")
             return
         }
         lastRoundTrip = Date()

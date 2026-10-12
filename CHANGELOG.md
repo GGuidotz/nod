@@ -4,6 +4,24 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.3.2 · 2026-10-12
+
+### New Features
+- Reminders alerts: an optional second channel to the iPhone and Apple Watch with nothing to install. Nod creates a reminder with an immediate alarm in a dedicated iCloud "Nod" list (EventKit, full Reminders access). iCloud syncs it, usually within a minute, and Nod deletes it once the request is answered or expires. It is used for Watch-only approvals, the "You're stepping away" prompt and the test. Reminders have no buttons: answers come from Touch ID at the Mac or the ntfy notification.
+- Reminders controls in Settings > Notifications, in the Notifications setup step (shown again after this update) and in Diagnostics, with access request and a test.
+
+### Improvements
+- Watch approval refused system-wide is now recognized. When the Apple-signed osascript probe is refused instantly, Nod says that macOS refuses Watch approval for every app on this Mac, rather than blaming its own signature. The result persists across launches, and the remaining system remedies are listed.
+- ntfy buttons stay valid for 10 minutes on the test and 5 minutes on approvals, up from 2. A late reply is still ignored, but it is reported with its delay: this proves the buttons reach the Mac even when the alert itself arrives late.
+- The ntfy alert checklist starts with the usual fix for messages that appear only inside the app: reinstall ntfy, allow notifications and subscribe again.
+- The diagnostics report gains a Reminders section and summary lines for system-level Watch refusal, late replies and a local-only Reminders list.
+
+### Bug Fixes
+- The classic Dock icon forced in 0.3.0 as a workaround is turned off once, at the first launch of 0.3.2, when the Liquid Glass icon renders correctly. The option stays available in Diagnostics, and the automatic fallback remains.
+
+### Known Issues
+- On some Mac and Watch configurations, macOS refuses Watch approval for every app, Apple's included. Nod then approves with Touch ID at the Mac and relies on ntfy and Reminders when you are away.
+
 ## 0.3.1 · 2026-10-12
 
 ### Improvements

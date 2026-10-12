@@ -31,6 +31,8 @@ struct DiagnosticsView: View {
 
             NtfyDiagnostics(relay: model.relay)
 
+            RemindersDiagnostics(reminders: model.reminders, prefs: model.prefs)
+
             IconDiagnostics(icon: IconHealth.shared, prefs: model.prefs)
 
             Section {
@@ -129,6 +131,21 @@ private struct IconDiagnostics: View {
     }
 }
 
+private struct RemindersDiagnostics: View {
+    @ObservedObject var reminders: ReminderRelay
+    @ObservedObject var prefs: Preferences
+
+    var body: some View {
+        Section {
+            RemindersControls(reminders: reminders, prefs: prefs)
+            LabeledContent(L("Lista"), value: reminders.listStatus ?? "-")
+            LabeledContent(L("Ultimo avviso"), value: reminders.lastAlert ?? "-")
+        } header: {
+            Text(L("Promemoria"))
+        }
+    }
+}
+
 private struct NtfyDiagnostics: View {
     @ObservedObject var relay: NotificationRelay
 
@@ -184,7 +201,7 @@ private struct WatchDiagnostics: View {
             if let last = watch.attempts.last {
                 LabeledContent(L("Ultimo tentativo"), value: last.line)
             }
-            if watch.watchOnlyFailsFast { WatchTroubleshooting() }
+            if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
         } header: {
             Text(L("Apple Watch"))
         } footer: {

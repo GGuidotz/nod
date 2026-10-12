@@ -110,6 +110,8 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(classicDockIcon, forKey: "classicDockIcon"); applyDockIcon() }
     }
     @Published var autoCheckUpdates: Bool { didSet { defaults.set(autoCheckUpdates, forKey: "autoCheckUpdates") } }
+    /// Avvisi anche con Promemoria (iCloud) oltre a ntfy: ReminderRelay.
+    @Published var remindersEnabled: Bool { didSet { defaults.set(remindersEnabled, forKey: "remindersEnabled") } }
 
     private init() {
         setupCompleted = defaults.bool(forKey: "setupCompleted")
@@ -129,6 +131,7 @@ final class Preferences: ObservableObject {
         learnedWatchMethod = WatchMethod(rawValue: defaults.string(forKey: "learnedWatchMethod") ?? "")
         classicDockIcon = defaults.bool(forKey: "classicDockIcon")
         autoCheckUpdates = defaults.object(forKey: "autoCheckUpdates") as? Bool ?? true
+        remindersEnabled = defaults.bool(forKey: "remindersEnabled")
         defaults.set(topic, forKey: "topic")
         Localization.language = language
     }
@@ -136,6 +139,16 @@ final class Preferences: ObservableObject {
     /// Icona classica nel Dock mentre Nod è aperto: se scelta, o da sola se l'icona Liquid Glass risulta vuota (IconHealth).
     func applyDockIcon() {
         IconHealth.shared.apply(forceClassic: classicDockIcon)
+    }
+
+    /// Una volta sola (0.3.2): l'icona classica forzata era il rimedio della 0.3.0 per il Dock vuoto. Se ora l'icona Liquid
+    /// Glass risulta a posto, la scelta si spegne; resta disponibile in Diagnostica.
+    func migrateClassicDockIcon() {
+        guard !defaults.bool(forKey: "migration.classicDockIcon.0.3.2") else { return }
+        defaults.set(true, forKey: "migration.classicDockIcon.0.3.2")
+        guard classicDockIcon, IconHealth.shared.tier == "liquid-glass", IconHealth.shared.looksHealthy else { return }
+        classicDockIcon = false
+        diag(.icon, "classic Dock icon turned off: the Liquid Glass icon renders correctly")
     }
 
     /// Applica a tutta l'app l'aspetto scelto (Sistema = segue macOS).

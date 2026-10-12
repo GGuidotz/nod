@@ -22,6 +22,11 @@ final class IconHealth: ObservableObject {
     var buildCheck: String? { info["NodIconCheck"] as? String }
     var iconName: String? { info["CFBundleIconName"] as? String }
     var hasAssetCatalog: Bool { Bundle.main.url(forResource: "Assets", withExtension: "car") != nil }
+    /// L'ultima misura dice che l'icona del bundle si vede.
+    var looksHealthy: Bool {
+        guard let coverage, let differenceFromGeneric else { return false }
+        return !IconMetrics.looksEmpty(coverage: coverage, differenceFromGeneric: differenceFromGeneric)
+    }
 
     /// Misura l'icona e sceglie quella del Dock: la classica se richiesta o se quella del bundle è vuota.
     func apply(forceClassic: Bool) {
