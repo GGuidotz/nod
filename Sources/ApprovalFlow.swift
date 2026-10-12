@@ -2,8 +2,8 @@
 //   AirPods indossate → suono (e riassunto parlato, se lo vuoi), 15 s per un gesto: annuisci → conferma sul Watch,
 //                       scuoti → Nega subito (negare non esegue nulla).
 //   Senza AirPods     → subito la richiesta di sistema (Touch ID o doppio clic sul Watch; Nega = Nega) e insieme la
-//                       notifica ntfy con Approva / Nega e, se attivo, l'avviso di Promemoria. La prima risposta vince
-//                       e chiude le altre.
+//                       notifica ntfy con Approva / Nega e, se attivo, il promemoria "Approva: …" (completarlo dal
+//                       Watch = Approva). La prima risposta vince e chiude le altre.
 // "Consenti sempre" non c'è mai. Finché le richieste vere dell'AI non sono collegate a Cocaine gira in modalità prova.
 
 import AppKit
@@ -125,9 +125,11 @@ final class ApprovalFlow: ObservableObject {
             }
             Task { _ = await relay.send(title: L("Nod: approvazione"), message: summary, buttons: [approve, deny],
                                         lifetime: Self.watchWindow, priority: 5) }
-            reminderID = reminders.alert(title: L("Nod: approvazione"),
-                                         notes: summary + "\n" + L("Approva con Touch ID al Mac o con la notifica ntfy."),
-                                         lifetime: Self.watchWindow)
+            reminderID = reminders.ask(title: L("Approva: %@", summary),
+                                       notes: L("Completalo dal Watch per approvare. Per negare: Nega al Mac o nella notifica ntfy; senza risposta non succede nulla."),
+                                       lifetime: Self.watchWindow) { [weak self] in
+                self?.decide(.approved(summary: summary, by: L("dal promemoria sul Watch")), allow: true, generation: gen)
+            }
         }
         Task {
             let outcome = await watch.confirm(L("approvare: %@", summary))

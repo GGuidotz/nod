@@ -59,12 +59,16 @@ final class WatchConfirmer: ObservableObject {
     }
     /// L'ordine dei metodi che Nod proverà adesso (aggiornato da `refresh`).
     @Published private(set) var currentChain: [WatchMethod] = []
+    /// La prova guidata ha dato solo annullato/fallito/"altro metodo" dopo un'interazione reale (oltre 2 s): il doppio clic
+    /// sul Watch chiude la richiesta ma macOS non risponde "confermato". Resta salvato fino alla prova successiva.
+    @Published private(set) var doubleClickNotConfirmed = UserDefaults.standard.bool(forKey: "watch.doubleClickNotConfirmed") {
+        didSet { UserDefaults.standard.set(doubleClickNotConfirmed, forKey: "watch.doubleClickNotConfirmed") }
+    }
     /// Prova guidata: l'istruzione del passo in corso.
     @Published private(set) var guidedStep: String?
 
     private let prefs: Preferences
     private var context: LAContext?
-    private var right: LARight?
 
     init(prefs: Preferences) { self.prefs = prefs }
 
@@ -72,9 +76,7 @@ final class WatchConfirmer: ObservableObject {
         let chain = chain()
         currentChain = chain
         var error: NSError?
-        if chain.first == .laRight {
-            isAvailable = true
-        } else if let first = chain.first, let policy = first.policy {
+        if let first = chain.first, let policy = first.policy {
             isAvailable = LAContext().canEvaluatePolicy(policy, error: &error)
         } else {
             isAvailable = false
@@ -147,21 +149,27 @@ final class WatchConfirmer: ObservableObject {
     func testAllMethods() async {
         methodResults = [:]
         let methods = WatchMethod.concrete
+        var confirmed = false, answeredWithoutSuccess = false
         for (index, method) in methods.enumerated() {
             guard method.isUsable else { methodResults[method] = L("Non disponibile su questo macOS"); continue }
             guidedStep = L("%d di %d, %@: ora doppio clic sul Watch, non toccare il Mac.", index + 1, methods.count, method.title)
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             let outcome = await run(method, reason: L("provare il metodo %@", method.title))
+            if case .confirmed = outcome { confirmed = true }
+            if let last = attempts.last, last.seconds > 2, let code = last.code,
+               [LAError.Code.userCancel.rawValue, LAError.Code.userFallback.rawValue, LAError.Code.authenticationFailed.rawValue].contains(code) {
+                answeredWithoutSuccess = true
+            }
             let code = attempts.last.flatMap { $0.code }.map { " (\($0) \(Self.codeName(code: $0)))" } ?? ""
             methodResults[method] = outcome.title + code
         }
         guidedStep = nil
+        doubleClickNotConfirmed = !confirmed && answeredWithoutSuccess
         diag(.watch, "guided test: " + methods.map { "\($0.rawValue)=\(methodResults[$0] ?? "-")" }.joined(separator: "; "))
     }
 
-    /// Un metodo: una LAPolicy oppure LARight.
+    /// Un metodo: la sua LAPolicy.
     private func run(_ method: WatchMethod, reason: String) async -> Outcome {
-        if method == .laRight { return await authorizeRight(reason: reason) }
         guard let policy = method.policy else { return .unavailable(L("Non disponibile su questo macOS")) }
         return await evaluate(policy, method: method, reason: reason)
     }
@@ -170,10 +178,6 @@ final class WatchConfirmer: ObservableObject {
     func cancel() {
         context?.invalidate()
         context = nil
-        if let right {
-            self.right = nil
-            Task { await right.deauthorize() }
-        }
         isAsking = false
     }
 
@@ -252,35 +256,6 @@ final class WatchConfirmer: ObservableObject {
             isAsking = false
         }
         return outcome
-    }
-
-    /// LARight (macOS 13+): l'autorizzazione con il requisito predefinito, qualsiasi autenticazione del proprietario.
-    private func authorizeRight(reason: String) async -> Outcome {
-        cancel()
-        let right = LARight()
-        self.right = right
-        isAsking = true
-        bringToFront()
-        diag(.watch, "authorize laRight")
-        let start = Date()
-        var error: NSError?
-        do {
-            try await right.authorize(localizedReason: reason)
-        } catch let caught {
-            error = caught as NSError
-        }
-        let seconds = Date().timeIntervalSince(start)
-        let ok = error == nil
-        let result = ok ? "confirmed" : "\(error?.domain ?? "?") \(error?.code ?? 0) \(Self.codeName(error))"
-        attempts.append(Attempt(date: start, method: WatchMethod.laRight.rawValue, seconds: seconds, result: result,
-                                code: ok ? nil : (error?.code ?? 0)))
-        if attempts.count > 30 { attempts.removeFirst() }
-        diag(.watch, "result laRight after \(String(format: "%.2f", seconds))s: \(result)")
-        if self.right === right {
-            self.right = nil
-            isAsking = false
-        }
-        return ok ? .confirmed(seconds: seconds) : Self.outcome(for: error)
     }
 
     private func bringToFront() {

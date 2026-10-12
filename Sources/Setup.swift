@@ -15,7 +15,7 @@ enum SetupStep: String, CaseIterable, Identifiable {
     /// La versione che ha introdotto il passaggio: dopo un aggiornamento compaiono solo quelli più nuovi di ciò che hai visto.
     var introducedIn: String {
         switch self {
-        case .notifications: "0.3.2"
+        case .notifications: "0.4.0"
         case .appearance: "0.3.0"
         default: "0.1.0"
         }
@@ -321,6 +321,7 @@ private struct WatchStep: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
+                    if watch.doubleClickNotConfirmed { WatchDoubleClickNotice() }
                 }
             }
             .contentCard(padding: 22)

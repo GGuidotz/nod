@@ -93,7 +93,8 @@ Mac e il server sono a posto e il problema è nella consegna sull'iPhone (punti 
 ## In alternativa: Promemoria
 
 Nod > Impostazioni > Notifiche > *Avvisi anche con Promemoria*: Nod crea un promemoria con allarme immediato nella lista
-"Nod" di iCloud, e l'avviso arriva su iPhone e Watch senza nessuna app (di solito entro un minuto). Non ha pulsanti: si
-risponde con Touch ID al Mac o con la notifica ntfy. Dopo la risposta o la scadenza Nod lo cancella.
+"Nod" di iCloud, e l'avviso arriva su iPhone e Watch senza nessuna app (di solito entro un minuto). **Completarlo dal Watch
+vale come risposta**: "Approva: …" approva, "Tieni sveglio il Mac?" lo tiene sveglio. Vale solo il promemoria creato da Nod,
+entro la scadenza e una volta sola; dopo la risposta o la scadenza Nod lo cancella.
 
 Le approvazioni e "Ti stai allontanando" partono con priorità massima (5); la prova con priorità alta (4).

@@ -68,7 +68,7 @@ func diag(_ category: DiagCategory, _ message: String) {
 
 /// Le politiche di LocalAuthentication che Nod sa usare per il Watch.
 enum WatchMethod: String, CaseIterable, Identifiable, Codable {
-    case automatic, companion, watch, biometricsOrCompanion, deviceOwner, laRight
+    case automatic, companion, watch, biometricsOrCompanion, deviceOwner
     var id: String { rawValue }
 
     var title: String {
@@ -78,14 +78,13 @@ enum WatchMethod: String, CaseIterable, Identifiable, Codable {
         case .watch: "Apple Watch"
         case .biometricsOrCompanion: L("Touch ID o Watch")
         case .deviceOwner: L("Touch ID, Watch o password")
-        case .laRight: "LARight"
         }
     }
 
-    /// La politica concreta; nil se non esiste su questo macOS (o per LARight, che non passa da una LAPolicy).
+    /// La politica concreta; nil se non esiste su questo macOS.
     var policy: LAPolicy? {
         switch self {
-        case .automatic, .laRight:
+        case .automatic:
             return nil
         case .deviceOwner:
             return .deviceOwnerAuthentication
@@ -100,10 +99,11 @@ enum WatchMethod: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Si può provare su questo Mac (LARight c'è sempre da macOS 13, il minimo di Nod è 14).
-    var isUsable: Bool { self == .laRight || policy != nil }
+    /// Si può provare su questo Mac. (LARight è stato tolto nella 0.4.0: su macOS 27.0.1 la sua finestra non compariva e
+    /// restava appesa due minuti, ViewBridge error 17.)
+    var isUsable: Bool { policy != nil }
 
-    static let concrete: [WatchMethod] = [.companion, .watch, .biometricsOrCompanion, .deviceOwner, .laRight]
+    static let concrete: [WatchMethod] = [.companion, .watch, .biometricsOrCompanion, .deviceOwner]
 }
 
 enum DiagnosticsReport {
@@ -172,7 +172,6 @@ enum DiagnosticsReport {
             .joined(separator: ", "))
         row("osascript probe", model.watch.probeResult ?? (model.watch.probeRefusedFast ? "refused instantly (earlier run)" : "not run"))
         for method in WatchMethod.concrete {
-            if method == .laRight { row(method.rawValue, "no canEvaluate (authorize only)"); continue }
             guard let policy = method.policy else { row(method.rawValue, "not available on this macOS"); continue }
             var error: NSError?
             let ok = LAContext().canEvaluatePolicy(policy, error: &error)
@@ -203,6 +202,7 @@ enum DiagnosticsReport {
         row("Access", model.reminders.access.rawValue)
         row("List", model.reminders.listStatus ?? "-")
         row("Last alert", model.reminders.lastAlert ?? "-")
+        row("Last round trip", model.reminders.lastRoundTrip ?? "-")
 
         section("Presence")
         row("State", model.presence.state.rawValue)
@@ -220,6 +220,11 @@ enum DiagnosticsReport {
     @MainActor
     private static func summary(model: AppModel) -> [String] {
         var findings: [String] = []
+        if model.watch.doubleClickNotConfirmed {
+            findings.append("Apple Watch: in the guided test the double-click closes the Mac prompt but every policy returns userCancel, "
+                            + "userFallback or authenticationFailed, for osascript too. Approve by completing the reminder on the Watch, "
+                            + "or with Touch ID at the Mac.")
+        }
         if model.watch.systemRefusesWatch {
             findings.append("Apple Watch: system-level. macOS refuses Watch approval for every process, Apple-signed osascript included, "
                             + "so Nod's signature is not the cause. Approvals use Touch ID at the Mac; away from the Mac, ntfy and "
@@ -261,6 +266,32 @@ enum DiagnosticsReport {
         }
         if !model.cocaine.isInstalled { findings.append("Cocaine is not installed.") }
         return findings
+    }
+
+    /// Il testo da incollare in Feedback Assistant (in inglese, senza dati personali).
+    @MainActor
+    static func appleFeedback(model: AppModel) -> String {
+        let attempts = model.watch.attempts.suffix(12).map(\.line).joined(separator: "\n")
+        return """
+        Title: Apple Watch approval closes the LocalAuthentication prompt but evaluatePolicy returns userCancel/userFallback
+
+        macOS: \(ProcessInfo.processInfo.operatingSystemVersionString), Mac model \(sysctl("hw.model"))
+        Apple Watch SE (3rd generation), "Use Apple Watch to unlock apps and your Mac" enabled.
+
+        Steps:
+        1. A third-party app (and /usr/bin/osascript via JXA) calls LAContext.evaluatePolicy with
+           .deviceOwnerAuthenticationWithCompanion (3), .deviceOwnerAuthenticationWithBiometricsOrCompanion (4)
+           or .deviceOwnerAuthentication (2).
+        2. The Watch shows the approval request; the user double-clicks the side button.
+
+        Expected: the reply block receives success = true.
+        Actual: the Mac prompt closes, the Watch shows nothing, and the reply receives LAError -2 (userCancel),
+        -3 (userFallback, when the fallback button is visible) or -1 (authenticationFailed). Touch ID on the same
+        prompt succeeds. Apple-signed osascript gets the same errors, so the app's signature is not the cause.
+
+        Recent attempts (policy, seconds, result):
+        \(attempts)
+        """
     }
 
     private static func sysctl(_ name: String) -> String {

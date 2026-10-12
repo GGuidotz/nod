@@ -243,6 +243,7 @@ struct DevicesView: View {
                     LabeledContent(L("Metodi, in ordine"), value: watch.currentChain.map(\.title).joined(separator: " → "))
                 }
                 if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
+                if watch.doubleClickNotConfirmed { WatchDoubleClickNotice() }
             }
         }
         .formStyle(.grouped)

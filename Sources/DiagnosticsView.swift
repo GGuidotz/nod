@@ -217,6 +217,14 @@ private struct WatchDiagnostics: View {
                 LabeledContent(L("Ultimo tentativo"), value: last.line)
             }
             if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
+            if watch.doubleClickNotConfirmed {
+                WatchDoubleClickNotice()
+                Button(L("Copia testo per Feedback Assistant")) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(DiagnosticsReport.appleFeedback(model: AppModel.shared), forType: .string)
+                    NSWorkspace.shared.open(URL(string: "applefeedback://")!)
+                }
+            }
         } header: {
             Text(L("Apple Watch"))
         } footer: {

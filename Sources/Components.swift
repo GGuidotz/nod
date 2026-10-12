@@ -83,6 +83,16 @@ struct WatchTroubleshooting: View {
     }
 }
 
+/// Il doppio clic sul Watch chiude la richiesta ma macOS risponde "annullato": l'alternativa che funziona.
+struct WatchDoubleClickNotice: View {
+    var body: some View {
+        Label(L("Su questo Mac il doppio clic sul Watch chiude la richiesta ma macOS risponde \"annullato\" a ogni app, anche a quelle Apple. Approva completando il promemoria sul Watch, o con Touch ID al Mac."),
+              systemImage: "exclamationmark.applewatch")
+            .foregroundStyle(.orange)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
 /// Promemoria come secondo canale verso il Watch: permesso, interruttore e prova. Nelle Impostazioni, nella
 /// configurazione e in Diagnostica.
 struct RemindersControls: View {
@@ -99,7 +109,7 @@ struct RemindersControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Toggle(L("Avvisi anche con Promemoria"), isOn: enabled)
-            Text(L("Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Non ha pulsanti: rispondi con Touch ID al Mac o con la notifica ntfy."))
+            Text(L("Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Completarlo dal Watch vale come risposta (Approva, Tieni sveglio)."))
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             HStack {
                 if reminders.access != .granted {
@@ -108,6 +118,8 @@ struct RemindersControls: View {
                 Button(L("Prova Promemoria")) { reminders.sendTest() }
                     .disabled(reminders.access != .granted)
             }
+            Text(L("Nella prova: quando l'avviso arriva sul Watch, toccalo e scegli Completato."))
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if let event = reminders.lastEvent {
                 Text(event).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }

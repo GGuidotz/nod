@@ -99,9 +99,12 @@ final class PresenceEngine: ObservableObject {
                                   message: L("Senza risposta tra %d min: %@.", minutes, fallback.title.lowercased()),
                                   buttons: buttons, lifetime: TimeInterval(minutes * 60), priority: 5)
         }
-        leavingReminderID = reminders?.alert(title: L("Ti stai allontanando"),
-                                             notes: L("Senza risposta tra %d min: %@.", minutes, fallback.title.lowercased()),
-                                             lifetime: TimeInterval(minutes * 60))
+        leavingReminderID = reminders?.ask(title: L("Tieni sveglio il Mac?"),
+                                           notes: L("Completalo dal Watch per tenere sveglio il Mac. Senza risposta tra %d min: %@.",
+                                                    minutes, fallback.title.lowercased()),
+                                           lifetime: TimeInterval(minutes * 60)) { [weak self] in
+            self?.apply(.keepAwake, answered: true)
+        }
         timeoutTask?.cancel()
         timeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(minutes) * 60 * 1_000_000_000)

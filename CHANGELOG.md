@@ -4,6 +4,23 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.4.0 · 2026-10-12
+
+### New Features
+- Answer from the Apple Watch by completing a reminder, a native round trip with nothing to install. Watch-only approvals create "Approve: …" and completing it approves. "You're stepping away" creates "Keep the Mac awake?" and completing it keeps the Mac awake. Nod listens for `EKEventStoreChanged` and polls every 5 s while a request is open.
+- Completion counts only for a reminder Nod created, before it expires, once, matched by identifier or an embedded reference. The reminder is deleted after the answer or on expiry, and a deleted or expired reminder does nothing.
+- The Reminders test is a round trip: complete the test reminder on the Watch and Nod reports how many seconds it took. The Notifications setup step is shown again for this.
+
+### Improvements
+- Guided-test diagnosis: when every policy returns `userCancel`, `userFallback` or `authenticationFailed` after a real double-click, Nod says the Watch double-click is not confirmed by macOS on this Mac and points to Reminders and Touch ID.
+- "Copy text for Feedback Assistant" in Diagnostics: a ready-made report for Apple with the macOS version, Mac model and the recent attempts.
+
+### Bug Fixes
+- Removed the `LARight` method: on macOS 27.0.1 its prompt never appeared, and the app waited two minutes before failing with `ViewBridge error 17`.
+
+### Known Issues
+- On macOS 27.0.1 with this Mac and Watch, the Watch double-click closes the LocalAuthentication prompt but returns `userCancel` to every app, Apple's osascript included. Approve by completing the reminder on the Watch, or with Touch ID.
+
 ## 0.3.3 · 2026-10-12
 
 ### Improvements

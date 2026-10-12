@@ -33,8 +33,8 @@
 "Apple Watch" = "Apple Watch";
 "Apple Watch non disponibile." = "Apple Watch no disponible.";
 "Approva" = "Aprobar";
-"Approva con Touch ID al Mac o con la notifica ntfy." = "Aprueba con Touch ID en el Mac o con la notificación de ntfy.";
 "Approva l'AI con un cenno. Lascia la scrivania senza pensarci." = "Aprueba la IA con un gesto. Deja tu escritorio sin pensarlo.";
+"Approva: %@" = "Aprobar: %@";
 "Approvata %@: %@" = "Aprobada %@: %@";
 "Approvazioni" = "Aprobaciones";
 "Approvazioni a mani libere e presenza per Cocaine, con AirPods e Apple Watch." = "Aprobaciones manos libres y presencia para Cocaine, con AirPods y Apple Watch.";
@@ -61,6 +61,9 @@
 "Cocaine spento, com'era prima." = "Cocaine desactivado, como estaba.";
 "Collegate" = "Conectadas";
 "Collegato." = "Conectado.";
+"Completalo dal Watch per approvare. Per negare: Nega al Mac o nella notifica ntfy; senza risposta non succede nulla." = "Complétalo en el Watch para aprobar. Para denegar: Denegar en el Mac o en la notificación de ntfy; sin respuesta no pasa nada.";
+"Completalo dal Watch per tenere sveglio il Mac. Senza risposta tra %d min: %@." = "Complétalo en el Watch para mantener el Mac despierto. Sin respuesta en %d min: %@.";
+"Completalo dal Watch: Nod ti dirà dopo quanti secondi l'ha visto." = "Complétalo en el Watch: Nod te dirá tras cuántos segundos lo ha visto.";
 "Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche" = "Con la app ntfy cerrada, el mensaje aparece en el Centro de notificaciones";
 "Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch." = "Con los AirPods apruebas asintiendo y confirmas con el botón lateral del Watch.";
 "Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. " = "Con AirPods: asiente y pulsa dos veces el botón lateral del Watch; niega con la cabeza para rechazar. ";
@@ -87,6 +90,7 @@
 "Copia comando" = "Copiar comando";
 "Copia il comando di aggiornamento" = "Copiar el comando de actualización";
 "Copia report" = "Copiar informe";
+"Copia testo per Feedback Assistant" = "Copiar texto para Asistente de Opiniones";
 "Copiato" = "Copiado";
 "Cosa è cambiato dall'ultima volta che l'hai aperto. Poi ti mostro solo ciò che è nuovo." = "Qué ha cambiado desde la última vez que lo abriste. Después, solo los pasos nuevos.";
 "Da" = "Desde";
@@ -164,6 +168,7 @@
 "Negata %@: %@" = "Denegada %@: %@";
 "Nell'app tocca + e incolla questo nome di topic (server: ntfy.sh, già quello predefinito):" = "En la app toca + y pega este nombre de tema (servidor: ntfy.sh, ya es el predeterminado):";
 "Nell'app tocca +, attiva \"Use another server\" con l'indirizzo del tuo server, e incolla questo nome di topic:" = "En la app toca +, activa \"Use another server\" con la dirección de tu servidor y pega este nombre de tema:";
+"Nella prova: quando l'avviso arriva sul Watch, toccalo e scegli Completato." = "En la prueba: cuando el aviso llegue al Watch, tócalo y elige Completado.";
 "Nella tua fascia oraria" = "En tu horario";
 "Nessun Apple Watch sbloccato vicino al Mac." = "No hay ningún Apple Watch desbloqueado cerca del Mac.";
 "Nessun account iCloud con Promemoria su questo Mac." = "No hay ninguna cuenta de iCloud con Recordatorios en este Mac.";
@@ -175,7 +180,7 @@
 "Niente" = "Nada";
 "No" = "No";
 "Nod" = "Nod";
-"Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Non ha pulsanti: rispondi con Touch ID al Mac o con la notifica ntfy." = "Nod crea un recordatorio en la lista \"Nod\" de iCloud: el aviso llega al iPhone y al Watch sin instalar apps, normalmente en menos de un minuto. No tiene botones: responde con Touch ID en el Mac o con la notificación de ntfy.";
+"Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Completarlo dal Watch vale come risposta (Approva, Tieni sveglio)." = "Nod crea un recordatorio en la lista \"Nod\" de iCloud: el aviso llega al iPhone y al Watch sin instalar apps, normalmente en menos de un minuto. Completarlo en el Watch cuenta como respuesta (Aprobar, Mantener despierto).";
 "Nod in ascolto delle risposte" = "Nod escuchando respuestas";
 "Nod lavora con Cocaine, le tue AirPods e il tuo Apple Watch. Ogni passaggio si prova subito." = "Nod funciona con Cocaine, tus AirPods y tu Apple Watch. Cada paso se prueba al momento.";
 "Nod legge il movimento della testa per capire quando annuisci, scuoti la testa o ti alzi e cammini. Sono facoltative: senza, basta il Watch." = "Nod lee el movimiento de la cabeza para saber cuándo asientes, niegas o te levantas y caminas. Son opcionales: sin ellos basta el Watch.";
@@ -252,6 +257,8 @@
 "Ripeti configurazione…" = "Repetir configuración…";
 "Risposta arrivata alle %@." = "Respuesta recibida a las %@.";
 "Risposta arrivata dopo la scadenza (dopo %d min): ignorata. I pulsanti arrivano al Mac, ma l'avviso è arrivato tardi o l'hai visto solo aprendo l'app." = "Respuesta recibida después de caducar (tras %d min): ignorada. Los botones llegan al Mac, pero el aviso llegó tarde o solo lo viste al abrir la app.";
+"Risposta da Promemoria ricevuta in %d s." = "Respuesta de Recordatorios recibida en %d s.";
+"Risposta da Promemoria ricevuta." = "Respuesta de Recordatorios recibida.";
 "Risposta ricevuta dal Watch." = "Respuesta recibida del Watch.";
 "Risposte" = "Respuestas";
 "Risultava vuota: Nod mostra da solo l'icona classica." = "Parecía vacío: Nod muestra el icono clásico por su cuenta.";
@@ -265,7 +272,6 @@
 "Se compare solo aprendo l'app, il push non arriva: in ntfy togli e aggiungi di nuovo il topic, poi attiva Aggiornamento app in background per ntfy." = "Si solo aparece al abrir la app, el push no llega: en ntfy quita y vuelve a añadir el topic, y activa la Actualización en segundo plano para ntfy.";
 "Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)." = "Si la comprobación en el servidor encuentra el mensaje pero no aparece el aviso, el camino hasta el servidor funciona: queda la entrega en el iPhone (lista de arriba).";
 "Se ti allontani con %@ aperto, nei giorni scelti tra %@ e %@, e non rispondi entro %d min, Cocaine tiene sveglio il Mac. Altrimenti non succede niente. Quando torni, Cocaine torna com'era." = "Si te alejas con %@ abierto, en los días elegidos entre las %@ y las %@, y no respondes en %d min, Cocaine mantiene el Mac despierto. Si no, no pasa nada. Cuando vuelves, Cocaine queda como estaba.";
-"Se vedi questo avviso sul Watch, Promemoria funziona." = "Si ves este aviso en el Watch, Recordatorios funciona.";
 "Sei tornato al Mac." = "Has vuelto al Mac.";
 "Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. " = "Sin AirPods: pulsa dos veces para aprobar, Denegar en la solicitud o el botón Denegar de la notificación en el Watch. ";
 "Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare." = "Sin AirPods: pulsa dos veces para aprobar, Denegar o la notificación para rechazar.";
@@ -284,6 +290,7 @@
 "Stessa schermata: con il riepilogo gli avvisi arrivano solo agli orari del riepilogo." = "Misma pantalla: con el resumen, los avisos solo llegan a las horas del resumen.";
 "Sto uscendo…" = "Me voy…";
 "Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita." = "En ntfy.sh el operador del servicio puede leer el texto de las notificaciones: Nod lo reduce al mínimo. Un servidor propio lo evita.";
+"Su questo Mac il doppio clic sul Watch chiude la richiesta ma macOS risponde \"annullato\" a ogni app, anche a quelle Apple. Approva completando il promemoria sul Watch, o con Touch ID al Mac." = "En este Mac el doble clic en el Watch cierra la solicitud pero macOS responde \"cancelado\" a todas las apps, incluidas las de Apple. Aprueba completando el recordatorio en el Watch, o con Touch ID en el Mac.";
 "Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple." = "En este Mac el doble clic en el Watch no está disponible: macOS lo rechaza a todas las apps, incluidas las de Apple.";
 "Sviluppato da %@" = "Desarrollado por %@";
 "Sì" = "Sí";
@@ -294,6 +301,7 @@
 "Ti stai allontanando" = "Te estás alejando";
 "Ti stai allontanando." = "Te estás alejando.";
 "Tieni sveglio" = "Mantener despierto";
+"Tieni sveglio il Mac?" = "¿Mantener el Mac despierto?";
 "Tieni sveglio ora" = "Mantener despierto ahora";
 "Tocca Ricevuta sulla notifica di prova" = "Toca Recibida en la notificación de prueba";
 "Token di accesso" = "Token de acceso";
@@ -326,6 +334,7 @@
 "col tasto laterale del Watch" = "con el botón lateral del Watch";
 "con Nega" = "con Denegar";
 "da fare" = "pendiente";
+"dal promemoria sul Watch" = "desde el recordatorio en el Watch";
 "dalla notifica sul Watch" = "desde la notificación en el Watch";
 "fatto" = "hecho";
 "iPhone > Impostazioni > Notifiche > ntfy" = "iPhone > Ajustes > Notificaciones > ntfy";
