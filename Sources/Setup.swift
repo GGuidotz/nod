@@ -15,6 +15,7 @@ enum SetupStep: String, CaseIterable, Identifiable {
     /// La versione che ha introdotto il passaggio: dopo un aggiornamento compaiono solo quelli più nuovi di ciò che hai visto.
     var introducedIn: String {
         switch self {
+        case .watch: "0.4.1"
         case .notifications: "0.4.0"
         case .appearance: "0.3.0"
         default: "0.1.0"
@@ -180,9 +181,9 @@ private struct WelcomeStep: View {
             }
             HStack(alignment: .top, spacing: 14) {
                 FeatureTile(symbol: "checkmark.seal.fill", title: L("Annuisci"),
-                            detail: L("Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch."))
+                            detail: L("Con le AirPods approvi con un cenno, poi confermi dal Watch."))
                 FeatureTile(symbol: "applewatch", title: L("Solo Watch"),
-                            detail: L("Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare."))
+                            detail: L("Senza AirPods: Approva o Nega dalla notifica sul Watch, oppure completa il promemoria per approvare."))
                 FeatureTile(symbol: "figure.walk.motion", title: L("Ti allontani"),
                             detail: L("Il Watch ti chiede se tenere sveglio il Mac. Se non rispondi decide la tua regola."))
             }
@@ -291,7 +292,7 @@ private struct WatchStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             StepHeader(eyebrow: L("Passo 3"), title: L("Apple Watch"),
-                       subtitle: L("Ogni approvazione si conferma premendo due volte il tasto laterale, come per sbloccare il Mac. Nega nella richiesta vale come no."))
+                       subtitle: L("Vicino al Mac puoi confermare premendo due volte il tasto laterale, come per sbloccare il Mac. È sperimentale: lontano dal Mac rispondi con la notifica o il promemoria (passo Notifiche)."))
             HStack(alignment: .center, spacing: 30) {
                 ZStack {
                     PulseRings(active: watch.isAsking).frame(width: 200, height: 200)
@@ -320,8 +321,8 @@ private struct WatchStep: View {
                             .foregroundStyle(isConfirmed(outcome) ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.orange))
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    WatchDoubleClickNotice()
                     if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
-                    if watch.doubleClickNotConfirmed { WatchDoubleClickNotice() }
                 }
             }
             .contentCard(padding: 22)

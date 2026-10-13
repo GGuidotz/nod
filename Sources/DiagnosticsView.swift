@@ -217,8 +217,8 @@ private struct WatchDiagnostics: View {
                 LabeledContent(L("Ultimo tentativo"), value: last.line)
             }
             if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
+            WatchDoubleClickNotice()
             if watch.doubleClickNotConfirmed {
-                WatchDoubleClickNotice()
                 Button(L("Copia testo per Feedback Assistant")) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(DiagnosticsReport.appleFeedback(model: AppModel.shared), forType: .string)
@@ -228,7 +228,8 @@ private struct WatchDiagnostics: View {
         } header: {
             Text(L("Apple Watch"))
         } footer: {
-            Text(L("Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra.")
+            Text(L("Sperimentale: i metodi col doppio clic restano qui per riprovarli dopo un aggiornamento di macOS o watchOS.")
+                 + " " + L("Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra.")
                  + " " + L("La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod."))
                 .foregroundStyle(.secondary)
         }

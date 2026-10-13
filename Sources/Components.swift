@@ -83,10 +83,11 @@ struct WatchTroubleshooting: View {
     }
 }
 
-/// Il doppio clic sul Watch chiude la richiesta ma macOS risponde "annullato": l'alternativa che funziona.
+/// Dalla 0.4.1, per tutti: il doppio clic sul Watch è sperimentale. Su macOS 27 chiude la richiesta ma il sistema risponde
+/// "annullato" a ogni app, e serve un fix di Apple. Le risposte a distanza che funzionano.
 struct WatchDoubleClickNotice: View {
     var body: some View {
-        Label(L("Su questo Mac il doppio clic sul Watch chiude la richiesta ma macOS risponde \"annullato\" a ogni app, anche a quelle Apple. Approva completando il promemoria sul Watch, o con Touch ID al Mac."),
+        Label(L("Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)."),
               systemImage: "exclamationmark.applewatch")
             .foregroundStyle(.orange)
             .fixedSize(horizontal: false, vertical: true)

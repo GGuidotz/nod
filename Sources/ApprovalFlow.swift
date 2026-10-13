@@ -1,9 +1,11 @@
 // Il flusso di un'approvazione. Sceglie da solo come chiedertela:
 //   AirPods indossate → suono (e riassunto parlato, se lo vuoi), 15 s per un gesto: annuisci → conferma sul Watch,
 //                       scuoti → Nega subito (negare non esegue nulla).
-//   Senza AirPods     → subito la richiesta di sistema (Touch ID o doppio clic sul Watch; Nega = Nega) e insieme la
-//                       notifica ntfy con Approva / Nega e, se attivo, il promemoria "Approva: …" (completarlo dal
-//                       Watch = Approva). La prima risposta vince e chiude le altre.
+//   Conferma sul Watch → la notifica ntfy con Approva / Nega, se attivo il promemoria "Approva: …" (completarlo dal
+//                       Watch = Approva) e la richiesta di sistema col doppio clic (sperimentale). La prima risposta
+//                       vince e chiude le altre. Dalla 0.4.1 anche dopo il cenno, perché le conferme servono lontano dal Mac.
+// Doppio clic sperimentale: su macOS 27 il sistema risponde "annullato" (userCancel) anche al doppio clic, lo stesso codice
+// di Nega. Finché Apple non lo corregge, un "annullato" della richiesta di sistema non nega: per negare c'è ntfy o il gesto.
 // "Consenti sempre" non c'è mai. Finché le richieste vere dell'AI non sono collegate a Cocaine gira in modalità prova.
 
 import AppKit
@@ -107,7 +109,7 @@ final class ApprovalFlow: ObservableObject {
         head.onGesture = nil
         switch gesture {
         case .shake: finish(.denied(summary: summary, by: L("scuotendo la testa")), allow: false, generation: gen)
-        case .nod: askOnWatch(summary, notify: false)
+        case .nod: askOnWatch(summary, notify: true)
         }
     }
 
@@ -136,6 +138,9 @@ final class ApprovalFlow: ObservableObject {
             guard gen == generation, !phase.isFinal else { return }
             switch outcome {
             case .confirmed: finish(.approved(summary: summary, by: L("col tasto laterale del Watch")), allow: true, generation: gen)
+            case .denied where notify:
+                // Su macOS 27 il doppio clic torna come userCancel, come Nega: non vale come decisione (vedi in cima).
+                diag(.watch, "system prompt answered cancel: ignored, waiting for ntfy or the reminder")
             case .denied: finish(.denied(summary: summary, by: L("con Nega")), allow: false, generation: gen)
             case .interrupted(let why), .unavailable(let why):
                 // Con la notifica in giro la decisione può ancora arrivare da lì.

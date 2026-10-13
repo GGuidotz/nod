@@ -65,8 +65,8 @@
 "Completalo dal Watch per tenere sveglio il Mac. Senza risposta tra %d min: %@." = "Complétalo en el Watch para mantener el Mac despierto. Sin respuesta en %d min: %@.";
 "Completalo dal Watch: Nod ti dirà dopo quanti secondi l'ha visto." = "Complétalo en el Watch: Nod te dirá tras cuántos segundos lo ha visto.";
 "Con l'app ntfy chiusa, il messaggio compare nel Centro Notifiche" = "Con la app ntfy cerrada, el mensaje aparece en el Centro de notificaciones";
-"Con le AirPods approvi con un cenno, poi confermi col tasto laterale del Watch." = "Con los AirPods apruebas asintiendo y confirmas con el botón lateral del Watch.";
-"Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. " = "Con AirPods: asiente y pulsa dos veces el botón lateral del Watch; niega con la cabeza para rechazar. ";
+"Con le AirPods approvi con un cenno, poi confermi dal Watch." = "Con los AirPods apruebas asintiendo y luego confirmas desde el Watch.";
+"Con le AirPods: annuisci, poi conferma dal Watch; scuoti la testa per negare. " = "Con los AirPods: asiente y luego confirma desde el Watch; niega con la cabeza para denegar. ";
 "Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma." = "Con este método el doble clic vuelve como \"otro método\" y no cuenta como confirmación.";
 "Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito." = "Con tu propio servidor el contenido se queda allí; ntfy.sh solo recibe un aviso sin texto, que el iPhone necesita para recibirlo al instante.";
 "Con una di queste app aperta" = "Con una de estas apps abierta";
@@ -96,6 +96,7 @@
 "Da" = "Desde";
 "Da lontano Nod ti scrive sul Watch tramite l'app ntfy dell'iPhone. Il doppio tap sceglie il primo pulsante." = "Cuando estás lejos, Nod te escribe en el Watch a través de la app ntfy del iPhone. El doble toque elige el primer botón.";
 "Da sinistra: al Mac, in uscita, lontano." = "Desde la izquierda: en el Mac, saliendo, lejos.";
+"Dal Watch: Approva o Nega nella notifica, oppure completa il promemoria per approvare. Il doppio clic sul tasto laterale è sperimentale. " = "Desde el Watch: Aprobar o Denegar en la notificación, o completa el recordatorio para aprobar. El doble clic en el botón lateral es experimental. ";
 "Dalle" = "Desde";
 "Diagnostica" = "Diagnóstico";
 "Diagnostica di Nod" = "Diagnóstico de Nod";
@@ -103,8 +104,8 @@
 "Disponibile Nod %@" = "Nod %@ está disponible";
 "Disponibile la versione %@" = "La versión %@ está disponible";
 "Dispositivi" = "Dispositivos";
+"Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)." = "Doble clic en el botón lateral del Watch: experimental, a la espera de una corrección de Apple. En macOS 27 el sistema cierra la solicitud pero responde \"cancelado\" a todas las apps, incluidas las de Apple. Mientras tanto responde desde el Watch con la notificación de ntfy (Aprobar o Denegar) o completando el recordatorio (aprobar).";
 "Doppio clic sul tasto laterale per approvare, Nega per rifiutare." = "Pulsa dos veces el botón lateral para aprobar, Denegar para rechazar.";
-"Doppio clic sul tasto laterale, oppure rispondi alla notifica sul Watch." = "Pulsa dos veces el botón lateral o responde a la notificación en el Watch.";
 "Esci da Nod" = "Salir de Nod";
 "Fai doppio tap sul Watch." = "Haz doble toque en el Watch.";
 "Generale" = "General";
@@ -212,7 +213,6 @@
 "Novità di Nod" = "Novedades de Nod";
 "Novità di Nod…" = "Novedades de Nod…";
 "Nuovo topic…" = "Nuevo tema…";
-"Ogni approvazione si conferma premendo due volte il tasto laterale, come per sbloccare il Mac. Nega nella richiesta vale come no." = "Cada aprobación se confirma pulsando dos veces el botón lateral, como para desbloquear el Mac. Denegar en la solicitud cuenta como no.";
 "Ordine in automatico" = "Orden automático";
 "Parte visibile" = "Parte visible";
 "Passo %d di %d" = "Paso %d de %d";
@@ -255,6 +255,7 @@
 "Richiesta chiusa da Nod." = "Solicitud cerrada por Nod.";
 "Richieste dell'AI" = "Solicitudes de la IA";
 "Ripeti configurazione…" = "Repetir configuración…";
+"Rispondi alla notifica o al promemoria sul Watch (doppio clic: sperimentale)." = "Responde a la notificación o al recordatorio en el Watch (doble clic: experimental).";
 "Risposta arrivata alle %@." = "Respuesta recibida a las %@.";
 "Risposta arrivata dopo la scadenza (dopo %d min): ignorata. I pulsanti arrivano al Mac, ma l'avviso è arrivato tardi o l'hai visto solo aprendo l'app." = "Respuesta recibida después de caducar (tras %d min): ignorada. Los botones llegan al Mac, pero el aviso llegó tarde o solo lo viste al abrir la app.";
 "Risposta da Promemoria ricevuta in %d s." = "Respuesta de Recordatorios recibida en %d s.";
@@ -273,8 +274,7 @@
 "Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)." = "Si la comprobación en el servidor encuentra el mensaje pero no aparece el aviso, el camino hasta el servidor funciona: queda la entrega en el iPhone (lista de arriba).";
 "Se ti allontani con %@ aperto, nei giorni scelti tra %@ e %@, e non rispondi entro %d min, Cocaine tiene sveglio il Mac. Altrimenti non succede niente. Quando torni, Cocaine torna com'era." = "Si te alejas con %@ abierto, en los días elegidos entre las %@ y las %@, y no respondes en %d min, Cocaine mantiene el Mac despierto. Si no, no pasa nada. Cuando vuelves, Cocaine queda como estaba.";
 "Sei tornato al Mac." = "Has vuelto al Mac.";
-"Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. " = "Sin AirPods: pulsa dos veces para aprobar, Denegar en la solicitud o el botón Denegar de la notificación en el Watch. ";
-"Senza AirPods: doppio clic per approvare, Nega o la notifica per rifiutare." = "Sin AirPods: pulsa dos veces para aprobar, Denegar o la notificación para rechazar.";
+"Senza AirPods: Approva o Nega dalla notifica sul Watch, oppure completa il promemoria per approvare." = "Sin AirPods: Aprobar o Denegar desde la notificación en el Watch, o completa el recordatorio para aprobar.";
 "Senza app o giorni scelti, quando non rispondi non succede niente." = "Sin apps ni días elegidos, no pasa nada si no respondes.";
 "Senza risposta tra %d min: %@." = "Sin respuesta en %d min: %@.";
 "Serve l'accesso a Promemoria." = "Se necesita acceso a Recordatorios.";
@@ -285,12 +285,12 @@
 "Solo Watch" = "Solo Watch";
 "Sono al Mac" = "Estoy en el Mac";
 "Spegni Cocaine" = "Desactivar Cocaine";
+"Sperimentale: i metodi col doppio clic restano qui per riprovarli dopo un aggiornamento di macOS o watchOS." = "Experimental: los métodos con doble clic se quedan aquí para volver a probarlos tras una actualización de macOS o watchOS.";
 "Stai camminando" = "Estás caminando";
 "Stato" = "Estado";
 "Stessa schermata: con il riepilogo gli avvisi arrivano solo agli orari del riepilogo." = "Misma pantalla: con el resumen, los avisos solo llegan a las horas del resumen.";
 "Sto uscendo…" = "Me voy…";
 "Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita." = "En ntfy.sh el operador del servicio puede leer el texto de las notificaciones: Nod lo reduce al mínimo. Un servidor propio lo evita.";
-"Su questo Mac il doppio clic sul Watch chiude la richiesta ma macOS risponde \"annullato\" a ogni app, anche a quelle Apple. Approva completando il promemoria sul Watch, o con Touch ID al Mac." = "En este Mac el doble clic en el Watch cierra la solicitud pero macOS responde \"cancelado\" a todas las apps, incluidas las de Apple. Aprueba completando el recordatorio en el Watch, o con Touch ID en el Mac.";
 "Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple." = "En este Mac el doble clic en el Watch no está disponible: macOS lo rechaza a todas las apps, incluidas las de Apple.";
 "Sviluppato da %@" = "Desarrollado por %@";
 "Sì" = "Sí";
@@ -325,6 +325,7 @@
 "Verifica sul server" = "Comprobación en el servidor";
 "Versione %@" = "Versión %@";
 "Versione installata" = "Versión instalada";
+"Vicino al Mac puoi confermare premendo due volte il tasto laterale, come per sbloccare il Mac. È sperimentale: lontano dal Mac rispondi con la notifica o il promemoria (passo Notifiche)." = "Cerca del Mac puedes confirmar pulsando dos veces el botón lateral, como para desbloquear el Mac. Es experimental: lejos del Mac responde con la notificación o el recordatorio (paso Notificaciones).";
 "Watch al polso e sbloccato, con il rilevamento del polso attivo (app Watch sull'iPhone > Codice)." = "Watch en la muñeca y desbloqueado, con la Detección de muñeca activada (app Watch del iPhone > Código).";
 "Watch da attivare" = "Watch por activar";
 "Watch pronto" = "Watch listo";

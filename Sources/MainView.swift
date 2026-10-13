@@ -137,8 +137,8 @@ struct ApprovalsView: View {
             } header: {
                 Text(L("Prova"))
             } footer: {
-                Text(L("Con le AirPods: annuisci, poi premi due volte il tasto laterale del Watch; scuoti la testa per negare. ")
-                     + L("Senza AirPods: doppio clic per approvare, Nega nella richiesta o il pulsante Nega della notifica sul Watch. ")
+                Text(L("Con le AirPods: annuisci, poi conferma dal Watch; scuoti la testa per negare. ")
+                     + L("Dal Watch: Approva o Nega nella notifica, oppure completa il promemoria per approvare. Il doppio clic sul tasto laterale è sperimentale. ")
                      + L("\"Consenti sempre\" non è mai disponibile da qui: resta nel notch di Cocaine o nel terminale."))
                     .foregroundStyle(.secondary)
             }
@@ -159,7 +159,7 @@ struct ApprovalsView: View {
         case .confirmingOnWatch(let summary, let notified):
             VStack(alignment: .leading, spacing: 6) {
                 Label(L("Conferma sul Watch: %@", summary), systemImage: "applewatch")
-                Text(notified ? L("Doppio clic sul tasto laterale, oppure rispondi alla notifica sul Watch.")
+                Text(notified ? L("Rispondi alla notifica o al promemoria sul Watch (doppio clic: sperimentale).")
                               : L("Doppio clic sul tasto laterale per approvare, Nega per rifiutare."))
                     .foregroundStyle(.secondary)
             }
@@ -242,8 +242,8 @@ struct DevicesView: View {
                 if !watch.currentChain.isEmpty {
                     LabeledContent(L("Metodi, in ordine"), value: watch.currentChain.map(\.title).joined(separator: " → "))
                 }
+                WatchDoubleClickNotice()
                 if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
-                if watch.doubleClickNotConfirmed { WatchDoubleClickNotice() }
             }
         }
         .formStyle(.grouped)

@@ -4,6 +4,20 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.4.1 · 2026-10-13
+
+### Improvements
+- Confirmations are built for when you are away from the Mac. After a nod with AirPods, Nod now also sends the ntfy notification (Approve / Deny) and, if enabled, the "Approve: …" reminder, not only the Watch prompt at the Mac.
+- The Watch side-button double-click is marked as experimental, waiting for a fix from Apple. The notice appears for everyone in Setup, Devices and Diagnostics, and the Apple Watch setup step is shown again after this update.
+- Setup and Approvals texts now point to the notification and the reminder as the way to answer from the Watch.
+
+### Bug Fixes
+- A double-click that macOS 27 reports as "cancelled" no longer denies the request. It has the same code as Deny in the system prompt, so while a notification or reminder is open the system prompt cannot deny: deny from the ntfy notification.
+
+### Known Issues
+- Watch side-button double-click: on macOS 27 the system closes the prompt but answers "cancelled" to every app, Apple's included. We are waiting for a fix from Apple. Answer from the Watch with the ntfy notification, or approve by completing the reminder.
+- Reminders can only approve: to deny, use the ntfy notification, or let the request expire (nothing happens).
+
 ## 0.4.0 · 2026-10-12
 
 ### New Features

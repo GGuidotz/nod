@@ -5,16 +5,35 @@ Progetto indipendente, non affiliato a Cocaine.
 
 ## Funzioni principali
 
-- **Approvazioni a mani libere**: con le AirPods annuisci e confermi col tasto laterale del Watch; senza AirPods basta il Watch.
+- **Approvazioni a mani libere, anche lontano dal Mac**: con le AirPods annuisci; dal Watch rispondi Approva o Nega nella
+  notifica ntfy, oppure approvi completando il promemoria. **In arrivo**: le richieste vere dell'AI arriveranno quando
+  Cocaine aggiungerà il canale per le app companion; oggi le provi con *Prova un'approvazione*.
 - **Presenza**: quando ti allontani il Watch ti chiede se tenere sveglio il Mac; senza risposta decide la tua regola.
 - **Lingue**: italiano, inglese, francese, spagnolo (Impostazioni > Aspetto > Lingua).
 - **Aggiornamenti**: controllo automatico, novità della nuova versione e comando pronto (anche "Aggiorna nel Terminale").
 - **Avvisi sul Watch**: notifica ntfy con pulsanti e, se vuoi, avviso nativo di Promemoria (iCloud), senza app da installare.
 - **Diagnostica**: report automatico senza segreti, da salvare e allegare a una segnalazione.
 
-## Autore
+## Problemi noti
+
+- **Doppio clic sul tasto laterale del Watch: sperimentale.** Su macOS 27 il sistema chiude la richiesta ma risponde
+  "annullato" a ogni app, anche a quelle Apple. È un difetto di macOS/watchOS e aspettiamo un fix da Apple. Intanto rispondi
+  dal Watch con la notifica ntfy (Approva o Nega) o approva completando il promemoria. Il doppio clic resta in Diagnostica,
+  per riprovarlo dopo un aggiornamento.
+- **Il promemoria sa solo approvare.** Per negare usa la notifica ntfy, oppure lascia scadere la richiesta: non succede nulla.
+
+## Requisiti
+
+macOS 14 Sonoma o successivo, AirPods con sensori di movimento (AirPods Pro, AirPods 3 e 4, AirPods Max; facoltative), Apple Watch con iPhone per le
+notifiche. Nod è stato provato su macOS 27: sulle versioni precedenti dovrebbe funzionare, ma se trovi problemi
+segnalali.
+
+## Autore e segnalazioni
 
 Sviluppato da **gguidotz**: [github.com/GGuidotz/nod](https://github.com/GGuidotz/nod) · giulioguidotz@yahoo.com
+
+Per bug e richieste preferisci le [issue su GitHub](https://github.com/GGuidotz/nod/issues), allegando il report di
+Diagnostica (non contiene segreti). L'email resta per tutto il resto.
 
 ## Installazione (per chi la usa)
 
@@ -49,7 +68,8 @@ xcrun swift tools/watch-probe.swift          # solo Watch
 xcrun swift tools/watch-probe.swift both     # Touch ID o Watch
 ```
 
-Se così il Watch la riceve e da Nod no, il limite è la firma locale di Nod; intanto Nod usa Touch ID.
+Se così il Watch la riceve e da Nod no, il limite è la firma locale di Nod. Se non la riceve neanche così, è il problema
+noto di macOS 27 descritto sopra.
 
 ## Pubblicare una versione
 
