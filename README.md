@@ -1,7 +1,7 @@
 # Nod
 
 Approvazioni a mani libere e presenza per [Cocaine](https://github.com/Mattiakart/cocaine), con AirPods e Apple Watch.
-Progetto indipendente, non affiliato a Cocaine.
+Progetto indipendente, non affiliato a Cocaine. [English](README.en.md)
 
 ## Funzioni principali
 
@@ -38,8 +38,11 @@ Diagnostica (non contiene segreti). L'email resta per tutto il resto.
 ## Installazione (per chi la usa)
 
 ```
+brew trust gguidotz/tap
 brew install --cask gguidotz/tap/nod
 ```
+
+La prima riga serve una volta sola: le versioni recenti di Homebrew caricano solo i tap segnati come fidati.
 
 Homebrew scarica il DMG dalla release, copia Nod in Applicazioni e toglie la quarantena (l'app non è notarizzata), quindi
 niente "Apri comunque". Al primo avvio si apre la configurazione guidata. Aggiornare: `brew upgrade --cask nod` (dopo
@@ -94,7 +97,6 @@ quarantena tolta all'installazione.
 
 - [Server ntfy proprio](docs/server-ntfy.md): come uscire da ntfy.sh, con configurazione Docker pronta in `server/`.
 - [Scelte di design dell'interfaccia](docs/design-interfaccia.md), secondo le Human Interface Guidelines di Apple.
-- [Prove sui sensori](spike/README.md): AirPods, Apple Watch, stelo, notifiche.
 
 Licenza MIT.
 

@@ -1,5 +1,5 @@
 // Movimento della testa dalle AirPods (Core Motion): indossate o no, assetto in tempo reale, annuire/scuotere, camminata.
-// Gli assi (beccheggio = annuire, imbardata = scuotere) sono l'ipotesi del design: la prova M0 `spike/run.sh head` la verifica.
+// Gli assi (beccheggio = annuire, imbardata = scuotere) sono l'ipotesi del design (la prova M0 che li verificava, spike/run.sh, è nella cronologia git).
 
 import CoreMotion
 import Foundation
