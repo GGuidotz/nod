@@ -1,0 +1,23 @@
+name: Problema / Problem
+description: Qualcosa non funziona come dovrebbe. Something doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Cosa succede / What happens
+      description: Cosa hai fatto, cosa ti aspettavi, cosa è successo. What you did, what you expected, what happened.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: App, macOS, Mac
+      description: Versione di Nod (Impostazioni › Aggiornamenti), macOS e modello del Mac. Nod version (Settings › Updates), macOS and Mac model.
+      placeholder: Nod 0.4.1 · macOS 27.0.1 · Mac14,2 · Apple Watch SE 3
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostica / Diagnostics
+      description: Diagnostica › Copia report, poi incolla qui (non contiene segreti). Diagnostics › Copy Report, then paste here (it contains no secrets).
+      render: markdown

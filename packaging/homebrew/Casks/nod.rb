@@ -35,8 +35,8 @@ cask "nod" do
   ]
 
   caveats <<~EOS
-    Nod è firmato con un certificato locale, non da Apple. Al primo avvio una configurazione guidata
-    chiede i permessi (Movimento e fitness per le AirPods) e prova Apple Watch e notifiche.
-    Serve Cocaine: brew install --cask mattiakart/tap/cocaine
+    Nod is signed with a local certificate, not by Apple. On first launch a guided setup asks for the
+    permissions (Motion & Fitness for AirPods) and tests Apple Watch and notifications.
+    It needs Cocaine: brew install --cask mattiakart/tap/cocaine
   EOS
 end
