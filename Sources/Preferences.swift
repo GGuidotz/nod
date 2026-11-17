@@ -89,7 +89,7 @@ final class Preferences: ObservableObject {
     @Published var speakSummaries: Bool { didSet { defaults.set(speakSummaries, forKey: "speakSummaries") } }
     @Published var serverChoice: NtfyServerChoice { didSet { defaults.set(serverChoice.rawValue, forKey: "serverChoice") } }
     @Published var ownServerURL: String { didSet { defaults.set(ownServerURL, forKey: "ownServerURL") } }
-    @Published var topic: String { didSet { defaults.set(topic, forKey: "topic") } }
+    @Published var topic: String { didSet { Keychain.write(topic, for: Preferences.topicAccount) } }
     @Published var leavingRule: LeavingRule { didSet { save(leavingRule, "leavingRule") } }
     @Published var leavingIdleSeconds: Int { didSet { defaults.set(leavingIdleSeconds, forKey: "leavingIdleSeconds") } }
     @Published var appearance: AppAppearance {
@@ -120,7 +120,7 @@ final class Preferences: ObservableObject {
         speakSummaries = defaults.bool(forKey: "speakSummaries")
         serverChoice = NtfyServerChoice(rawValue: defaults.string(forKey: "serverChoice") ?? "") ?? .ntfySh
         ownServerURL = defaults.string(forKey: "ownServerURL") ?? ""
-        topic = defaults.string(forKey: "topic") ?? Preferences.newTopic()
+        topic = Preferences.loadTopic(defaults)
         leavingIdleSeconds = defaults.object(forKey: "leavingIdleSeconds") as? Int ?? 30
         leavingRule = (defaults.data(forKey: "leavingRule")).flatMap { try? JSONDecoder().decode(LeavingRule.self, from: $0) }
             ?? LeavingRule()
@@ -132,7 +132,6 @@ final class Preferences: ObservableObject {
         classicDockIcon = defaults.bool(forKey: "classicDockIcon")
         autoCheckUpdates = defaults.object(forKey: "autoCheckUpdates") as? Bool ?? true
         remindersEnabled = defaults.bool(forKey: "remindersEnabled")
-        defaults.set(topic, forKey: "topic")
         Localization.language = language
     }
 
@@ -161,6 +160,23 @@ final class Preferences: ObservableObject {
         let raw = serverChoice == .ntfySh ? "https://ntfy.sh" : ownServerURL.trimmingCharacters(in: .whitespaces)
         guard let url = URL(string: raw.hasSuffix("/") ? String(raw.dropLast()) : raw), url.scheme == "https" else { return nil }
         return url
+    }
+
+    /// Voce del Portachiavi che custodisce il topic.
+    nonisolated static let topicAccount = "ntfy-topic"
+
+    /// Il topic sta nel Portachiavi. Se c'è ancora nelle preferenze (versioni fino alla 0.4.1) lo si sposta lì e lo si toglie
+    /// dalle preferenze; se non c'è da nessuna parte se ne genera uno nuovo.
+    private static func loadTopic(_ defaults: UserDefaults) -> String {
+        if let stored = Keychain.read(topicAccount), !stored.isEmpty {
+            defaults.removeObject(forKey: "topic")
+            return stored
+        }
+        let legacy = defaults.string(forKey: "topic").flatMap { $0.isEmpty ? nil : $0 }
+        let topic = legacy ?? newTopic()
+        // Le preferenze si svuotano solo se il Portachiavi ha davvero accettato il valore.
+        if Keychain.write(topic, for: topicAccount) { defaults.removeObject(forKey: "topic") }
+        return topic
     }
 
     /// Nome del topic casuale: chi lo conosce può leggere e scrivere sul topic, quindi fa da segreto.

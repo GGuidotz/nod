@@ -1,7 +1,7 @@
 # Server ntfy proprio (opt-out da ntfy.sh)
 
 Nod usa **ntfy.sh di default**: funziona subito, ma il gestore di ntfy.sh può leggere il testo delle notifiche e i token dei
-pulsanti (ntfy non cifra end-to-end). Nod tiene il testo al minimo e i token valgono una volta sola, per pochi minuti.
+pulsanti (ntfy non cifra end-to-end). Nod tiene il testo al minimo e i token dei pulsanti valgono una volta sola, per pochi minuti.
 Con un server tuo il contenuto non passa più da ntfy.sh. In Nod: *Impostazioni > Notifiche > Server: Server mio*.
 
 ## Cosa resta di ntfy.sh, onestamente
@@ -53,8 +53,25 @@ ntfy.esempio.it {
    poi + con il topic che Nod mostra.
 3. Nod > Notifiche > *Invia notifica di prova*, doppio tap sul Watch.
 
-Il token finisce nel Portachiavi del Mac e nei pulsanti delle notifiche (che passano solo dal tuo server). Per cambiarlo:
+Il token finisce nel Portachiavi del Mac. Nei pulsanti delle notifiche Nod non lo mette mai: i pulsanti restano scritti nel
+messaggio, sul server e sull'iPhone, e un token lì dentro varrebbe per tutto l'account. Per cambiarlo:
 `ntfy token remove`, poi `ntfy token add` e aggiorna Nod.
+
+### Token per i pulsanti (facoltativo, consigliato)
+
+I pulsanti rispondono scrivendo sul topic `<topic>-r`. Se il tuo server richiede l'accesso, crea un utente che può solo
+scrivere su quel topic e dagli un token; poi incollalo in Nod: Impostazioni > Notifiche > *Token per i pulsanti*.
+Senza questo token i pulsanti non portano nessuna autorizzazione e funzionano solo se il topic di risposta è scrivibile
+senza accesso.
+
+```
+docker compose exec ntfy ntfy user add pulsanti-nod                          # utente solo per i pulsanti
+docker compose exec ntfy ntfy access pulsanti-nod 'nod-0d8a1c2e-r' write-only  # il tuo topic + "-r", solo scrittura
+docker compose exec ntfy ntfy token add pulsanti-nod                         # stampa tk_… da incollare in Nod
+```
+
+Il topic che Nod mostra (es. `nod-0d8a1c2e`) va completato con `-r`. Se cambi topic, ripeti `ntfy access`. Nod non scrive mai
+i token nella diagnostica.
 
 ## L'app giusta sull'iPhone
 

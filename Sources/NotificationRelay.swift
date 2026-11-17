@@ -31,6 +31,9 @@ final class NotificationRelay: ObservableObject {
 
     var replyTopic: String { prefs.topic + "-r" }
     var accessToken: String? { Keychain.read("ntfy-token").flatMap { $0.isEmpty ? nil : $0 } }
+    /// Il token dei pulsanti (facoltativo): resta scritto nel messaggio sul server e sull'iPhone, quindi deve poter solo
+    /// scrivere sul topic di risposta. Il token principale non va mai nei pulsanti.
+    var replyToken: String? { Keychain.read("ntfy-reply-token").flatMap { $0.isEmpty ? nil : $0 } }
     /// L'indirizzo completo del topic, da incollare nell'app ntfy dell'iPhone.
     var subscribeURL: String { (prefs.serverURL?.absoluteString ?? "https://ntfy.sh") + "/" + prefs.topic }
 
@@ -55,7 +58,8 @@ final class NotificationRelay: ObservableObject {
             var action: [String: Any] = ["action": "http", "label": button.label,
                                          "url": server.appendingPathComponent(replyTopic).absoluteString,
                                          "method": "POST", "body": token, "clear": true]
-            if let accessToken { action["headers"] = ["Authorization": "Bearer \(accessToken)"] }
+            // Solo il token per i pulsanti; senza, nessun header Authorization (mai quello principale).
+            if let replyToken { action["headers"] = ["Authorization": "Bearer \(replyToken)"] }
             actions.append(action)
         }
         let body: [String: Any] = ["topic": prefs.topic, "title": title, "message": message,
