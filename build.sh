@@ -123,7 +123,8 @@ else
   echo "Attenzione: firma ad hoc. macOS chiederà di nuovo i permessi a ogni build. ./make-signing-identity.sh lo evita."
 fi
 codesign --verify --strict "$APP"
-codesign -dv "$APP" 2>&1 | grep -q 'flags=.*runtime' || { echo "Manca l'hardened runtime" >&2; exit 1; }
+SIGN_INFO="$(codesign -dv "$APP" 2>&1)"
+[[ "$SIGN_INFO" == *flags=*runtime* ]] || { echo "Manca l'hardened runtime" >&2; exit 1; }
 echo "Pronto: $APP ($VERSION, build $BUILD_NUMBER, commit $COMMIT, firma $TIER, icona $ICON_TIER${ICON_CHECK:+: $ICON_CHECK})"
 
 case "$MODE" in
