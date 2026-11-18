@@ -2,8 +2,8 @@
 
 # Cask di Nod per il tap GGuidotz/homebrew-tap. Version e sha256 li aggiorna release.sh: non modificarli a mano.
 cask "nod" do
-  version "0.4.1"
-  sha256 "262bb982802cd5ee930d6ac4133b9ed915de78f6f88cc29c26b107708df9856f"
+  version "0.4.2"
+  sha256 "0a422a933dcc1630020053e2f7ad0a5d5ffd5cb02ee2ac23a839b724a487061e"
 
   url "https://github.com/GGuidotz/nod/releases/download/v#{version}/Nod-#{version}.dmg"
   name "Nod"
