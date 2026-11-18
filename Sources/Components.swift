@@ -212,6 +212,7 @@ struct ServerSettingsSection: View {
     @ObservedObject var prefs: Preferences
     @ObservedObject var relay: NotificationRelay
     @State private var token = Keychain.read("ntfy-token") ?? ""
+    @State private var replyToken = Keychain.read("ntfy-reply-token") ?? ""
 
     var body: some View {
         Section {
@@ -223,6 +224,10 @@ struct ServerSettingsSection: View {
                 SecureField(L("Token di accesso"), text: $token, prompt: Text(verbatim: "tk_…"))
                     .onSubmit { relay.restartListening() }
                     .onChange(of: token) { Keychain.write(token, for: "ntfy-token") }
+                SecureField(L("Token per i pulsanti"), text: $replyToken, prompt: Text(verbatim: "tk_…"))
+                    .onChange(of: replyToken) { Keychain.write(replyToken, for: "ntfy-reply-token") }
+                Text(L("Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \"-r\"), mai quello principale. Senza, i pulsanti non portano nessun token."))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             LabeledContent(L("Topic")) {
                 HStack {

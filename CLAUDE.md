@@ -15,9 +15,12 @@ GGuidotz/whats-going-on, GGuidotz/knock e GGuidotz/smartmemo.
   `### New Features`, `### Improvements`, `### Bug Fixes`, `### Known Issues`.
 - Rilascio: `./release.sh` sul Mac di Giulio (DMG, release GitHub, cask in `packaging/homebrew/Casks/nod.rb` e nel tap
   GGuidotz/homebrew-tap). Il cask del repo è la fonte: il tap ne è una copia.
+- Firma con hardened runtime ed entitlement in `Resources/Nod.entitlements` (eventi Apple per l'Updater, calendari per
+  Promemoria): da aggiornare se l'app usa una risorsa nuova.
 - Il doppio clic del tasto laterale del Watch è sperimentale su macOS 27 (il sistema risponde "annullato"): le
   conferme da lontano passano da ntfy e Promemoria. Vedi README, "Problemi noti".
-- ntfy: testo al minimo, token monouso; server proprio descritto in `docs/server-ntfy.md`. Mai segreti, token o testi
+- ntfy: testo al minimo, token monouso; il token principale non va mai nei pulsanti (solo il "token per i pulsanti",
+  Portachiavi `ntfy-reply-token`, da scrittura sola); il topic sta nel Portachiavi (`ntfy-topic`), non nelle preferenze; server proprio descritto in `docs/server-ntfy.md`. Mai segreti, token o testi
   delle richieste nella diagnostica.
 - Design: Human Interface Guidelines (`docs/design-interfaccia.md`); colore mai come unico segnale. Interfaccia in
   quattro lingue, niente emoji.

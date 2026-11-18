@@ -107,6 +107,7 @@
 "Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)." = "Watch side-button double-click: experimental, waiting for a fix from Apple. On macOS 27 the system closes the prompt but answers \"cancelled\" to every app, Apple's included. Meanwhile answer from the Watch with the ntfy notification (Approve or Deny) or by completing the reminder (approve).";
 "Doppio clic sul tasto laterale per approvare, Nega per rifiutare." = "Double-click the side button to approve, Deny to refuse.";
 "Esci da Nod" = "Quit Nod";
+"Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \"-r\"), mai quello principale. Senza, i pulsanti non portano nessun token." = "Optional. Notification buttons stay stored on the server and on the iPhone: use a token with write-only access to the reply topic (topic name + \"-r\"), never the main one. Without it, the buttons carry no token.";
 "Fai doppio tap sul Watch." = "Double tap on the Watch.";
 "Generale" = "General";
 "Giorni" = "Days";
@@ -305,6 +306,7 @@
 "Tieni sveglio ora" = "Keep Awake Now";
 "Tocca Ricevuta sulla notifica di prova" = "Tap Received on the test notification";
 "Token di accesso" = "Access token";
+"Token per i pulsanti" = "Token for buttons";
 "Topic" = "Topic";
 "Torna ad Automatico" = "Back to Automatic";
 "Touch ID o Watch" = "Touch ID or Watch";

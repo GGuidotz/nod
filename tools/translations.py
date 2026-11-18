@@ -311,6 +311,8 @@ T = {
 "Tieni sveglio il Mac?": ("Keep the Mac awake?", "Garder le Mac éveillé ?", "¿Mantener el Mac despierto?"),
 "Tieni sveglio ora": ("Keep Awake Now", "Garder éveillé maintenant", "Mantener despierto ahora"),
 "Tocca Ricevuta sulla notifica di prova": ("Tap Received on the test notification", "Touchez Reçue sur la notification test", "Toca Recibida en la notificación de prueba"),
+"Token per i pulsanti": ("Token for buttons", "Jeton pour les boutons", "Token para los botones"),
+"Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \\\"-r\\\"), mai quello principale. Senza, i pulsanti non portano nessun token.": ("Optional. Notification buttons stay stored on the server and on the iPhone: use a token with write-only access to the reply topic (topic name + \\\"-r\\\"), never the main one. Without it, the buttons carry no token.", "Facultatif. Les boutons des notifications restent enregistrés sur le serveur et sur l'iPhone : utilisez un jeton en écriture seule sur le topic de réponse (nom du topic + \\\"-r\\\"), jamais le principal. Sans lui, les boutons ne portent aucun jeton.", "Opcional. Los botones de las notificaciones quedan guardados en el servidor y en el iPhone: usa un token de solo escritura en el topic de respuesta (nombre del topic + \\\"-r\\\"), nunca el principal. Sin él, los botones no llevan ningún token."),
 "Token di accesso": ("Access token", "Jeton d'accès", "Token de acceso"),
 "Topic": ("Topic", "Sujet", "Tema"),
 "Torna ad Automatico": ("Back to Automatic", "Revenir à Automatique", "Volver a Automático"),

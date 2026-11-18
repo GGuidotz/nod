@@ -107,6 +107,7 @@
 "Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)." = "Double-clic sur le bouton latéral de la Watch : expérimental, en attente d'un correctif d'Apple. Sur macOS 27, le système ferme la demande mais répond \"annulé\" à toutes les apps, y compris celles d'Apple. En attendant, répondez depuis la Watch avec la notification ntfy (Approuver ou Refuser) ou en terminant le rappel (approuver).";
 "Doppio clic sul tasto laterale per approvare, Nega per rifiutare." = "Appuyez deux fois sur le bouton latéral pour approuver, Refuser pour refuser.";
 "Esci da Nod" = "Quitter Nod";
+"Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \"-r\"), mai quello principale. Senza, i pulsanti non portano nessun token." = "Facultatif. Les boutons des notifications restent enregistrés sur le serveur et sur l'iPhone : utilisez un jeton en écriture seule sur le topic de réponse (nom du topic + \"-r\"), jamais le principal. Sans lui, les boutons ne portent aucun jeton.";
 "Fai doppio tap sul Watch." = "Touchez deux fois sur la Watch.";
 "Generale" = "Général";
 "Giorni" = "Jours";
@@ -305,6 +306,7 @@
 "Tieni sveglio ora" = "Garder éveillé maintenant";
 "Tocca Ricevuta sulla notifica di prova" = "Touchez Reçue sur la notification test";
 "Token di accesso" = "Jeton d'accès";
+"Token per i pulsanti" = "Jeton pour les boutons";
 "Topic" = "Sujet";
 "Torna ad Automatico" = "Revenir à Automatique";
 "Touch ID o Watch" = "Touch ID ou Watch";

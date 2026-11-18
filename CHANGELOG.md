@@ -4,6 +4,20 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.4.2 · 2026-11-17
+
+### Improvements
+- Stricter code signing (hardened runtime): other processes can no longer inject code into Nod to use its permissions. Nod only keeps the access it needs, to Reminders and to run the update in Terminal.
+- Keychain items are now stored only on this Mac, available after the first unlock, and are never included in backups.
+- Nod's diagnostics folder and log are now readable only by you.
+
+### Bug Fixes
+- Buttons in notifications no longer carry your main ntfy token, which stayed stored in the message on the server and on the iPhone. There is a new optional "Token for buttons" field in Settings: use a token that can only write to the reply topic (see docs/server-ntfy.md). Without it, buttons carry no token.
+- The ntfy topic, which acts as a secret, now lives in the Keychain instead of the preferences. It is moved there automatically on first launch, so the iPhone subscription keeps working.
+
+### Known Issues
+- If your own ntfy server requires access, set a "Token for buttons" with write-only access to the reply topic, otherwise the notification buttons are refused by the server.
+
 ## 0.4.1 · 2026-10-13
 
 ### Improvements
