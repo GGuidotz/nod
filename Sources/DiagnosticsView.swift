@@ -13,19 +13,26 @@ struct DiagnosticsView: View {
     @State private var status: String?
 
     var body: some View {
-        Form {
-            Section {
-                Text(L("Nod tiene un registro di ciò che succede (conferme del Watch, notifiche, presenza) e lo raccoglie in un report senza dati segreti. Se qualcosa non va, salvalo e mandacelo."))
-                    .fixedSize(horizontal: false, vertical: true)
-                HStack {
-                    Button(L("Copia report")) { copy() }
-                    Button(L("Salva…")) { save() }
-                    Button(L("Invia per email")) { email() }
-                    Button(L("Apri una issue su GitHub")) { openIssue() }
+        SGPage(topInset: SG.Space.l, hasTabBar: false) {
+            SGSection(L("Report")) {
+                SGRowBlock {
+                    Text(L("Nod tiene un registro di ciò che succede (conferme del Watch, notifiche, presenza) e lo raccoglie in un report senza dati segreti. Se qualcosa non va, salvalo e mandacelo."))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                if let status { Text(status).foregroundStyle(.secondary) }
-            } header: {
-                Text(L("Report"))
+                SGDivider()
+                SGRowBlock {
+                    HStack(spacing: 8) {
+                        Button(L("Copia report")) { copy() }
+                        Button(L("Salva…")) { save() }
+                        Button(L("Invia per email")) { email() }
+                        Button(L("Apri una issue su GitHub")) { openIssue() }
+                    }
+                    .buttonStyle(.sgSecondary)
+                }
+                if let status {
+                    SGDivider()
+                    SGRowBlock { Text(status).foregroundStyle(SG.Ink.secondary) }
+                }
             }
 
             WatchDiagnostics(watch: model.watch, prefs: model.prefs)
@@ -36,19 +43,19 @@ struct DiagnosticsView: View {
 
             IconDiagnostics(icon: IconHealth.shared, prefs: model.prefs)
 
-            Section {
-                ScrollView {
-                    Text(report)
-                        .font(.system(.caption, design: .monospaced))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            SGSection(L("Anteprima")) {
+                SGRowBlock {
+                    ScrollView {
+                        Text(report)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(SG.Ink.primary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(height: 240)
                 }
-                .frame(minHeight: 240)
-            } header: {
-                Text(L("Anteprima"))
             }
         }
-        .formStyle(.grouped)
         .navigationTitle(L("Diagnostica"))
         .onAppear { refresh(); model.watch.refresh() }
         .onChange(of: log.entries.count) { refresh() }
@@ -106,28 +113,30 @@ private struct IconDiagnostics: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Section {
-            HStack(alignment: .top, spacing: 16) {
-                if let preview = icon.preview {
-                    Image(nsImage: preview).resizable().frame(width: 64, height: 64)
-                        .accessibilityLabel(L("Anteprima dell'icona del bundle"))
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    LabeledContent(L("Icona compilata"), value: icon.tier)
-                    LabeledContent(L("Parte visibile"), value: icon.coverage.map(IconMetrics.percent) ?? "-")
-                    if let check = icon.buildCheck { LabeledContent(L("Controllo di build.sh"), value: check) }
-                    if icon.fallbackActive {
-                        Label(L("Risultava vuota: Nod mostra da solo l'icona classica."), systemImage: "arrow.uturn.backward.circle")
-                            .foregroundStyle(.orange)
+        SGSection(L("Icona")) {
+            SGRowBlock {
+                HStack(alignment: .top, spacing: 16) {
+                    if let preview = icon.preview {
+                        Image(nsImage: preview).resizable().frame(width: 64, height: 64)
+                            .accessibilityLabel(L("Anteprima dell'icona del bundle"))
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack { Text(L("Icona compilata")); Spacer(); Text(icon.tier).foregroundStyle(SG.Ink.secondary) }
+                        HStack { Text(L("Parte visibile")); Spacer()
+                            Text(icon.coverage.map(IconMetrics.percent) ?? "-").foregroundStyle(SG.Ink.secondary) }
+                        if let check = icon.buildCheck {
+                            HStack { Text(L("Controllo di build.sh")); Spacer(); Text(check).foregroundStyle(SG.Ink.secondary) }
+                        }
+                        if icon.fallbackActive {
+                            NoteLabel(text: L("Risultava vuota: Nod mostra da solo l'icona classica."), symbol: "arrow.uturn.backward.circle")
+                        }
                     }
                 }
             }
-            Toggle(L("Usa l'icona classica nel Dock"), isOn: $prefs.classicDockIcon)
-        } header: {
-            Text(L("Icona"))
+            SGDivider()
+            SGToggleRow(L("Usa l'icona classica nel Dock"), isOn: $prefs.classicDockIcon)
         } footer: {
-            Text(L("All'avvio Nod misura l'icona che il Dock disegna: se è vuota mette quella classica. Con questa opzione la classica resta sempre."))
-                .foregroundStyle(.secondary)
+            SGFootnote(L("All'avvio Nod misura l'icona che il Dock disegna: se è vuota mette quella classica. Con questa opzione la classica resta sempre."))
         }
     }
 }
@@ -137,12 +146,12 @@ private struct RemindersDiagnostics: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Section {
+        SGSection(L("Promemoria")) {
             RemindersControls(reminders: reminders, prefs: prefs)
-            LabeledContent(L("Lista"), value: reminders.listStatus ?? "-")
-            LabeledContent(L("Ultimo avviso"), value: reminders.lastAlert ?? "-")
-        } header: {
-            Text(L("Promemoria"))
+            SGDivider()
+            SGValueRow(L("Lista"), value: reminders.listStatus ?? "-")
+            SGDivider()
+            SGValueRow(L("Ultimo avviso"), value: reminders.lastAlert ?? "-")
         }
     }
 }
@@ -151,20 +160,24 @@ private struct NtfyDiagnostics: View {
     @ObservedObject var relay: NotificationRelay
 
     var body: some View {
-        Section {
-            HStack {
-                Button(L("Prova invio ntfy")) { Task { await relay.sendTest() } }
-                if let event = relay.lastEvent { Text(event).foregroundStyle(.secondary) }
+        SGSection(L("Notifiche")) {
+            SGRowBlock {
+                HStack(spacing: 10) {
+                    Button(L("Prova invio ntfy")) { Task { await relay.sendTest() } }
+                        .buttonStyle(.sgSecondary)
+                    if let event = relay.lastEvent { Text(event).foregroundStyle(SG.Ink.secondary) }
+                }
             }
-            LabeledContent(L("Ultimo invio"), value: relay.lastPublish ?? "-")
-            LabeledContent(L("Verifica sul server"), value: relay.lastServerCheck ?? "-")
-            LabeledContent(L("Risposte"), value: relay.isListening ? L("In ascolto") : L("Non collegato"))
-            NtfyAlertChecklist(relay: relay)
-        } header: {
-            Text(L("Notifiche"))
+            SGDivider()
+            SGValueRow(L("Ultimo invio"), value: relay.lastPublish ?? "-")
+            SGDivider()
+            SGValueRow(L("Verifica sul server"), value: relay.lastServerCheck ?? "-")
+            SGDivider()
+            SGValueRow(L("Risposte"), value: relay.isListening ? L("In ascolto") : L("Non collegato"))
+            SGDivider()
+            SGRowBlock { NtfyAlertChecklist(relay: relay) }
         } footer: {
-            Text(L("Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)."))
-                .foregroundStyle(.secondary)
+            SGFootnote(L("Se la verifica sul server trova il messaggio ma l'avviso non compare, il percorso fino al server funziona: resta la consegna sull'iPhone (lista qui sopra)."))
         }
     }
 }
@@ -174,64 +187,82 @@ private struct WatchDiagnostics: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Section {
-            Picker(L("Metodo di conferma"), selection: $prefs.watchMethod) {
-                ForEach(WatchMethod.allCases) { Text($0.title).tag($0) }
-            }
+        SGSection(L("Apple Watch")) {
+            SGMenuRow(L("Metodo di conferma"), selection: $prefs.watchMethod,
+                      options: WatchMethod.allCases.map { (value: $0, title: $0.title) })
             if prefs.watchMethod == .automatic, !watch.currentChain.isEmpty {
-                LabeledContent(L("Ordine in automatico"), value: watch.currentChain.map(\.title).joined(separator: " → "))
+                SGDivider()
+                SGValueRow(L("Ordine in automatico"), value: watch.currentChain.map(\.title).joined(separator: " → "))
             }
-            HStack {
-                Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova guidata del doppio clic")) {
-                    Task { await watch.testAllMethods() }
+            SGDivider()
+            SGRowBlock {
+                HStack(spacing: 10) {
+                    Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova guidata del doppio clic")) {
+                        Task { await watch.testAllMethods() }
+                    }
+                    .buttonStyle(.sgSecondary)
+                    .disabled(watch.isAsking || watch.isProbing)
+                    Button(watch.isProbing ? L("Guarda il Watch…") : L("Prova il Watch tramite osascript")) {
+                        Task { await watch.probeViaOsascript() }
+                    }
+                    .buttonStyle(.sgSecondary)
+                    .disabled(watch.isAsking || watch.isProbing)
                 }
-                .disabled(watch.isAsking || watch.isProbing)
-                Button(watch.isProbing ? L("Guarda il Watch…") : L("Prova il Watch tramite osascript")) {
-                    Task { await watch.probeViaOsascript() }
-                }
-                .disabled(watch.isAsking || watch.isProbing)
             }
             if let step = watch.guidedStep {
-                Label(step, systemImage: "applewatch.radiowaves.left.and.right")
-                    .font(.headline)
-                    .foregroundStyle(Brand.gradient)
-                    .fixedSize(horizontal: false, vertical: true)
+                SGDivider()
+                SGRowBlock {
+                    NoteLabel(text: step, symbol: "applewatch.radiowaves.left.and.right", tint: SG.Ink.secondary)
+                        .font(SG.Font.bodyEmphasis)
+                }
             }
             if prefs.watchMethod != .automatic,
                watch.attempts.last(where: { $0.method == prefs.watchMethod.rawValue })?.code == LAError.Code.userFallback.rawValue {
-                HStack {
-                    Text(L("Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma."))
-                        .foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
-                    Button(L("Torna ad Automatico")) { prefs.watchMethod = .automatic; watch.refresh() }
+                SGDivider()
+                SGRowBlock {
+                    HStack {
+                        NoteLabel(text: L("Con questo metodo il doppio clic torna come \"altro metodo\" e non vale come conferma."),
+                                  symbol: "exclamationmark.triangle.fill")
+                        Button(L("Torna ad Automatico")) { prefs.watchMethod = .automatic; watch.refresh() }
+                            .buttonStyle(.sgSecondary)
+                    }
                 }
             }
             if let probe = watch.probeResult {
-                LabeledContent(L("osascript (firmato Apple)"), value: probe)
+                SGDivider()
+                SGValueRow(L("osascript (firmato Apple)"), value: probe)
             }
             ForEach(WatchMethod.concrete) { method in
                 if let result = watch.methodResults[method] {
-                    LabeledContent(method.title, value: result)
+                    SGDivider()
+                    SGValueRow(method.title, value: result)
                 }
             }
             if let last = watch.attempts.last {
-                LabeledContent(L("Ultimo tentativo"), value: last.line)
+                SGDivider()
+                SGValueRow(L("Ultimo tentativo"), value: last.line)
             }
-            if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
-            WatchDoubleClickNotice()
+            if watch.needsTroubleshooting {
+                SGDivider()
+                SGRowBlock { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
+            }
+            SGDivider()
+            SGRowBlock { WatchDoubleClickNotice() }
             if watch.doubleClickNotConfirmed {
-                Button(L("Copia testo per Feedback Assistant")) {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(DiagnosticsReport.appleFeedback(model: AppModel.shared), forType: .string)
-                    NSWorkspace.shared.open(URL(string: "applefeedback://")!)
+                SGDivider()
+                SGRowBlock {
+                    Button(L("Copia testo per Feedback Assistant")) {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(DiagnosticsReport.appleFeedback(model: AppModel.shared), forType: .string)
+                        NSWorkspace.shared.open(URL(string: "applefeedback://")!)
+                    }
+                    .buttonStyle(.sgSecondary)
                 }
             }
-        } header: {
-            Text(L("Apple Watch"))
         } footer: {
-            Text(L("Sperimentale: i metodi col doppio clic restano qui per riprovarli dopo un aggiornamento di macOS o watchOS.")
-                 + " " + L("Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra.")
-                 + " " + L("La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod."))
-                .foregroundStyle(.secondary)
+            SGFootnote(L("Sperimentale: i metodi col doppio clic restano qui per riprovarli dopo un aggiornamento di macOS o watchOS.")
+                       + " " + L("Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra.")
+                       + " " + L("La prova tramite osascript fa la stessa richiesta da un processo firmato Apple: se così il Watch la riceve, il limite è la firma di Nod."))
         }
     }
 }

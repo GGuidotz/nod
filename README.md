@@ -51,6 +51,9 @@ l'aggiornamento Nod mostra le novità). Disinstallare: `brew uninstall --cask no
 ## Compilare (per chi sviluppa)
 
 Servono macOS 14+ e gli strumenti a riga di comando (`xcode-select --install`); niente progetto Xcode, come Cocaine.
+Sguardo, il sistema di design comune (github.com/GGuidotz/sguardo), sta in `Vendor/Sguardo` e si compila con l'app:
+clona con `git clone --recursive https://github.com/GGuidotz/nod.git`, oppure in un clone già fatto esegui
+`git submodule update --init`.
 
 ```
 ./make-signing-identity.sh   # una volta: firma stabile, così macOS non dimentica i permessi a ogni build
@@ -120,4 +123,5 @@ Licenza MIT.
 | `packaging/homebrew/Casks/nod.rb` | Il cask per il tap |
 | `Sources/Diagnostics.swift`, `DiagnosticsView.swift` | Registro eventi e report di diagnostica |
 | `Sources/Updater.swift`, `UpdatesView.swift` | Controllo aggiornamenti e comando per aggiornare |
+| `Sources/Theme.swift`, `Vendor/Sguardo` | Accento di Nod, aspetto scelto, schede; il sistema di design Sguardo (submodule) |
 | `Sources/Localization.swift`, `Localization/` | Lingue (`L("…")`), traduzioni generate da `tools/translations.py` |

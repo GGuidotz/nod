@@ -49,6 +49,8 @@ update Nod shows what's new). Uninstall: `brew uninstall --cask nod` (`--zap` al
 ## Building (for developers)
 
 You need macOS 14+ and the command line tools (`xcode-select --install`); no Xcode project, like Cocaine.
+Sguardo, the shared design system (github.com/GGuidotz/sguardo), lives in `Vendor/Sguardo` and is built with the app:
+clone with `git clone --recursive https://github.com/GGuidotz/nod.git`, or run `git submodule update --init` in an existing clone.
 
 ```
 ./make-signing-identity.sh   # once: a stable signature, so macOS doesn't forget permissions on every build

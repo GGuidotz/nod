@@ -61,6 +61,9 @@
 "Cocaine spento, com'era prima." = "Cocaine desactivado, como estaba.";
 "Collegate" = "Conectadas";
 "Collegato." = "Conectado.";
+"Colore d'accento" = "Color de énfasis";
+"Colore dell'app" = "Color de la app";
+"Colore di sistema" = "Color del sistema";
 "Completalo dal Watch per approvare. Per negare: Nega al Mac o nella notifica ntfy; senza risposta non succede nulla." = "Complétalo en el Watch para aprobar. Para denegar: Denegar en el Mac o en la notificación de ntfy; sin respuesta no pasa nada.";
 "Completalo dal Watch per tenere sveglio il Mac. Senza risposta tra %d min: %@." = "Complétalo en el Watch para mantener el Mac despierto. Sin respuesta en %d min: %@.";
 "Completalo dal Watch: Nod ti dirà dopo quanti secondi l'ha visto." = "Complétalo en el Watch: Nod te dirá tras cuántos segundos lo ha visto.";
@@ -225,6 +228,7 @@
 "Passo 6" = "Paso 6";
 "Per aggiornare, esegui nel Terminale:" = "Para actualizar, ejecuta en Terminal:";
 "Per ogni metodo Nod ti dice quando fare doppio clic sul tasto laterale del Watch: non toccare il Mac. Il metodo che dà \"Confermato\" sceglilo qui sopra." = "Para cada método Nod te dice cuándo hacer doble clic en el botón lateral del Watch: no toques el Mac. Elige arriba el método que da \"Confirmado\".";
+"Personalizzato" = "Personalizado";
 "Piccole correzioni e miglioramenti." = "Correcciones y mejoras menores.";
 "Presenza" = "Presencia";
 "Presenza: %@" = "Presencia: %@";

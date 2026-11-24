@@ -7,46 +7,53 @@ struct UpdatesSettings: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Form {
-            Toggle(L("Controlla automaticamente (ogni 6 ore)"), isOn: $prefs.autoCheckUpdates)
-            LabeledContent(L("Versione installata"), value: updater.currentVersion)
-            LabeledContent(L("Ultimo controllo")) {
-                if let last = updater.lastCheck {
-                    Text(last, style: .relative)
-                } else {
-                    Text(L("Mai"))
+        SGPage {
+            SGSection {
+                SGToggleRow(L("Controlla automaticamente (ogni 6 ore)"), isOn: $prefs.autoCheckUpdates)
+                SGDivider()
+                SGValueRow(L("Versione installata"), value: updater.currentVersion)
+                SGDivider()
+                SGValueRow(L("Ultimo controllo")) {
+                    if let last = updater.lastCheck {
+                        Text(last, style: .relative)
+                    } else {
+                        Text(L("Mai"))
+                    }
                 }
-            }
-            HStack {
-                Button(L("Controlla ora")) { Task { await updater.check() } }
-                    .disabled(updater.state == .checking)
-                UpdateStateText(updater: updater)
+                SGDivider()
+                SGRowBlock {
+                    HStack(spacing: 10) {
+                        Button(L("Controlla ora")) { Task { await updater.check() } }
+                            .buttonStyle(.sgSecondary)
+                            .disabled(updater.state == .checking)
+                        UpdateStateText(updater: updater)
+                    }
+                }
             }
             if updater.isUpdateAvailable {
                 UpdateCard(updater: updater)
             }
         }
-        .formStyle(.grouped)
-        .frame(height: 420)
     }
 }
 
 struct UpdateStateText: View {
     @ObservedObject var updater: Updater
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         switch updater.state {
         case .idle: EmptyView()
         case .checking: ProgressView().controlSize(.small)
-        case .upToDate: Label(L("Nod è aggiornato."), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-        case .available(let version): Label(L("Disponibile la versione %@", version), systemImage: "arrow.down.circle.fill")
-            .foregroundStyle(Brand.accent)
-        case .failed(let why): Text(why).foregroundStyle(.orange)
+        case .upToDate: NoteLabel(text: L("Nod è aggiornato."), symbol: "checkmark.circle.fill", tint: SG.Status.success)
+        case .available(let version): NoteLabel(text: L("Disponibile la versione %@", version), symbol: "arrow.down.circle.fill",
+                                                tint: accent.base)
+        case .failed(let why): NoteLabel(text: why, symbol: "exclamationmark.triangle.fill")
         }
     }
 }
 
-/// Le novità della nuova versione e il comando per aggiornare.
+/// Le novità della nuova versione e il comando per aggiornare. Una scheda a sé: l'unico pulsante principale è "Aggiorna".
 struct UpdateCard: View {
     @ObservedObject var updater: Updater
 
@@ -54,26 +61,32 @@ struct UpdateCard: View {
         VStack(alignment: .leading, spacing: 12) {
             if case .available(let version) = updater.state {
                 Label(L("Disponibile Nod %@", version), systemImage: "arrow.down.circle.fill")
-                    .font(.headline)
+                    .font(SG.Font.instruction)
+                    .foregroundStyle(SG.Ink.primary)
             }
             if !updater.news.isEmpty {
                 ChangelogList(entries: updater.news)
             }
-            Text(L("Per aggiornare, esegui nel Terminale:")).foregroundStyle(.secondary)
+            Text(L("Per aggiornare, esegui nel Terminale:")).font(SG.Font.body).foregroundStyle(SG.Ink.secondary)
             Text(updater.command)
-                .font(.system(.callout, design: .monospaced))
+                .font(SG.Font.value)
+                .foregroundStyle(SG.Ink.primary)
                 .textSelection(.enabled)
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.12)))
-            HStack {
+                .background(RoundedRectangle(cornerRadius: SG.Radius.tile, style: .continuous).fill(SG.Fill.tile))
+                .overlay(RoundedRectangle(cornerRadius: SG.Radius.tile, style: .continuous)
+                    .strokeBorder(SG.Fill.rowBorder, lineWidth: SG.Stroke.hairline))
+            HStack(spacing: 10) {
                 Button(L("Copia comando")) { updater.copyCommand() }
+                    .buttonStyle(.sgSecondary)
                 Button(L("Aggiorna nel Terminale")) { updater.runInTerminal() }
-                    .primaryButton()
+                    .buttonStyle(.sgPrimary)
             }
             if let error = updater.terminalError {
-                Text(error).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                NoteLabel(text: error, symbol: "exclamationmark.triangle.fill")
             }
         }
+        .contentCard()
     }
 }

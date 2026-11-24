@@ -28,6 +28,13 @@ plist_set() { /usr/bin/plutil -insert "$1" -string "$2" "$PLIST"; }   # chiave, 
 
 grep -q "^## $VERSION " CHANGELOG.md || { echo "Manca la sezione '## $VERSION · <data>' in CHANGELOG.md" >&2; exit 1; }
 
+# Sguardo, il sistema di design comune (github.com/GGuidotz/sguardo): submodule in Vendor/Sguardo, compilato insieme
+# all'app (un modulo solo, niente import). Per provare modifiche al kit senza aggiornare il submodule:
+# SGUARDO_DIR=~/Developer/design-system ./build.sh
+SGUARDO="${SGUARDO_DIR:-Vendor/Sguardo}/swift/Sources/Sguardo"
+[ -d "$SGUARDO" ] || { echo "Manca Sguardo: esegui git submodule update --init" >&2; exit 1; }
+SOURCES=(Sources/*.swift "$SGUARDO"/*.swift)
+
 # Traduzioni: ogni L("…") deve avere la sua voce in en/fr/es (avviso, non blocca).
 if command -v python3 >/dev/null; then
   python3 -I tools/check-strings.py >/dev/null || echo "Attenzione: traduzioni incomplete (python3 tools/check-strings.py)."
@@ -42,7 +49,7 @@ cp Resources/Scripts/*.js "$APP/Contents/Resources/"   # prove di Diagnostica (w
 
 for arch in arm64 x86_64; do
   mkdir -p "$BUILD/$arch"
-  swiftc -O -swift-version 5 -parse-as-library -target "$arch-apple-macos14.0" Sources/*.swift -o "$BUILD/$arch/Nod"
+  swiftc -O -swift-version 5 -parse-as-library -target "$arch-apple-macos14.0" "${SOURCES[@]}" -o "$BUILD/$arch/Nod"
 done
 lipo -create "$BUILD/arm64/Nod" "$BUILD/x86_64/Nod" -output "$APP/Contents/MacOS/Nod"
 

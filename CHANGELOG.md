@@ -4,6 +4,18 @@ All notable changes to Nod. The app shows the sections newer than the last versi
 Format: `## <version> · <date>`, then `### New Features`, `### Improvements`, `### Bug Fixes`, `### Security`,
 `### Known Issues`, one `- ` line per change.
 
+## 0.4.3 · 2026-11-24
+
+### New Features
+- Accent color of your choice. In Settings > General: Nod blue, the macOS accent color, or your own.
+
+### Improvements
+- A new look: the shapes, colors and motion of Sguardo, the design system shared by our apps. Rows sit on a translucent layer with a thin outline, buttons are capsules, and Nod blue is used only for the main button and the current selection.
+- Settings have a floating tab bar at the bottom that shows the name of the selected tab (⌘1 to ⌘5). The window stays on the same tab when you change language.
+- The main window pages, Diagnostics and the setup guide use the same rows and capsule buttons. Steps change with a soft blur, and Reduce Motion gives a plain fade.
+- The animated aurora background is gone: the window uses the system background.
+- Building from source now needs the design system: `git clone --recursive`, or `git submodule update --init` in an existing clone.
+
 ## 0.4.2 · 2026-11-17
 
 ### Improvements

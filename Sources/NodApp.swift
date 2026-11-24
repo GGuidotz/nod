@@ -32,13 +32,16 @@ struct NodApp: App {
     }
 }
 
-/// Ricostruisce l'interfaccia quando cambi lingua, così ogni testo passa di nuovo da L().
+/// Ricostruisce l'interfaccia quando cambi lingua, così ogni testo passa di nuovo da L(). Applica anche l'accento di
+/// Sguardo (quello di Nod, o la scelta in Impostazioni > Generale) a ogni finestra.
 struct LanguageRoot<Content: View>: View {
     @ObservedObject var prefs: Preferences
     @ViewBuilder var content: Content
 
     var body: some View {
-        content.id(prefs.language)
+        content
+            .sguardoAccent(default: .nod)
+            .id(prefs.language)
     }
 }
 

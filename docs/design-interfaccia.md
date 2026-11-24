@@ -9,6 +9,14 @@ configurare, controllare lo stato e provare. **L'elemento per cui si ricorda**: 
 tempo reale (`HeadIndicator`), nella configurazione e in Dispositivi. Non è decorazione: dimostra che il sensore funziona ed è
 lo stesso gesto con cui approvi. Tutto il resto è sistema: SF Pro, colori semantici, controlli standard.
 
+## Versione 0.4.3: Sguardo
+
+Forme, riempimenti, pulsanti a capsula e molle vengono da Sguardo (`Vendor/Sguardo`, regole in DESIGN.md). Cambia la grafica,
+non il comportamento: la barra laterale, i passi e i testi sono gli stessi. Resta valido il vetro solo sui controlli che
+galleggiano (barra delle schede, capsula dei passi); il contenuto ha un velo traslucido e un filo da 1 pt. L'aurora animata
+è stata tolta: il fondo è quello di sistema. L'accento predefinito è il blu di Nod, a scelta della persona in
+Impostazioni > Generale. Il bianco sul blu dà circa 3:1: il testo dei pulsanti principali è corto e in grassetto medio.
+
 ## Versione 0.2.0: Liquid Glass
 
 | Scelta | Riferimento |

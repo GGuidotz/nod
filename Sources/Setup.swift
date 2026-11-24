@@ -1,8 +1,9 @@
 // Configurazione guidata. Al primo avvio: tutti i passaggi. A ogni aggiornamento: prima le novità, poi solo i passaggi
 // introdotti dopo l'ultima versione che hai visto (un nuovo permesso, una nuova funzione), poi la fine.
 // Si riapre da Nod > Ripeti configurazione. Ogni passaggio si prova davvero: annuire, la conferma sul Watch, la notifica.
-// Grafica: aurora nel livello del contenuto, schede di materiale standard, una sola barra di vetro in basso con i passi,
-// Indietro e Continua (HIG, Liquid Glass: il vetro solo sui controlli che galleggiano).
+// Grafica: Sguardo. Righe e schede su velo traslucido con filo da 1 pt, titoli da 26 in grassetto, pulsanti a capsula
+// (il solo principale è "Continua"), i passi cambiano con la molla e un po' di sfocatura. L'unico vetro è la capsula dei
+// passi in basso (HIG, Liquid Glass: il vetro solo sui controlli che galleggiano).
 
 import AppKit
 import ServiceManagement
@@ -54,36 +55,26 @@ struct SetupView: View {
     @EnvironmentObject private var model: AppModel
     let session: SetupSession
     @State private var index = 0
-    @State private var forward = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var step: SetupStep { session.steps[index] }
 
     var body: some View {
-        ZStack {
-            AuroraBackground().ignoresSafeArea()
-            VStack(spacing: 0) {
-                ScrollView {
-                    content
-                        .id(step)
-                        .transition(transition)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 36)
-                        .padding(.bottom, 24)
-                }
-                .scrollIndicators(.never)
-                bottomBar
+        VStack(spacing: 0) {
+            ScrollView {
+                content
+                    .id(step)
+                    .transition(reduceMotion ? .opacity : .sgBlurReplace)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 36)
+                    .padding(.bottom, 24)
             }
+            .scrollIndicators(.never)
+            bottomBar
         }
         .frame(width: 760, height: 600)
         .interactiveDismissDisabled()
-    }
-
-    private var transition: AnyTransition {
-        if reduceMotion { return .opacity }
-        return .asymmetric(insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
-                           removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity))
     }
 
     @ViewBuilder private var content: some View {
@@ -100,36 +91,33 @@ struct SetupView: View {
         }
     }
 
-    /// L'unica superficie di vetro: passi, Indietro, Continua.
+    /// In basso: i passi in una capsula (l'unica superficie di vetro), poi Indietro e Continua, il solo pulsante principale.
     private var bottomBar: some View {
-        GlassGroup {
-            HStack(spacing: 14) {
-                StepDots(count: session.steps.count, current: index)
-                    .padding(.horizontal, 16)
-                    .frame(height: 44)
-                    .glassSurface(in: Capsule())
-                Spacer()
-                if step == .welcome {
-                    Button(L("Configura più tardi")) { model.finishSetup() }
-                        .secondaryButton()
-                } else if index > 0 {
-                    Button(L("Indietro")) { go(-1) }
-                        .secondaryButton()
-                }
-                Button(step == .done ? L("Inizia a usare Nod") : L("Continua")) {
-                    if step == .done { model.finishSetup() } else { go(1) }
-                }
-                .primaryButton()
-                .keyboardShortcut(.defaultAction)
+        HStack(spacing: 14) {
+            StepDots(count: session.steps.count, current: index)
+                .padding(.horizontal, 16)
+                .frame(height: SG.Size.buttonLarge + 6)
+                .glassSurface(in: Capsule())
+            Spacer()
+            if step == .welcome {
+                Button(L("Configura più tardi")) { model.finishSetup() }
+                    .buttonStyle(SGCapsuleButtonStyle(.secondary, size: .large))
+            } else if index > 0 {
+                Button(L("Indietro")) { go(-1) }
+                    .buttonStyle(SGCapsuleButtonStyle(.secondary, size: .large))
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            Button(step == .done ? L("Inizia a usare Nod") : L("Continua")) {
+                if step == .done { model.finishSetup() } else { go(1) }
+            }
+            .buttonStyle(SGCapsuleButtonStyle(.primary, size: .large))
+            .keyboardShortcut(.defaultAction)
         }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
     }
 
     private func go(_ delta: Int) {
-        forward = delta > 0
-        withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.5, dampingFraction: 0.86)) {
+        withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : SG.Motion.standard) {
             index = max(0, min(session.steps.count - 1, index + delta))
         }
     }
@@ -143,20 +131,19 @@ private struct StepHeader: View {
     let subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(eyebrow.uppercased())
-                .font(.caption.weight(.bold))
-                .tracking(1.2)
-                .foregroundStyle(Brand.gradient)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(eyebrow).font(SG.Font.label).foregroundStyle(SG.Ink.secondary)
             Text(title)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(SG.Font.title)
+                .foregroundStyle(SG.Ink.primary)
                 .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
             Text(subtitle)
-                .font(.title3)
-                .foregroundStyle(.secondary)
+                .font(SG.Font.instruction)
+                .foregroundStyle(SG.Ink.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.bottom, 22)
+        .padding(.bottom, 20)
     }
 }
 
@@ -166,20 +153,22 @@ private struct WelcomeStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 26) {
             HStack(alignment: .center, spacing: 28) {
-                FloatingAppIcon(size: 150)
+                AppIconView(size: 136)
                 VStack(alignment: .leading, spacing: 10) {
                     Text(L("Nod"))
-                        .font(.system(size: 54, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Brand.gradient)
+                        .font(SG.Font.title)
+                        .foregroundStyle(SG.Ink.primary)
                     Text(L("Approva l'AI con un cenno. Lascia la scrivania senza pensarci."))
-                        .font(.title2.weight(.medium))
+                        .font(SG.Font.instruction)
+                        .foregroundStyle(SG.Ink.primary)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(L("Nod lavora con Cocaine, le tue AirPods e il tuo Apple Watch. Ogni passaggio si prova subito."))
-                        .foregroundStyle(.secondary)
+                        .font(SG.Font.body)
+                        .foregroundStyle(SG.Ink.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            HStack(alignment: .top, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
                 FeatureTile(symbol: "checkmark.seal.fill", title: L("Annuisci"),
                             detail: L("Con le AirPods approvi con un cenno, poi confermi dal Watch."))
                 FeatureTile(symbol: "applewatch", title: L("Solo Watch"),
@@ -200,12 +189,12 @@ struct WhatsNewStep: View {
                 StepHeader(eyebrow: L("Aggiornamento"), title: L("Novità di Nod"),
                            subtitle: L("Cosa è cambiato dall'ultima volta che l'hai aperto. Poi ti mostro solo ciò che è nuovo."))
                 Spacer()
-                FloatingAppIcon(size: 84)
+                AppIconView(size: 84)
             }
             if entries.isEmpty {
-                Text(L("Piccole correzioni e miglioramenti.")).foregroundStyle(.secondary).contentCard()
+                Text(L("Piccole correzioni e miglioramenti.")).font(SG.Font.body).foregroundStyle(SG.Ink.secondary).contentCard()
             } else {
-                ChangelogList(entries: entries).contentCard(padding: 22)
+                ChangelogList(entries: entries, cards: true)
             }
         }
     }
@@ -215,25 +204,34 @@ private struct CocaineStep: View {
     @ObservedObject var cocaine: CocaineBridge
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
             StepHeader(eyebrow: L("Passo 1"), title: L("Cocaine"),
                        subtitle: L("Nod usa Cocaine per tenere sveglio il Mac quando ti allontani."))
-            VStack(alignment: .leading, spacing: 14) {
+            SGGroup {
                 StatusRow(title: L("Installato"), value: cocaine.isInstalled ? L("Versione %@", cocaine.version ?? "?") : L("Non trovato"),
                           ok: cocaine.isInstalled, symbol: "powersleep")
+                SGDivider()
                 StatusRow(title: L("Richieste dell'AI"), value: cocaine.approvalsAvailable ? L("Collegate") : L("In arrivo"),
                           ok: cocaine.approvalsAvailable, symbol: "checkmark.seal")
                 if !cocaine.isInstalled {
-                    Text(verbatim: "brew install --cask mattiakart/tap/cocaine")
-                        .font(.body.monospaced()).textSelection(.enabled)
+                    SGDivider()
+                    SGRowBlock {
+                        Text(verbatim: "brew install --cask mattiakart/tap/cocaine")
+                            .font(SG.Font.value).textSelection(.enabled)
+                    }
                 }
                 if !cocaine.approvalsAvailable {
-                    Text(L("Le richieste vere dell'AI non sono ancora collegate a Cocaine. Intanto Nod gestisce la presenza e puoi provare il flusso delle approvazioni."))
-                        .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    SGDivider()
+                    SGRowBlock {
+                        Text(L("Le richieste vere dell'AI non sono ancora collegate a Cocaine. Intanto Nod gestisce la presenza e puoi provare il flusso delle approvazioni."))
+                            .foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                Button(L("Controlla di nuovo")) { cocaine.refresh() }.secondaryButton()
+                SGDivider()
+                SGRowBlock {
+                    Button(L("Controlla di nuovo")) { cocaine.refresh() }.buttonStyle(.sgSecondary)
+                }
             }
-            .contentCard()
         }
         .onAppear { cocaine.refresh() }
     }
@@ -246,7 +244,7 @@ private struct AirPodsStep: View {
     @State private var lastLabel: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
             StepHeader(eyebrow: L("Passo 2"), title: L("AirPods"),
                        subtitle: L("Nod legge il movimento della testa per capire quando annuisci, scuoti la testa o ti alzi e cammini. Sono facoltative: senza, basta il Watch."))
             HStack(alignment: .center, spacing: 30) {
@@ -260,21 +258,23 @@ private struct AirPodsStep: View {
                     if !head.isRunning {
                         // Prima della richiesta di sistema: un solo pulsante, che la apre (HIG, Privacy).
                         Text(L("Al prossimo passo macOS ti chiede il permesso Movimento e fitness. I dati restano su questo Mac."))
+                            .font(SG.Font.body)
                             .fixedSize(horizontal: false, vertical: true)
-                        Button(L("Continua")) { prefs.headMotionEnabled = true; head.start() }.primaryButton()
+                        Button(L("Continua")) { prefs.headMotionEnabled = true; head.start() }.buttonStyle(.sgSecondary)
                     } else {
                         Text(head.isConnected ? L("Prova: annuisci due o tre volte, poi scuoti la testa.")
                                               : L("Indossa le AirPods: il disegno seguirà la tua testa."))
-                            .font(.title3.weight(.medium))
+                            .font(SG.Font.instruction)
                             .fixedSize(horizontal: false, vertical: true)
                         if let lastLabel {
-                            Label(lastLabel, systemImage: "checkmark.circle.fill").foregroundStyle(Brand.gradient)
+                            NoteLabel(text: lastLabel, symbol: "checkmark.circle.fill", tint: SG.Status.success)
                         }
                         Text(L("Non le hai con te? Continua: le approvazioni funzionano anche solo col Watch."))
-                            .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                            .font(SG.Font.field).foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
+            .foregroundStyle(SG.Ink.primary)
             .contentCard(padding: 22)
         }
         .onReceive(head.$lastGesture) { g in
@@ -290,42 +290,46 @@ private struct WatchStep: View {
     @State private var successes = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
             StepHeader(eyebrow: L("Passo 3"), title: L("Apple Watch"),
                        subtitle: L("Vicino al Mac puoi confermare premendo due volte il tasto laterale, come per sbloccare il Mac. È sperimentale: lontano dal Mac rispondi con la notifica o il promemoria (passo Notifiche)."))
-            HStack(alignment: .center, spacing: 30) {
+            HStack(alignment: .top, spacing: 24) {
                 ZStack {
                     PulseRings(active: watch.isAsking).frame(width: 200, height: 200)
                     Image(systemName: "applewatch.side.right")
                         .font(.system(size: 84, weight: .light))
-                        .foregroundStyle(Brand.gradient)
+                        .foregroundStyle(SG.Ink.primary)
                     DrawnCheck(trigger: successes, size: 60).offset(x: 62, y: 52)
                 }
                 .frame(width: 220, height: 220)
+                .contentCard(padding: 10)
+                .frame(width: 240)
                 VStack(alignment: .leading, spacing: 14) {
-                    StatusRow(title: L("Watch vicino e sbloccato"),
-                              value: watch.isAvailable ? L("Pronto") : (watch.unavailableReason ?? L("Non pronto")), ok: watch.isAvailable)
+                    SGGroup {
+                        StatusRow(title: L("Watch vicino e sbloccato"),
+                                  value: watch.isAvailable ? L("Pronto") : (watch.unavailableReason ?? L("Non pronto")), ok: watch.isAvailable)
+                    }
                     if !watch.isAvailable {
                         Text(L("Attiva Impostazioni di Sistema > Touch ID e password > Apple Watch, poi riprova."))
-                            .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                            .font(SG.Font.body)
+                            .foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                     Button(watch.isAsking ? L("Guarda il Watch…") : L("Prova la conferma")) {
                         Task {
                             if case .confirmed = await watch.confirm(L("provare la conferma con Apple Watch")) { successes += 1 }
                         }
                     }
-                    .primaryButton()
+                    .buttonStyle(.sgSecondary)
                     .disabled(watch.isAsking)
                     if let outcome = watch.lastOutcome {
-                        Label(outcome.title, systemImage: outcome == .denied || isConfirmed(outcome) ? "checkmark.circle.fill" : "exclamationmark.circle")
-                            .foregroundStyle(isConfirmed(outcome) ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.orange))
-                            .fixedSize(horizontal: false, vertical: true)
+                        NoteLabel(text: outcome.title,
+                                  symbol: outcome == .denied || isConfirmed(outcome) ? "checkmark.circle.fill" : "exclamationmark.circle",
+                                  tint: isConfirmed(outcome) ? SG.Status.success : SG.Status.warning)
                     }
                     WatchDoubleClickNotice()
                     if watch.needsTroubleshooting { WatchTroubleshooting(systemLevel: watch.systemRefusesWatch) }
                 }
             }
-            .contentCard(padding: 22)
         }
         .onAppear { watch.refresh() }
     }
@@ -342,30 +346,26 @@ private struct NotificationsStep: View {
     @ObservedObject var reminders: ReminderRelay
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             StepHeader(eyebrow: L("Passo 4"), title: L("Notifiche sul Watch"),
                        subtitle: L("Da lontano Nod ti scrive sul Watch tramite l'app ntfy dell'iPhone. Il doppio tap sceglie il primo pulsante."))
+                .padding(.bottom, -4)
             OfficialAppCard(prefs: prefs)
             HStack(alignment: .top, spacing: 22) {
                 VStack(spacing: 14) {
                     WatchNotificationPreview()
-                    Button(L("Invia prova")) { Task { await relay.sendTest() } }.primaryButton()
+                    Button(L("Invia prova")) { Task { await relay.sendTest() } }.buttonStyle(.sgSecondary)
                     if let event = relay.lastEvent {
-                        Text(event).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(width: 180)
+                        Text(event).font(SG.Font.field).foregroundStyle(SG.Ink.secondary).multilineTextAlignment(.center).frame(width: 180)
                     }
                 }
                 NtfyAlertChecklist(relay: relay)
                     .contentCard()
             }
-            VStack(alignment: .leading, spacing: 8) {
-                Label(L("Promemoria: l'avviso nativo, senza app"), systemImage: "checklist").font(.headline)
+            SGSection(L("Promemoria: l'avviso nativo, senza app")) {
                 RemindersControls(reminders: reminders, prefs: prefs)
             }
-            .contentCard()
-            Form { ServerSettingsSection(prefs: prefs, relay: relay) }
-                .formStyle(.grouped)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 230)
+            ServerSettingsSection(prefs: prefs, relay: relay)
         }
     }
 }
@@ -383,7 +383,7 @@ struct NtfyAlertChecklist: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(.headline)
+            Text(L("Se arrivano nell'app ntfy ma non come avviso")).font(SG.Font.bodyEmphasis).foregroundStyle(SG.Ink.primary)
             ChecklistRow(text: L("Disinstalla e reinstalla l'app ntfy"),
                          detail: L("Al primo avvio consenti le notifiche, poi aggiungi di nuovo il topic: così l'iPhone si registra di nuovo per il push."),
                          done: $reinstall)
@@ -412,20 +412,19 @@ private struct PresenceStep: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             StepHeader(eyebrow: L("Passo 5"), title: L("Quando ti allontani"),
                        subtitle: L("Il Watch ti chiede cosa fare. Se non rispondi, vale questa regola."))
+                .padding(.bottom, -4)
             HStack(alignment: .center, spacing: 28) {
                 WeekStrip(schedule: prefs.leavingRule.schedule)
                 Text(PresenceRuleEditor.summary(prefs.leavingRule))
-                    .font(.title3.weight(.medium))
+                    .font(SG.Font.instruction)
+                    .foregroundStyle(SG.Ink.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .contentCard(padding: 22)
-            Form { PresenceRuleEditor(prefs: prefs) }
-                .formStyle(.grouped)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 400)
+            PresenceRuleEditor(prefs: prefs)
         }
     }
 }
@@ -434,38 +433,41 @@ private struct AppearanceStep: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             StepHeader(eyebrow: L("Passo 6"), title: L("Aspetto"),
                        subtitle: L("Scegli lingua, tema dell'app e come appare Nod nella barra dei menu."))
-            VStack(alignment: .leading, spacing: 14) {
-                Text(L("Lingua")).font(.headline)
-                Picker(L("Lingua"), selection: $prefs.language) {
-                    ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Text(L("Tema")).font(.headline)
-                Picker(L("Tema"), selection: $prefs.appearance) {
-                    ForEach(AppAppearance.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: 360)
-            }
-            .contentCard()
-            VStack(alignment: .leading, spacing: 14) {
-                Text(L("Barra dei menu")).font(.headline)
-                HStack(spacing: 16) {
-                    ForEach(MenuBarStyle.allCases) { style in
-                        MenuBarPreview(style: style, selected: prefs.menuBarStyle == style)
-                            .onTapGesture { prefs.menuBarStyle = style }
-                            .accessibilityAddTraits(.isButton)
-                            .accessibilityLabel(L("Icona %@", style.title))
+                .padding(.bottom, -4)
+            SGSection(L("Lingua")) {
+                SGRowBlock {
+                    Picker(L("Lingua"), selection: $prefs.language) {
+                        ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
                 }
-                Text(L("Da sinistra: al Mac, in uscita, lontano.")).font(.callout).foregroundStyle(.secondary)
             }
-            .contentCard()
+            SGSection(L("Tema")) {
+                SGRowBlock {
+                    Picker(L("Tema"), selection: $prefs.appearance) {
+                        ForEach(AppAppearance.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+            }
+            SGSection(L("Barra dei menu")) {
+                SGRowBlock {
+                    HStack(spacing: 16) {
+                        ForEach(MenuBarStyle.allCases) { style in
+                            MenuBarPreview(style: style, selected: prefs.menuBarStyle == style) { prefs.menuBarStyle = style }
+                        }
+                    }
+                    .padding(.vertical, 6)
+                }
+            } footer: {
+                SGFootnote(L("Da sinistra: al Mac, in uscita, lontano."))
+            }
         }
     }
 }
@@ -479,13 +481,14 @@ private struct DoneStep: View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .center, spacing: 24) {
                 ZStack {
-                    FloatingAppIcon(size: 120)
+                    AppIconView(size: 120)
                     DrawnCheck(trigger: 1, size: 54).offset(x: 54, y: 48)
                 }
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L("Tutto pronto")).font(.system(size: 40, weight: .bold, design: .rounded))
+                    Text(L("Tutto pronto")).font(SG.Font.title).foregroundStyle(SG.Ink.primary)
                     Text(L("Nod resta nella barra dei menu. Questa configurazione si riapre da Nod > Ripeti configurazione."))
-                        .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        .font(SG.Font.instruction)
+                        .foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
             FlowPills(items: [
@@ -494,18 +497,18 @@ private struct DoneStep: View {
                 ("applewatch", model.watch.isAvailable ? L("Watch pronto") : L("Watch da attivare"), model.watch.isAvailable),
                 ("bell.badge", model.relay.isListening ? L("Notifiche collegate") : L("Notifiche da verificare"), model.relay.isListening),
             ])
-            Toggle(L("Apri Nod all'accesso"), isOn: $launchAtLogin)
-                .toggleStyle(.switch)
-                .onChange(of: launchAtLogin) {
-                    do {
-                        if launchAtLogin { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-                        loginError = nil
-                    } catch {
-                        loginError = error.localizedDescription
+            SGGroup {
+                SGToggleRow(L("Apri Nod all'accesso"), isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) {
+                        do {
+                            if launchAtLogin { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+                            loginError = nil
+                        } catch {
+                            loginError = error.localizedDescription
+                        }
                     }
-                }
-                .contentCard()
-            if let loginError { Text(loginError).foregroundStyle(.orange) }
+            }
+            if let loginError { NoteLabel(text: loginError, symbol: "exclamationmark.triangle.fill") }
             DeveloperLinks()
         }
     }
@@ -536,22 +539,28 @@ private struct OfficialAppCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "exclamationmark.bubble.fill").font(.title2).foregroundStyle(Brand.gradient)
+                Image(systemName: "exclamationmark.bubble.fill").font(.system(size: 20)).foregroundStyle(SG.Status.warning)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(L("Usa l'app ntfy (icona verde, di Philipp Heckel)")).font(.headline)
+                    Text(L("Usa l'app ntfy (icona verde, di Philipp Heckel)")).font(SG.Font.bodyEmphasis).foregroundStyle(SG.Ink.primary)
                     Text(L("Non \"Ntfy me\": è un servizio diverso e non riceve le notifiche di Nod."))
-                        .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        .font(SG.Font.caption)
+                        .foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 Link(L("Apri nell'App Store"), destination: URL(string: "https://apps.apple.com/app/ntfy/id1625396347")!)
+                    .font(SG.Font.label)
             }
             Text(prefs.serverChoice == .ntfySh
                  ? L("Nell'app tocca + e incolla questo nome di topic (server: ntfy.sh, già quello predefinito):")
                  : L("Nell'app tocca +, attiva \"Use another server\" con l'indirizzo del tuo server, e incolla questo nome di topic:"))
+                .font(SG.Font.body)
+                .foregroundStyle(SG.Ink.primary)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Text(verbatim: prefs.topic)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(SG.Font.value)
+                    .foregroundStyle(SG.Ink.primary)
                     .textSelection(.enabled)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -561,9 +570,12 @@ private struct OfficialAppCard: View {
                     NSPasteboard.general.setString(prefs.topic, forType: .string)
                     copied = true
                 }
+                .buttonStyle(.sgSecondary)
             }
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.12)))
+            .background(RoundedRectangle(cornerRadius: SG.Radius.tile, style: .continuous).fill(SG.Fill.tile))
+            .overlay(RoundedRectangle(cornerRadius: SG.Radius.tile, style: .continuous)
+                .strokeBorder(SG.Fill.rowBorder, lineWidth: SG.Stroke.hairline))
         }
         .contentCard()
     }

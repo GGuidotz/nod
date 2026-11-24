@@ -45,6 +45,8 @@ final class AppModel: ObservableObject {
     let updater: Updater
 
     @Published var selection: SidebarItem? = .status
+    /// Il pannello aperto nelle Impostazioni: sta qui, così un cambio di lingua (che ridisegna la finestra) non lo azzera.
+    @Published var settingsTab: SettingsTab = .general
     @Published var setup: SetupSession?
 
     private init() {

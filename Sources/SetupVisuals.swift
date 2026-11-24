@@ -1,6 +1,7 @@
-// Pezzi grafici della configurazione: icona che galleggia, spunta che si disegna, onde, indicatore dei passi,
+// Pezzi grafici della configurazione: icona dell'app, spunta che si disegna, onde, indicatore dei passi,
 // anteprima della notifica sul Watch, settimana della regola di presenza, anteprima della barra dei menu.
-// Con Riduci movimento: niente galleggiamento né onde, la spunta compare già disegnata.
+// Colori e forme vengono da Sguardo (accento della persona, riempimenti, filo da 1 pt, molle).
+// Con Riduci movimento: niente onde, la spunta compare già disegnata.
 
 import AppKit
 import SwiftUI
@@ -17,20 +18,19 @@ struct CheckShape: Shape {
     }
 }
 
-/// Una spunta che si disegna quando `trigger` cambia.
+/// Una spunta che si disegna quando `trigger` cambia, nel colore d'accento.
 struct DrawnCheck: View {
     var trigger: Int
     var size: CGFloat = 64
-    var color: Color = Brand.aurora
     @State private var progress: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         CheckShape()
             .trim(from: 0, to: progress)
-            .stroke(color, style: StrokeStyle(lineWidth: size * 0.13, lineCap: .round, lineJoin: .round))
+            .stroke(accent.base, style: StrokeStyle(lineWidth: size * 0.13, lineCap: .round, lineJoin: .round))
             .frame(width: size, height: size)
-            .shadow(color: color.opacity(0.6), radius: 10)
             .onAppear { draw() }
             .onChange(of: trigger) { draw() }
             .accessibilityHidden(true)
@@ -40,27 +40,20 @@ struct DrawnCheck: View {
         guard trigger > 0 else { progress = 0; return }
         if reduceMotion { progress = 1; return }
         progress = 0
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) { progress = 1 }
+        withAnimation(.easeOut(duration: 0.28)) { progress = 1 }
     }
 }
 
-/// L'icona dell'app, grande, che galleggia piano.
-struct FloatingAppIcon: View {
+/// L'icona dell'app, grande, con un'ombra morbida.
+struct AppIconView: View {
     var size: CGFloat = 128
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var up = false
 
     var body: some View {
         Image(nsImage: NSApp.applicationIconImage)
             .resizable()
             .interpolation(.high)
             .frame(width: size, height: size)
-            .shadow(color: Brand.aurora.opacity(0.35), radius: size * 0.18, y: size * 0.06)
-            .offset(y: up ? -size * 0.04 : size * 0.04)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 2.8).repeatForever(autoreverses: true)) { up = true }
-            }
+            .shadow(color: .black.opacity(0.18), radius: size * 0.08, y: size * 0.03)
             .accessibilityHidden(true)
     }
 }
@@ -68,8 +61,8 @@ struct FloatingAppIcon: View {
 /// Onde che si allargano attorno a qualcosa che aspetta (il Watch che aspetta il doppio clic).
 struct PulseRings: View {
     var active: Bool
-    var color: Color = Brand.aurora
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !active || reduceMotion)) { context in
@@ -78,7 +71,7 @@ struct PulseRings: View {
                 ForEach(0..<3, id: \.self) { i in
                     let phase = (t / 1.8 + Double(i) / 3).truncatingRemainder(dividingBy: 1)
                     Circle()
-                        .stroke(color.opacity(active && !reduceMotion ? 0.5 * (1 - phase) : 0), lineWidth: 2)
+                        .stroke(accent.base.opacity(active && !reduceMotion ? 0.5 * (1 - phase) : 0), lineWidth: 2)
                         .scaleEffect(0.6 + phase * 0.8)
                 }
             }
@@ -87,26 +80,27 @@ struct PulseRings: View {
     }
 }
 
-/// Indicatore dei passi: capsule, quella attuale più lunga e colorata.
+/// Indicatore dei passi: capsule, quella attuale più lunga e nel colore d'accento.
 struct StepDots: View {
     var count: Int
     var current: Int
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         HStack(spacing: 6) {
             ForEach(0..<count, id: \.self) { i in
                 Capsule()
-                    .fill(i == current ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.secondary.opacity(i < current ? 0.6 : 0.25)))
+                    .fill(i == current ? accent.base : (i < current ? SG.Ink.tertiary : SG.Fill.neutralButton))
                     .frame(width: i == current ? 26 : 8, height: 8)
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: current)
+        .animation(SG.Motion.respecting(SG.Motion.snappy), value: current)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("Passo %d di %d", current + 1, count))
     }
 }
 
-/// Una funzione di Nod in una pillola: simbolo e due righe.
+/// Una funzione di Nod in una scheda: simbolo e due righe.
 struct FeatureTile: View {
     let symbol: String
     let title: String
@@ -116,12 +110,12 @@ struct FeatureTile: View {
         VStack(alignment: .leading, spacing: 8) {
             Image(systemName: symbol)
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(Brand.gradient)
-            Text(title).font(.headline)
-            Text(detail).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(SG.Ink.primary)
+            Text(title).font(SG.Font.bodyEmphasis).foregroundStyle(SG.Ink.primary)
+            Text(detail).font(SG.Font.caption).foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .contentCard(padding: 16)
+        .contentCard(padding: SG.Space.l)
     }
 }
 
@@ -135,28 +129,28 @@ struct WatchNotificationPreview: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: 4).fill(Color(red: 0.2, green: 0.6, blue: 0.5)).frame(width: 14, height: 14)
-                Text(verbatim: "NTFY").font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.7))
+                Text(verbatim: "NTFY").font(.caption2.weight(.semibold)).foregroundStyle(SG.Island.textSecondary)
             }
-            Text(title).font(.callout.weight(.semibold)).foregroundStyle(.white)
-            Text(message).font(.caption).foregroundStyle(.white.opacity(0.8))
+            Text(title).font(SG.Font.bodyEmphasis).foregroundStyle(SG.Island.textPrimary)
+            Text(message).font(SG.Font.caption).foregroundStyle(SG.Island.textDetail)
             ForEach(Array(buttons.enumerated()), id: \.offset) { item in
                 Text(item.element)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .font(SG.Font.label)
+                    .foregroundStyle(SG.Island.textPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
-                    .background(Capsule().fill(.white.opacity(item.offset == 0 ? 0.28 : 0.14)))
+                    .background(Capsule().fill(item.offset == 0 ? SG.Island.surfaceRaised : SG.Island.surface))
                     .overlay(alignment: .trailing) {
                         if item.offset == 0 {
-                            Image(systemName: "hand.tap.fill").font(.caption2).foregroundStyle(.white.opacity(0.7)).padding(.trailing, 8)
+                            Image(systemName: "hand.tap.fill").font(.caption2).foregroundStyle(SG.Island.textDetail).padding(.trailing, 8)
                         }
                     }
             }
         }
         .padding(12)
         .frame(width: 168)
-        .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(.black))
-        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(.white.opacity(0.18), lineWidth: 3))
+        .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(SG.Island.panel))
+        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(SG.Island.surfaceRaised, lineWidth: 3))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("Anteprima della notifica sul Watch: %@. Il doppio tap sceglie %@.", title, buttons.first ?? ""))
     }
@@ -165,6 +159,7 @@ struct WatchNotificationPreview: View {
 /// La settimana della regola di presenza: sette colonne, la fascia oraria colorata nei giorni scelti.
 struct WeekStrip: View {
     let schedule: WorkSchedule
+    @Environment(\.sgAccent) private var accent
     private var days: [(Int, String)] { Weekdays.ordered.map { ($0.0, $0.1) } }
 
     var body: some View {
@@ -174,11 +169,11 @@ struct WeekStrip: View {
                     GeometryReader { geo in
                         let h = geo.size.height
                         ZStack(alignment: .top) {
-                            RoundedRectangle(cornerRadius: 6).fill(Color.secondary.opacity(0.15))
+                            RoundedRectangle(cornerRadius: 6, style: .continuous).fill(SG.Fill.neutralButton)
                             if schedule.weekdays.contains(day.0) {
                                 ForEach(segments, id: \.0) { seg in
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(Brand.gradient)
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(accent.base)
                                         .frame(height: max(4, h * CGFloat(seg.1 - seg.0) / 1440))
                                         .offset(y: h * CGFloat(seg.0) / 1440)
                                 }
@@ -186,12 +181,12 @@ struct WeekStrip: View {
                         }
                     }
                     .frame(width: 22, height: 96)
-                    Text(day.1).font(.caption.weight(.semibold))
-                        .foregroundStyle(schedule.weekdays.contains(day.0) ? Color.primary : Color.secondary)
+                    Text(day.1).font(SG.Font.label)
+                        .foregroundStyle(schedule.weekdays.contains(day.0) ? SG.Ink.primary : SG.Ink.secondary)
                 }
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: schedule)
+        .animation(SG.Motion.respecting(SG.Motion.snappy), value: schedule)
         .accessibilityHidden(true)
     }
 
@@ -203,36 +198,32 @@ struct WeekStrip: View {
     }
 }
 
-/// Anteprima del glifo nella barra dei menu, su barra chiara e scura.
+/// Anteprima del glifo nella barra dei menu, su barra chiara e scura: una tessera di Sguardo, con l'anello dell'accento
+/// quando è scelta.
 struct MenuBarPreview: View {
     let style: MenuBarStyle
     let selected: Bool
+    let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 10) {
+        SGOptionTile(style.title, isSelected: selected, size: CGSize(width: 220, height: 52), action: action) {
             HStack(spacing: 0) {
                 bar(dark: false)
                 bar(dark: true)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            Text(style.title).font(.callout.weight(selected ? .semibold : .regular))
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .strokeBorder(selected ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.secondary.opacity(0.3)), lineWidth: selected ? 2.5 : 1))
-        .contentShape(Rectangle())
+        .accessibilityLabel(L("Icona %@", style.title))
     }
 
     private func bar(dark: Bool) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ForEach([PresenceState.here, .leaving, .away], id: \.self) { state in
                 Image(nsImage: MenuBarGlyph.image(state: state, style: style))
                     .renderingMode(.template)
                     .foregroundStyle(dark ? Color.white : Color.black)
             }
         }
-        .padding(.horizontal, 12)
-        .frame(height: 30)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(dark ? Color(white: 0.16) : Color(white: 0.93))
     }
 }
@@ -243,18 +234,19 @@ struct ChecklistRow: View {
     var detail: String? = nil
     @Binding var done: Bool
     var automatic = false
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         Button {
-            if !automatic { done.toggle() }
+            if !automatic { withAnimation(SG.Motion.respecting(SG.Motion.snappy)) { done.toggle() } }
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(done ? AnyShapeStyle(Brand.gradient) : AnyShapeStyle(Color.secondary))
-                    .font(.title3)
+                    .foregroundStyle(done ? accent.base : SG.Ink.tertiary)
+                    .font(.system(size: 15))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(text).foregroundStyle(.primary)
-                    if let detail { Text(detail).font(.callout).foregroundStyle(.secondary) }
+                    Text(text).font(SG.Font.body).foregroundStyle(SG.Ink.primary)
+                    if let detail { Text(detail).font(SG.Font.caption).foregroundStyle(SG.Ink.secondary) }
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
@@ -267,18 +259,23 @@ struct ChecklistRow: View {
     }
 }
 
-/// Una pillola del riepilogo finale.
+/// Una pillola del riepilogo finale: capsula di Sguardo, simbolo d'avviso se manca qualcosa.
 struct SummaryPill: View {
     let symbol: String
     let text: String
     let ok: Bool
 
     var body: some View {
-        Label(text, systemImage: ok ? symbol : "exclamationmark.circle")
-            .font(.callout.weight(.medium))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(Capsule().fill(ok ? AnyShapeStyle(Brand.accent.opacity(0.18)) : AnyShapeStyle(Color.orange.opacity(0.18))))
-            .foregroundStyle(ok ? Color.primary : Color.orange)
+        HStack(spacing: 6) {
+            Image(systemName: ok ? symbol : "exclamationmark.circle")
+                .foregroundStyle(ok ? SG.Ink.secondary : SG.Status.warning)
+            Text(text).foregroundStyle(SG.Ink.primary)
+        }
+        .font(SG.Font.label)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Capsule().fill(SG.Fill.row))
+        .overlay(Capsule().strokeBorder(SG.Fill.rowBorder, lineWidth: SG.Stroke.hairline))
+        .accessibilityElement(children: .combine)
     }
 }

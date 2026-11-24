@@ -1,4 +1,6 @@
-// Pezzi d'interfaccia condivisi tra configurazione, finestra principale e impostazioni.
+// Pezzi d'interfaccia condivisi tra configurazione, finestra principale e impostazioni. Righe, capsule e riempimenti
+// vengono da Sguardo (Vendor/Sguardo); qui ci sono i pezzi propri di Nod e quelli che il kit non ha (campo di testo
+// nelle finestre, nota con simbolo colorato).
 
 import AppKit
 import SwiftUI
@@ -9,24 +11,72 @@ struct HeadIndicator: View {
     @ObservedObject var head: HeadMotionMonitor
     var size: CGFloat = 96
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.sgAccent) private var accent
 
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "airpodspro")
                 .font(.system(size: size * 0.5, weight: .regular))
-                .foregroundStyle(head.isConnected ? Color.accentColor : Color.secondary)
+                .foregroundStyle(head.isConnected ? accent.base : SG.Ink.secondary)
                 .frame(width: size, height: size)
-                .background(Circle().fill(.quaternary))
+                .background(Circle().fill(SG.Fill.tile))
+                .overlay(Circle().strokeBorder(SG.Fill.rowBorder, lineWidth: SG.Stroke.hairline))
                 .rotation3DEffect(.radians(reduceMotion ? 0 : head.pitch), axis: (x: 1, y: 0, z: 0))
                 .rotation3DEffect(.radians(reduceMotion ? 0 : head.yaw), axis: (x: 0, y: 1, z: 0))
                 .rotationEffect(.radians(reduceMotion ? 0 : -head.roll))
             if reduceMotion, head.isConnected {
                 Text(L("su/giù %.0f°  destra/sinistra %.0f°", head.pitch * 180 / .pi, head.yaw * 180 / .pi))
-                    .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+                    .font(SG.Font.caption).monospacedDigit().foregroundStyle(SG.Ink.secondary)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(head.isConnected ? L("AirPods indossate") : L("AirPods non indossate"))
+    }
+}
+
+/// Una nota con un simbolo colorato: il colore sta solo nel simbolo, il testo resta nell'inchiostro normale (leggibile
+/// anche con il giallo di avviso su fondo chiaro) e lo stato è sempre scritto in parole. Il kit non ha questo pezzo.
+struct NoteLabel: View {
+    let text: String
+    let symbol: String
+    var tint: Color = SG.Status.warning
+    var ink: Color = SG.Ink.primary
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: symbol).foregroundStyle(tint).accessibilityHidden(true)
+            Text(text).foregroundStyle(ink).fixedSize(horizontal: false, vertical: true)
+        }
+        .font(SG.Font.body)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Campo di testo a capsula per le finestre (il kit ha solo quello per l'isola scura): fondo del selettore e filo da 1 pt.
+struct NodField: View {
+    let title: String
+    @Binding var text: String
+    var prompt: String
+    var secure = false
+    var width: CGFloat = 240
+
+    var body: some View {
+        Group {
+            if secure {
+                SecureField(title, text: $text, prompt: Text(verbatim: prompt))
+            } else {
+                TextField(title, text: $text, prompt: Text(verbatim: prompt))
+            }
+        }
+        .textFieldStyle(.plain)
+        .labelsHidden()
+        .font(SG.Font.field)
+        .foregroundStyle(SG.Ink.primary)
+        .padding(.horizontal, 12)
+        .frame(width: width, height: 28)
+        .background(Capsule().fill(SG.Fill.pickerPill))
+        .overlay(Capsule().strokeBorder(SG.Fill.rowBorder, lineWidth: SG.Stroke.hairline))
+        .accessibilityLabel(title)
     }
 }
 
@@ -38,13 +88,18 @@ struct StatusRow: View {
     var symbol: String? = nil
 
     var body: some View {
-        LabeledContent {
-            Label(value, systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.circle")
-                .foregroundStyle(ok ? Color.green : Color.orange)
-                .labelStyle(.titleAndIcon)
-        } label: {
+        SGLabeledRow {
             if let symbol { Label(title, systemImage: symbol) } else { Text(title) }
+        } trailing: {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: ok ? "checkmark.circle.fill" : "exclamationmark.circle")
+                    .foregroundStyle(ok ? SG.Status.success : SG.Status.warning)
+                Text(value).foregroundStyle(SG.Ink.secondary)
+            }
+            .font(SG.Font.body)
+            .multilineTextAlignment(.trailing)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -67,18 +122,16 @@ struct WatchTroubleshooting: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label(systemLevel ? L("Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple.")
-                              : L("macOS non manda la richiesta al Watch. Controlla:"),
-                  systemImage: "exclamationmark.applewatch")
-                .foregroundStyle(.orange)
-                .fixedSize(horizontal: false, vertical: true)
-            if systemLevel { Text(L("Puoi ancora provare:")).font(.callout) }
+            NoteLabel(text: systemLevel ? L("Su questo Mac il doppio clic sul Watch non è disponibile: macOS lo rifiuta a ogni app, anche a quelle Apple.")
+                                        : L("macOS non manda la richiesta al Watch. Controlla:"),
+                      symbol: "exclamationmark.applewatch")
+            if systemLevel { Text(L("Puoi ancora provare:")).font(SG.Font.field) }
             ForEach(items, id: \.self) { item in
-                Text("• " + item).font(.callout).fixedSize(horizontal: false, vertical: true)
+                Text("• " + item).font(SG.Font.field).fixedSize(horizontal: false, vertical: true)
             }
             Text(systemLevel ? L("Intanto approvi con Touch ID al Mac e, da lontano, con la notifica o l'avviso di Promemoria.")
                              : L("Intanto Nod usa Touch ID: al Mac approvi col dito."))
-                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(SG.Font.field).foregroundStyle(SG.Ink.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -87,15 +140,13 @@ struct WatchTroubleshooting: View {
 /// "annullato" a ogni app, e serve un fix di Apple. Le risposte a distanza che funzionano.
 struct WatchDoubleClickNotice: View {
     var body: some View {
-        Label(L("Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)."),
-              systemImage: "exclamationmark.applewatch")
-            .foregroundStyle(.orange)
-            .fixedSize(horizontal: false, vertical: true)
+        NoteLabel(text: L("Doppio clic sul tasto laterale del Watch: sperimentale, in attesa di un fix di Apple. Su macOS 27 il sistema chiude la richiesta ma risponde \"annullato\" a ogni app, anche a quelle Apple. Intanto rispondi dal Watch con la notifica ntfy (Approva o Nega) o completando il promemoria (approva)."),
+                  symbol: "exclamationmark.applewatch")
     }
 }
 
-/// Promemoria come secondo canale verso il Watch: permesso, interruttore e prova. Nelle Impostazioni, nella
-/// configurazione e in Diagnostica.
+/// Promemoria come secondo canale verso il Watch: permesso, interruttore e prova. Sono righe da mettere in un gruppo
+/// (`SGSection`, `SGGroup`): nelle Impostazioni, nella configurazione e in Diagnostica.
 struct RemindersControls: View {
     @ObservedObject var reminders: ReminderRelay
     @ObservedObject var prefs: Preferences
@@ -108,79 +159,103 @@ struct RemindersControls: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Toggle(L("Avvisi anche con Promemoria"), isOn: enabled)
-            Text(L("Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Completarlo dal Watch vale come risposta (Approva, Tieni sveglio)."))
-                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            HStack {
-                if reminders.access != .granted {
-                    Button(L("Consenti l'accesso a Promemoria")) { Task { await reminders.requestAccess() } }
+        VStack(spacing: 0) {
+            SGToggleRow(L("Avvisi anche con Promemoria"), isOn: enabled)
+            SGDivider()
+            SGRowBlock {
+                VStack(alignment: .leading, spacing: 10) {
+                    SGFootnote(L("Nod crea un promemoria nella lista \"Nod\" di iCloud: l'avviso arriva su iPhone e Watch senza app da installare, di solito entro un minuto. Completarlo dal Watch vale come risposta (Approva, Tieni sveglio)."))
+                    HStack {
+                        if reminders.access != .granted {
+                            Button(L("Consenti l'accesso a Promemoria")) { Task { await reminders.requestAccess() } }
+                                .buttonStyle(.sgSecondary)
+                        }
+                        Button(L("Prova Promemoria")) { reminders.sendTest() }
+                            .buttonStyle(.sgSecondary)
+                            .disabled(reminders.access != .granted)
+                    }
+                    SGFootnote(L("Nella prova: quando l'avviso arriva sul Watch, toccalo e scegli Completato."))
+                    if let event = reminders.lastEvent { SGFootnote(event) }
                 }
-                Button(L("Prova Promemoria")) { reminders.sendTest() }
-                    .disabled(reminders.access != .granted)
-            }
-            Text(L("Nella prova: quando l'avviso arriva sul Watch, toccalo e scegli Completato."))
-                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            if let event = reminders.lastEvent {
-                Text(event).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
         .onAppear { reminders.refreshAccess() }
     }
 }
 
-/// Giorni della settimana come pulsanti attivabili, da lunedì.
+/// Giorni della settimana come capsule attivabili, da lunedì. Il giorno scelto ha l'anello e il velo dell'accento.
 struct WeekdayPicker: View {
     @Binding var selection: Set<Int>
+    @Environment(\.sgAccent) private var accent
     /// Da lunedì: (giorno di Calendar, iniziale, nome per VoiceOver) nella lingua dell'app.
     private var days: [(Int, String, String)] { Weekdays.ordered }
 
     var body: some View {
         HStack(spacing: 6) {
             ForEach(days, id: \.0) { day in
-                Toggle(isOn: Binding(get: { selection.contains(day.0) },
-                                     set: { on in if on { selection.insert(day.0) } else { selection.remove(day.0) } })) {
-                    Text(day.1).frame(width: 18)
+                let on = selection.contains(day.0)
+                Button {
+                    withAnimation(SG.Motion.respecting(SG.Motion.snappy)) {
+                        if on { selection.remove(day.0) } else { selection.insert(day.0) }
+                    }
+                } label: {
+                    Text(day.1)
+                        .font(SG.Font.label)
+                        .foregroundStyle(on ? SG.Ink.primary : SG.Ink.secondary)
+                        .frame(width: 26, height: 26)
+                        .background(Capsule().fill(on ? accent.selectedWash : SG.Fill.pickerPill))
+                        .overlay(Capsule().strokeBorder(on ? accent.base : SG.Fill.rowBorder, lineWidth: on ? 1.5 : SG.Stroke.hairline))
+                        .contentShape(Capsule())
                 }
-                .toggleStyle(.button)
+                .buttonStyle(.plain)
                 .accessibilityLabel(day.2)
+                .accessibilityAddTraits(on ? .isSelected : [])
             }
         }
     }
 }
 
-/// La regola "mi sto allontanando": app, giorni, fascia oraria, attese. Sotto, la regola scritta per intero.
+/// La regola "mi sto allontanando": app, giorni, fascia oraria, attese. Sotto, la regola scritta per intero. Sono tre
+/// gruppi (`SGSection`) da mettere in una pagina.
 struct PresenceRuleEditor: View {
     @ObservedObject var prefs: Preferences
 
     var body: some View {
-        Section {
-            ForEach(WatchedApp.suggestions) { app in
-                Toggle(app.name, isOn: Binding(
-                    get: { prefs.leavingRule.apps.contains(app) },
-                    set: { on in
-                        if on { prefs.leavingRule.apps.append(app) } else { prefs.leavingRule.apps.removeAll { $0 == app } }
-                    }))
+        Group {
+            SGSection(L("Con una di queste app aperta")) {
+                ForEach(Array(WatchedApp.suggestions.enumerated()), id: \.element.id) { index, app in
+                    if index > 0 { SGDivider() }
+                    SGToggleRow(app.name, isOn: Binding(
+                        get: { prefs.leavingRule.apps.contains(app) },
+                        set: { on in
+                            if on { prefs.leavingRule.apps.append(app) } else { prefs.leavingRule.apps.removeAll { $0 == app } }
+                        }))
+                }
             }
-        } header: {
-            Text(L("Con una di queste app aperta"))
-        }
-        Section {
-            LabeledContent(L("Giorni")) { WeekdayPicker(selection: $prefs.leavingRule.schedule.weekdays) }
-            DatePicker(L("Dalle"), selection: minutes(\.startMinutes), displayedComponents: .hourAndMinute)
-            DatePicker(L("Alle"), selection: minutes(\.endMinutes), displayedComponents: .hourAndMinute)
-        } header: {
-            Text(L("Nella tua fascia oraria"))
-        }
-        Section {
-            Stepper(L("Ti consideriamo in uscita dopo %d s senza usare il Mac", prefs.leavingIdleSeconds),
-                    value: $prefs.leavingIdleSeconds, in: 15...600, step: 15)
-            Stepper(L("Aspetta la tua risposta %d min", prefs.leavingRule.timeoutMinutes),
-                    value: $prefs.leavingRule.timeoutMinutes, in: 1...30)
-        } header: {
-            Text(L("Tempi"))
-        } footer: {
-            Text(Self.summary(prefs.leavingRule)).foregroundStyle(.secondary)
+            SGSection(L("Nella tua fascia oraria")) {
+                SGLabeledRow { Text(L("Giorni")) } trailing: { WeekdayPicker(selection: $prefs.leavingRule.schedule.weekdays) }
+                SGDivider()
+                SGLabeledRow { Text(L("Dalle")) } trailing: {
+                    DatePicker(L("Dalle"), selection: minutes(\.startMinutes), displayedComponents: .hourAndMinute).labelsHidden()
+                }
+                SGDivider()
+                SGLabeledRow { Text(L("Alle")) } trailing: {
+                    DatePicker(L("Alle"), selection: minutes(\.endMinutes), displayedComponents: .hourAndMinute).labelsHidden()
+                }
+            }
+            SGSection(L("Tempi")) {
+                let idle = L("Ti consideriamo in uscita dopo %d s senza usare il Mac", prefs.leavingIdleSeconds)
+                SGLabeledRow { Text(idle) } trailing: {
+                    Stepper(idle, value: $prefs.leavingIdleSeconds, in: 15...600, step: 15).labelsHidden()
+                }
+                SGDivider()
+                let wait = L("Aspetta la tua risposta %d min", prefs.leavingRule.timeoutMinutes)
+                SGLabeledRow { Text(wait) } trailing: {
+                    Stepper(wait, value: $prefs.leavingRule.timeoutMinutes, in: 1...30).labelsHidden()
+                }
+            } footer: {
+                SGFootnote(Self.summary(prefs.leavingRule))
+            }
         }
     }
 
@@ -207,7 +282,7 @@ struct PresenceRuleEditor: View {
     }
 }
 
-/// Server ntfy: ntfy.sh (predefinito) o un server tuo, con token di accesso nel Portachiavi.
+/// Server ntfy: ntfy.sh (predefinito) o un server tuo, con token di accesso nel Portachiavi. Un gruppo (`SGSection`).
 struct ServerSettingsSection: View {
     @ObservedObject var prefs: Preferences
     @ObservedObject var relay: NotificationRelay
@@ -215,36 +290,46 @@ struct ServerSettingsSection: View {
     @State private var replyToken = Keychain.read("ntfy-reply-token") ?? ""
 
     var body: some View {
-        Section {
-            Picker(L("Server"), selection: $prefs.serverChoice) {
-                ForEach(NtfyServerChoice.allCases) { Text($0.title).tag($0) }
-            }
+        SGSection(L("Server delle notifiche")) {
+            SGMenuRow(L("Server"), selection: $prefs.serverChoice,
+                      options: NtfyServerChoice.allCases.map { (value: $0, title: $0.title) })
             if prefs.serverChoice == .own {
-                TextField(L("Indirizzo"), text: $prefs.ownServerURL, prompt: Text(verbatim: "https://ntfy.example.com"))
-                SecureField(L("Token di accesso"), text: $token, prompt: Text(verbatim: "tk_…"))
-                    .onSubmit { relay.restartListening() }
-                    .onChange(of: token) { Keychain.write(token, for: "ntfy-token") }
-                SecureField(L("Token per i pulsanti"), text: $replyToken, prompt: Text(verbatim: "tk_…"))
-                    .onChange(of: replyToken) { Keychain.write(replyToken, for: "ntfy-reply-token") }
-                Text(L("Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \"-r\"), mai quello principale. Senza, i pulsanti non portano nessun token."))
-                    .font(.caption).foregroundStyle(.secondary)
+                SGDivider()
+                SGLabeledRow { Text(L("Indirizzo")) } trailing: {
+                    NodField(title: L("Indirizzo"), text: $prefs.ownServerURL, prompt: "https://ntfy.example.com")
+                }
+                SGDivider()
+                SGLabeledRow { Text(L("Token di accesso")) } trailing: {
+                    NodField(title: L("Token di accesso"), text: $token, prompt: "tk_…", secure: true)
+                        .onSubmit { relay.restartListening() }
+                        .onChange(of: token) { Keychain.write(token, for: "ntfy-token") }
+                }
+                SGDivider()
+                SGLabeledRow { Text(L("Token per i pulsanti")) } trailing: {
+                    NodField(title: L("Token per i pulsanti"), text: $replyToken, prompt: "tk_…", secure: true)
+                        .onChange(of: replyToken) { Keychain.write(replyToken, for: "ntfy-reply-token") }
+                }
+                SGDivider()
+                SGRowBlock {
+                    SGFootnote(L("Facoltativo. I pulsanti delle notifiche restano scritti sul server e sull'iPhone: usa un token con permesso di sola scrittura sul topic di risposta (nome del topic + \"-r\"), mai quello principale. Senza, i pulsanti non portano nessun token."))
+                }
             }
-            LabeledContent(L("Topic")) {
-                HStack {
-                    Text(prefs.topic).font(.body.monospaced()).textSelection(.enabled).lineLimit(1).truncationMode(.middle)
+            SGDivider()
+            SGLabeledRow { Text(L("Topic")) } trailing: {
+                HStack(spacing: 10) {
+                    Text(prefs.topic).font(SG.Font.value).foregroundStyle(SG.Ink.secondary)
+                        .textSelection(.enabled).lineLimit(1).truncationMode(.middle)
                     Button(L("Copia")) {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(prefs.topic, forType: .string)
                     }
+                    .buttonStyle(.sgSecondary)
                 }
             }
-        } header: {
-            Text(L("Server delle notifiche"))
         } footer: {
-            Text(prefs.serverChoice == .ntfySh
-                 ? L("Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita.")
-                 : L("Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito."))
-                .foregroundStyle(.secondary)
+            SGFootnote(prefs.serverChoice == .ntfySh
+                       ? L("Su ntfy.sh il gestore del servizio può leggere il testo delle notifiche: Nod lo tiene al minimo. Un server tuo lo evita.")
+                       : L("Con un server tuo il contenuto resta lì; a ntfy.sh arriva solo un avviso senza testo, che serve all'iPhone per riceverlo subito."))
         }
         .onChange(of: prefs.serverChoice) { relay.restartListening() }
     }
